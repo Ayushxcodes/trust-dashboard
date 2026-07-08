@@ -1,0 +1,657 @@
+{
+  "users": [
+    {
+      "id": "usr-admin",
+      "name": "Alex Mercer",
+      "email": "admin@trustlink.com",
+      "passwordHash": "admin123",
+      "role": "ADMIN",
+      "companyName": "TrustLink Compliance Ltd",
+      "createdAt": "2026-06-08T09:47:47.394Z",
+      "corporateId": "ENT-ADMIN-000"
+    },
+    {
+      "id": "usr-client1",
+      "name": "Jane Doe",
+      "email": "jane@acme.com",
+      "passwordHash": "jane123",
+      "role": "USER",
+      "companyName": "Acme Corporation",
+      "createdAt": "2026-06-28T09:47:47.394Z",
+      "corporateId": "ENT-4229-701"
+    },
+    {
+      "id": "usr-client2",
+      "name": "Bruce Wayne",
+      "email": "bruce@stark.com",
+      "passwordHash": "bruce123",
+      "role": "USER",
+      "companyName": "Stark Industries",
+      "createdAt": "2026-07-03T09:47:47.394Z",
+      "corporateId": "ENT-2156-204"
+    },
+    {
+      "id": "usr-client3",
+      "name": "Lex Luthor",
+      "email": "lex@lexcorp.com",
+      "passwordHash": "lex123",
+      "role": "USER",
+      "companyName": "LexCorp",
+      "createdAt": "2026-07-07T09:47:47.394Z",
+      "corporateId": "ENT-8773-645"
+    },
+    {
+      "name": "afsa",
+      "email": "asd",
+      "passwordHash": "12345",
+      "role": "USER",
+      "companyName": "sdfsf",
+      "id": "usr-rpmve73v1",
+      "corporateId": "ENT-3507-207",
+      "createdAt": "2026-07-08T09:57:43.077Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "tpl-1",
+      "title": "Certificate of Incorporation Template",
+      "description": "Standard incorporation form for proof of company registration and legal formation.",
+      "fileUrl": "/templates/certificate_of_incorporation.docx",
+      "requiredFor": "Account Setup",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    },
+    {
+      "id": "tpl-2",
+      "title": "KYC Director Identification Form",
+      "description": "Official form to identify directors, verify address, and submit passport/ID details.",
+      "fileUrl": "/templates/kyc_director_verification.pdf",
+      "requiredFor": "Identity Verification",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    },
+    {
+      "id": "tpl-3",
+      "title": "Tax Status Declaration Form (W8/W9)",
+      "description": "Self-certification form declaring tax residency and taxpayer identification status.",
+      "fileUrl": "/templates/tax_status_declaration.pdf",
+      "requiredFor": "Compliance",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    },
+    {
+      "id": "tpl-4",
+      "title": "Standard Master Service Agreement",
+      "description": "Agreement outlining standard engagement terms, confidentiality, and service levels.",
+      "fileUrl": "/templates/master_service_agreement.docx",
+      "requiredFor": "Legal Processing",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc-1",
+      "userId": "usr-client1",
+      "templateId": "tpl-1",
+      "uploadedFileUrl": "/uploads/acme_incorporation.pdf",
+      "fileName": "acme_incorporation_final.pdf",
+      "status": "VERIFIED",
+      "adminRemark": "Certificate verified. Corporate registry match confirmed.",
+      "uploadedAt": "2026-06-30T09:47:47.395Z",
+      "reviewedAt": "2026-07-01T09:47:47.395Z"
+    },
+    {
+      "id": "doc-2",
+      "userId": "usr-client1",
+      "templateId": "tpl-2",
+      "uploadedFileUrl": "/uploads/acme_kyc_jane.pdf",
+      "fileName": "acme_kyc_jane.pdf",
+      "status": "REJECTED",
+      "adminRemark": "Passport photo is blurry. Please upload a clear high-resolution copy of the biographical page.",
+      "uploadedAt": "2026-07-02T09:47:47.395Z",
+      "reviewedAt": "2026-07-03T09:47:47.395Z"
+    },
+    {
+      "id": "doc-3",
+      "userId": "usr-client2",
+      "templateId": "tpl-1",
+      "uploadedFileUrl": "/uploads/stark_incorporation.pdf",
+      "fileName": "stark_incorporation_official.pdf",
+      "status": "VERIFIED",
+      "adminRemark": "All registration details validated successfully.",
+      "uploadedAt": "2026-07-04T09:47:47.395Z",
+      "reviewedAt": "2026-07-05T09:47:47.395Z"
+    },
+    {
+      "id": "doc-4",
+      "userId": "usr-client2",
+      "templateId": "tpl-2",
+      "uploadedFileUrl": "/uploads/stark_kyc_bruce.pdf",
+      "fileName": "stark_kyc_bruce.pdf",
+      "status": "PENDING",
+      "adminRemark": "",
+      "uploadedAt": "2026-07-07T09:47:47.395Z",
+      "reviewedAt": null
+    }
+  ],
+  "pipelineStages": [
+    {
+      "id": "pipe-client1-1",
+      "userId": "usr-client1",
+      "stageName": "Account Created",
+      "status": "COMPLETED",
+      "stageOrder": 1,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-2",
+      "userId": "usr-client1",
+      "stageName": "KYC Submitted",
+      "status": "COMPLETED",
+      "stageOrder": 2,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-3",
+      "userId": "usr-client1",
+      "stageName": "Documents Uploaded",
+      "status": "IN_PROGRESS",
+      "stageOrder": 3,
+      "adminNote": "Pending client upload of the Master Service Agreement.",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-4",
+      "userId": "usr-client1",
+      "stageName": "Admin Review",
+      "status": "PENDING",
+      "stageOrder": 4,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-5",
+      "userId": "usr-client1",
+      "stageName": "Compliance Verification",
+      "status": "PENDING",
+      "stageOrder": 5,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-6",
+      "userId": "usr-client1",
+      "stageName": "Legal Processing",
+      "status": "PENDING",
+      "stageOrder": 6,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-7",
+      "userId": "usr-client1",
+      "stageName": "Final Approval",
+      "status": "PENDING",
+      "stageOrder": 7,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client1-8",
+      "userId": "usr-client1",
+      "stageName": "Completed",
+      "status": "PENDING",
+      "stageOrder": 8,
+      "adminNote": "",
+      "updatedAt": "2026-07-05T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client2-1",
+      "userId": "usr-client2",
+      "stageName": "Account Created",
+      "status": "COMPLETED",
+      "stageOrder": 1,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-2",
+      "userId": "usr-client2",
+      "stageName": "KYC Submitted",
+      "status": "COMPLETED",
+      "stageOrder": 2,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-3",
+      "userId": "usr-client2",
+      "stageName": "Documents Uploaded",
+      "status": "COMPLETED",
+      "stageOrder": 3,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-4",
+      "userId": "usr-client2",
+      "stageName": "Admin Review",
+      "status": "COMPLETED",
+      "stageOrder": 4,
+      "adminNote": "Reviewing Certificate of Incorporation and KYC documents.",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-5",
+      "userId": "usr-client2",
+      "stageName": "Compliance Verification",
+      "status": "PENDING",
+      "stageOrder": 5,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-6",
+      "userId": "usr-client2",
+      "stageName": "Legal Processing",
+      "status": "PENDING",
+      "stageOrder": 6,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-7",
+      "userId": "usr-client2",
+      "stageName": "Final Approval",
+      "status": "PENDING",
+      "stageOrder": 7,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client2-8",
+      "userId": "usr-client2",
+      "stageName": "Completed",
+      "status": "PENDING",
+      "stageOrder": 8,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "id": "pipe-client3-1",
+      "userId": "usr-client3",
+      "stageName": "Account Created",
+      "status": "COMPLETED",
+      "stageOrder": 1,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.394Z"
+    },
+    {
+      "id": "pipe-client3-2",
+      "userId": "usr-client3",
+      "stageName": "KYC Submitted",
+      "status": "IN_PROGRESS",
+      "stageOrder": 2,
+      "adminNote": "KYC Form submitted by client. Under administrative queue.",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-client3-3",
+      "userId": "usr-client3",
+      "stageName": "Documents Uploaded",
+      "status": "PENDING",
+      "stageOrder": 3,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-client3-4",
+      "userId": "usr-client3",
+      "stageName": "Admin Review",
+      "status": "PENDING",
+      "stageOrder": 4,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-client3-5",
+      "userId": "usr-client3",
+      "stageName": "Compliance Verification",
+      "status": "PENDING",
+      "stageOrder": 5,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-client3-6",
+      "userId": "usr-client3",
+      "stageName": "Legal Processing",
+      "status": "PENDING",
+      "stageOrder": 6,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-client3-7",
+      "userId": "usr-client3",
+      "stageName": "Final Approval",
+      "status": "PENDING",
+      "stageOrder": 7,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-client3-8",
+      "userId": "usr-client3",
+      "stageName": "Completed",
+      "status": "PENDING",
+      "stageOrder": 8,
+      "adminNote": "",
+      "updatedAt": "2026-07-08T09:47:47.395Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-1",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Account Created",
+      "status": "COMPLETED",
+      "stageOrder": 1,
+      "adminNote": "Account creation completed.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-2",
+      "userId": "usr-rpmve73v1",
+      "stageName": "KYC Submitted",
+      "status": "IN_PROGRESS",
+      "stageOrder": 2,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-3",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Documents Uploaded",
+      "status": "PENDING",
+      "stageOrder": 3,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-4",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Admin Review",
+      "status": "PENDING",
+      "stageOrder": 4,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-5",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Compliance Verification",
+      "status": "PENDING",
+      "stageOrder": 5,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-6",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Legal Processing",
+      "status": "PENDING",
+      "stageOrder": 6,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-7",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Final Approval",
+      "status": "PENDING",
+      "stageOrder": 7,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-rpmve73v1-8",
+      "userId": "usr-rpmve73v1",
+      "stageName": "Completed",
+      "status": "PENDING",
+      "stageOrder": 8,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-08T09:57:43.085Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log-1",
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "Registered user account for Acme Corporation",
+      "createdAt": "2026-06-28T09:47:47.395Z"
+    },
+    {
+      "id": "log-2",
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'Certificate of Incorporation'",
+      "createdAt": "2026-07-01T09:47:47.395Z"
+    },
+    {
+      "id": "log-3",
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Rejected document 'KYC Director Identification Form' (Blurry photo)",
+      "createdAt": "2026-07-03T09:47:47.395Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER)",
+      "id": "log-rggsflb39",
+      "createdAt": "2026-07-08T09:47:47.398Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-tesssm4k2",
+      "createdAt": "2026-07-08T09:48:00.362Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN)",
+      "id": "log-318fcas7m",
+      "createdAt": "2026-07-08T09:48:02.835Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-2zd5jnfcu",
+      "createdAt": "2026-07-08T09:48:26.223Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged in: Bruce Wayne (USER)",
+      "id": "log-ei0eousty",
+      "createdAt": "2026-07-08T09:48:31.259Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged out",
+      "id": "log-s7qe9sbdk",
+      "createdAt": "2026-07-08T09:48:36.297Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN)",
+      "id": "log-cjmfcc55p",
+      "createdAt": "2026-07-08T09:48:37.336Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client2",
+      "action": "Updated pipeline for Stark Industries to stage 'Admin Review' (COMPLETED). Note: Reviewing Certificate of Incorporation and KYC documents.",
+      "id": "log-dl5keds0w",
+      "createdAt": "2026-07-08T09:48:48.179Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-ev12xiq7f",
+      "createdAt": "2026-07-08T09:49:51.220Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN)",
+      "id": "log-jufb59er9",
+      "createdAt": "2026-07-08T09:50:04.190Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-ogk89ijgg",
+      "createdAt": "2026-07-08T09:50:46.990Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER)",
+      "id": "log-i2ja8cf0v",
+      "createdAt": "2026-07-08T09:50:49.022Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-hhsa3y8v9",
+      "createdAt": "2026-07-08T09:54:06.624Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-rpmve73v1",
+      "action": "Registered account: sdfsf (USER) with ID ENT-3507-207",
+      "id": "log-7xdrxh562",
+      "createdAt": "2026-07-08T09:57:43.086Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-rpmve73v1",
+      "action": "User logged out",
+      "id": "log-galzz6swx",
+      "createdAt": "2026-07-08T09:57:57.159Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-zq02xeh3y",
+      "createdAt": "2026-07-08T09:58:00.025Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-3443egljl",
+      "createdAt": "2026-07-08T10:03:18.346Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-lukcfnjzv",
+      "createdAt": "2026-07-08T10:03:53.433Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-uxum0dcrg",
+      "createdAt": "2026-07-08T10:03:57.582Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-zojveu6cj",
+      "createdAt": "2026-07-08T10:05:31.795Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-11g25zo8t",
+      "createdAt": "2026-07-08T10:05:36.962Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-nhuphaw0s",
+      "createdAt": "2026-07-08T10:06:11.520Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-rh4fwnn9c",
+      "createdAt": "2026-07-08T10:06:20.889Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-kyukruabv",
+      "createdAt": "2026-07-08T10:06:39.371Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-c28fxousx",
+      "createdAt": "2026-07-08T10:07:19.533Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-bpp6bpew7",
+      "createdAt": "2026-07-08T10:07:43.856Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-hpyaeo0hd",
+      "createdAt": "2026-07-08T10:07:48.106Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-wj9z1omkv",
+      "createdAt": "2026-07-08T10:07:52.814Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-g4ls9rom5",
+      "createdAt": "2026-07-08T10:07:54.929Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-hprvdkius",
+      "createdAt": "2026-07-08T10:08:12.503Z"
+    }
+  ]
+}
