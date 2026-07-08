@@ -652,6 +652,13 @@
       "action": "User logged out",
       "id": "log-hprvdkius",
       "createdAt": "2026-07-08T10:08:12.503Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-gbcd6dba9",
+      "createdAt": "2026-07-08T10:11:49.254Z"
     }
   ]
 }
