@@ -2,11 +2,22 @@
 
 import { useState } from "react";
 
-export default function CommercialTab() {
-  const [capital, setCapital] = useState(50000000); // Default 5 Crore (50,00,000)
-  const [folios, setFolios] = useState(5000);
+export default function CommercialTab({ companyName }: { companyName: string }) {
+  // Initialize values dynamically based on selected company
+  const getInitialValues = (name: string) => {
+    if (name.toLowerCase().includes("stark")) {
+      return { cap: 400000000, fol: 15000 };
+    }
+    if (name.toLowerCase().includes("lex")) {
+      return { cap: 7500000, fol: 2000 };
+    }
+    return { cap: 80000000, fol: 5000 }; // Acme Corporation / default
+  };
+
+  const init = getInitialValues(companyName);
+  const [capital, setCapital] = useState(init.cap);
+  const [folios, setFolios] = useState(init.fol);
   const [isSettling, setIsSettling] = useState(false);
-  const [activeTarget, setActiveTarget] = useState("Nexus Capital Group");
 
   // Format currency in Indian numbering system
   const formatINR = (value: number) => {
@@ -63,15 +74,9 @@ export default function CommercialTab() {
                 <span className="text-[10px] font-extrabold text-zinc-450 uppercase tracking-widest block">
                   Active Client:
                 </span>
-                <select
-                  value={activeTarget}
-                  onChange={(e) => setActiveTarget(e.target.value)}
-                  className="bg-zinc-50 border border-zinc-200 rounded px-2 py-1 text-xs font-bold text-zinc-700 focus:outline-none focus:border-indigo-500"
-                >
-                  <option>Nexus Capital Group</option>
-                  <option>Acme Corporation</option>
-                  <option>Global Holdings Trust</option>
-                </select>
+                <span className="text-xs font-bold text-[#0B1528] bg-zinc-100 px-2.5 py-1 rounded">
+                  {companyName}
+                </span>
               </div>
 
               <h3 className="text-base font-bold text-zinc-900 mt-3">Commercial Architecture</h3>

@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, logout } from "../actions";
-import { getTemplates, getDocumentsByUserId, getPipelineStages } from "@/lib/db";
+import { getTemplates, getDocumentsByUserId, getPipelineStages, getUsers, getUserById } from "@/lib/db";
 import UploadButton from "./UploadButton";
 import CommercialTab from "./CommercialTab";
+import CompanySwitcher from "./CompanySwitcher";
 
 interface PageProps {
   searchParams: Promise<{
     tab?: string;
+    userContext?: string;
   }>;
 }
 
@@ -25,10 +27,16 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const activeTab = params.tab || "vault";
+  const contextUserId = params.userContext || user.id;
+
+  const clients = getUsers().filter((u) => u.role === "USER");
+  const companyMap = clients.map((c) => ({ id: c.id, name: c.companyName }));
+
+  const activeCompanyUser = getUserById(contextUserId) || user;
 
   const templates = getTemplates();
-  const uploads = getDocumentsByUserId(user.id);
-  const stages = getPipelineStages(user.id);
+  const uploads = getDocumentsByUserId(contextUserId);
+  const stages = getPipelineStages(contextUserId);
 
   // Map upload files to template IDs for fast lookup
   const uploadMap = uploads.reduce((acc, doc) => {
@@ -55,7 +63,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </div>
               <div>
                 <span className="text-base font-extrabold text-white tracking-tight uppercase">TrustLink</span>
-                <span className="text-[9px] block font-mono text-zinc-500 leading-none">Registry Authority</span>
+                <span className="text-[9px] block font-mono text-zinc-500 leading-none">Client Portal</span>
               </div>
             </Link>
           </div>
@@ -143,20 +151,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           {/* Global Account Switcher dropdown & Search Bar */}
           <div className="flex items-center gap-4 flex-1 max-w-xl">
             {/* Account Switcher */}
-            <div className="relative">
-              <select className="bg-zinc-50 border border-zinc-200 rounded px-2.5 py-1.5 text-xs font-bold text-zinc-700 focus:outline-none focus:border-indigo-500 cursor-pointer">
-                <option>{user.companyName}</option>
-                <option>Global Holdings Trust</option>
-                <option>Nexus Capital Group</option>
-              </select>
-            </div>
+            <CompanySwitcher
+              currentContextId={contextUserId}
+              companyMap={companyMap}
+              activeTab={activeTab}
+            />
 
             {/* Global Search Bar */}
             <div className="relative flex-1 hidden sm:block">
               <input
                 type="text"
                 placeholder="Search across registry..."
-                className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-1.5 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-1.5 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-[#0B1528] focus:bg-white transition-all font-semibold"
               />
               <span className="absolute right-3 top-2.5 text-zinc-400">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -168,18 +174,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
           {/* Quick Context Links & Profile Action */}
           <div className="flex items-center gap-4.5">
-            <Link
-              href="/dashboard?tab=pipeline"
-              className="text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-950 transition-colors"
-            >
-              Audit Logs
-            </Link>
-            <span className="text-zinc-200 font-light">/</span>
-            <span className="text-xs font-bold text-zinc-500 hover:text-zinc-950 cursor-pointer transition-colors">Reports</span>
-            <span className="text-zinc-200 font-light">/</span>
-            <span className="text-xs font-bold text-zinc-500 hover:text-zinc-950 cursor-pointer transition-colors">Entities</span>
+            <span className="text-[10px] font-extrabold text-zinc-450 uppercase tracking-widest font-mono hidden md:inline">
+              Secure client portal
+            </span>
 
-            <span className="text-zinc-200 px-1 font-light">|</span>
+            <span className="text-zinc-200 px-1 font-light hidden md:inline">|</span>
 
             {/* Verify Status primary button */}
             <button
@@ -356,7 +355,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
                         {/* Upload trigger button */}
                         {(!doc || doc.status !== "VERIFIED") && (
-                          <UploadButton templateId={tpl.id} templateTitle={tpl.title} />
+                          <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
                         )}
                       </div>
                     </div>
@@ -560,7 +559,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
         {activeTab === "commercial" && (
           <main className="flex-1 p-8 overflow-y-auto bg-[#F8FAFC]">
-            <CommercialTab />
+            <CommercialTab key={contextUserId} companyName={activeCompanyUser.companyName} />
           </main>
         )}
 

@@ -659,6 +659,55 @@
       "action": "User logged out",
       "id": "log-gbcd6dba9",
       "createdAt": "2026-07-08T10:11:49.254Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-e0buqlesh",
+      "createdAt": "2026-07-09T09:17:35.593Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-clxb96wtp",
+      "createdAt": "2026-07-09T09:23:11.586Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-axbjihye2",
+      "createdAt": "2026-07-09T09:23:13.810Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-enda1uhlv",
+      "createdAt": "2026-07-09T09:24:55.557Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-3tysn9qf7",
+      "createdAt": "2026-07-09T09:26:04.358Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-6ppldz7pz",
+      "createdAt": "2026-07-09T09:26:31.301Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-nh0g3c8b9",
+      "createdAt": "2026-07-09T09:34:33.041Z"
     }
   ]
 }

@@ -135,16 +135,18 @@ export async function logout() {
 }
 
 // Client-Specific Actions
-export async function uploadDocument(templateId: string, fileName: string) {
+export async function uploadDocument(templateId: string, fileName: string, targetUserId?: string) {
   const user = await getCurrentUser();
-  if (!user || user.role !== "USER") {
+  if (!user) {
     return { success: false, error: "Unauthorized access." };
   }
 
+  const activeUserId = targetUserId || user.id;
+
   // Simulate file upload path
-  const simulatedUrl = `/uploads/${user.id}/${Date.now()}_${fileName}`;
+  const simulatedUrl = `/uploads/${activeUserId}/${Date.now()}_${fileName}`;
   
-  uploadUserDocument(user.id, templateId, fileName, simulatedUrl);
+  uploadUserDocument(activeUserId, templateId, fileName, simulatedUrl);
 
   revalidatePath("/dashboard");
   revalidatePath("/admin");

@@ -594,33 +594,11 @@ export default async function AdminPage({
                     <div className="flex justify-between items-end border-b border-zinc-200 pb-4">
                       <div>
                         <span className="text-[10px] font-bold text-zinc-450 uppercase tracking-wider font-mono">
-                          Pipeline &gt; Regulatory Briefing &gt; Rule 9B
+                          Pipeline &gt; Milestone Administrator
                         </span>
                         <h2 className="text-xl font-bold text-zinc-900 mt-1.5">
-                          Regulatory Briefing: Rule 9B Compliance (Reviewing {activeClient.companyName})
+                          Milestone Administrator: {activeClient.companyName}
                         </h2>
-                      </div>
-                    </div>
-
-                    {/* Objective / Scope layout */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="p-5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
-                        <span className="text-[9px] font-bold text-zinc-400 block uppercase">Objective</span>
-                        <p className="text-[11px] text-zinc-650 leading-relaxed">
-                          Enforce absolute conversion of physical folios to electronic demat forms to clear institutional audits.
-                        </p>
-                      </div>
-                      <div className="p-5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
-                        <span className="text-[9px] font-bold text-zinc-400 block uppercase">Scope</span>
-                        <p className="text-[11px] text-zinc-650 leading-relaxed">
-                          Mandatory for unlisted public entities under Section 29. Admin verification of signatories required.
-                        </p>
-                      </div>
-                      <div className="p-5 bg-zinc-50 border border-zinc-200 rounded-xl space-y-2">
-                        <span className="text-[9px] font-bold text-zinc-400 block uppercase">Consequences</span>
-                        <p className="text-[11px] text-zinc-650 leading-relaxed">
-                          Freeze on corporate restructures, private placements, or equity dividends pending completion.
-                        </p>
                       </div>
                     </div>
 
