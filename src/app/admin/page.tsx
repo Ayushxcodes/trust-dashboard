@@ -8,11 +8,13 @@ import {
   getTemplates,
   getPipelineStages,
   getAuditLogs,
+  getSystemMessages,
 } from "@/lib/db";
 import DocumentReviewForm from "./DocumentReviewForm";
 import PipelineForm from "./PipelineForm";
 import TemplateForm from "./TemplateForm";
 import DeleteTemplateButton from "./DeleteTemplateButton";
+import AdminControlWidgets from "./AdminControlWidgets";
 
 interface SearchParams {
   client?: string;
@@ -59,6 +61,7 @@ export default async function AdminPage({
   const activeClient = filteredClients.find((c) => c.id === activeClientId) || clients.find((c) => c.id === activeClientId);
   const activeClientDocs = activeClient ? getDocumentsByUserId(activeClient.id) : [];
   const activeClientStages = activeClient ? getPipelineStages(activeClient.id) : [];
+  const allMessages = getSystemMessages();
 
   // Metrics
   const pendingReviewCount = documents.filter((d) => d.status === "UPLOADED").length;
@@ -604,6 +607,15 @@ export default async function AdminPage({
 
                     {/* Pipeline Selector Form */}
                     <PipelineForm userId={activeClient.id} stages={activeClientStages} />
+
+                    {/* Overrides and messaging */}
+                    <AdminControlWidgets
+                      userId={activeClient.id}
+                      companyName={activeClient.companyName}
+                      initialDeadline={activeClient.complianceDeadline}
+                      initialCountdownDays={activeClient.countdownDays}
+                      initialMessages={allMessages}
+                    />
                   </>
                 ) : (
                   <div className="text-center py-12 text-zinc-450 text-xs font-semibold">

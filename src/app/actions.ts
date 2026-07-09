@@ -13,6 +13,10 @@ import {
   createTemplate,
   deleteTemplate,
   createAuditLog,
+  readDb,
+  writeDb,
+  createSystemMessage,
+  deleteSystemMessage,
   User,
 } from "@/lib/db";
 
@@ -229,4 +233,115 @@ export async function removeTemplate(templateId: string) {
   revalidatePath("/admin");
 
   return { success: true, message: "Template deleted successfully" };
+}
+
+export async function overrideCountdown(userId: string, deadline: string, countdownDays: number) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const dbData = readDb();
+  const userIdx = dbData.users.findIndex((u) => u.id === userId);
+  if (userIdx === -1) {
+    return { success: false, error: "Client not found." };
+  }
+
+  dbData.users[userIdx] = {
+    ...dbData.users[userIdx],
+    complianceDeadline: deadline,
+    countdownDays: Number(countdownDays),
+  };
+
+  writeDb(dbData);
+
+  createAuditLog({
+    adminId: admin.id,
+    userId,
+    action: `Overrode compliance countdown to ${countdownDays} days (Deadline: ${deadline}) for ${dbData.users[userIdx].companyName}`,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+export async function sendSystemMessageAction(targetUserId: string, messageText: string, type: "INFO" | "WARNING" | "CRITICAL") {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  if (!messageText || !messageText.trim()) {
+    return { success: false, error: "Message content cannot be empty." };
+  }
+
+  const newMsg = createSystemMessage(admin.id, targetUserId, messageText.trim(), type);
+
+  createAuditLog({
+    adminId: admin.id,
+    userId: targetUserId === "all" ? null : targetUserId,
+    action: `Sent ${type} system message/broadcast: "${messageText.substring(0, 50)}..."`,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true, message: newMsg };
+}
+
+export async function deleteSystemMessageAction(messageId: string) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const success = deleteSystemMessage(messageId);
+  if (!success) {
+    return { success: false, error: "Message not found." };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+export async function updateProfileSettings(userId: string, name: string, email: string, newPassword?: string, avatarUrl?: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Not logged in." };
+  }
+  if (currentUser.role !== "ADMIN" && currentUser.id !== userId) {
+    return { success: false, error: "Unauthorized access: You cannot modify another user's profile." };
+  }
+
+  const dbData = readDb();
+  const userIdx = dbData.users.findIndex((u) => u.id === userId);
+  if (userIdx === -1) {
+    return { success: false, error: "Client profile not found." };
+  }
+
+  dbData.users[userIdx].name = name;
+  dbData.users[userIdx].email = email;
+  if (avatarUrl) {
+    dbData.users[userIdx].avatarUrl = avatarUrl;
+  }
+  if (newPassword && newPassword.trim() !== "") {
+    dbData.users[userIdx].passwordHash = newPassword;
+  }
+
+  writeDb(dbData);
+
+  createAuditLog({
+    adminId: null,
+    userId,
+    action: `Updated client user profile parameters (Name: ${name}, Email: ${email})`,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true };
 }

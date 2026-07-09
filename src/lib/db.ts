@@ -12,6 +12,9 @@ export interface User {
   companyName: string;
   corporateId: string;
   createdAt: string;
+  complianceDeadline?: string;
+  countdownDays?: number;
+  avatarUrl?: string;
 }
 
 export interface DocumentTemplate {
@@ -53,12 +56,22 @@ export interface AuditLog {
   createdAt: string;
 }
 
+export interface SystemMessage {
+  id: string;
+  senderId: string;
+  targetUserId: string; // "all" or userId
+  messageText: string;
+  type: "INFO" | "WARNING" | "CRITICAL";
+  createdAt: string;
+}
+
 interface DatabaseSchema {
   users: User[];
   templates: DocumentTemplate[];
   documents: UserDocument[];
   pipelineStages: PipelineStage[];
   auditLogs: AuditLog[];
+  messages: SystemMessage[];
 }
 
 const DB_PATH = path.join(process.cwd(), "src/lib/db.json");
@@ -313,12 +326,32 @@ function seedDatabase(): DatabaseSchema {
     },
   ];
 
+  const messages: SystemMessage[] = [
+    {
+      id: "msg-1",
+      senderId: "usr-admin",
+      targetUserId: "all",
+      messageText: "Attention all corporate entities: Ensure NSDL/CDSL synchronization keys are set before requesting final audit approval.",
+      type: "WARNING",
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "msg-2",
+      senderId: "usr-admin",
+      targetUserId: "usr-client1",
+      messageText: "Jane, we reviewed your Certificate of Incorporation and approved it. Please re-upload a clear copy of your passport photo to resolve the KYC rejection.",
+      type: "INFO",
+      createdAt: new Date().toISOString(),
+    }
+  ];
+
   return {
     users,
     templates: DEFAULT_TEMPLATES,
     documents,
     pipelineStages,
     auditLogs,
+    messages,
   };
 }
 
@@ -332,6 +365,9 @@ export function readDb(): DatabaseSchema {
     }
     const data = fs.readFileSync(DB_PATH, "utf-8");
     const parsed = JSON.parse(data) as DatabaseSchema;
+    if (!parsed.messages) {
+      parsed.messages = [];
+    }
 
     // Backfill missing corporateId
     let updated = false;
@@ -625,4 +661,37 @@ export function createAuditLog(log: Omit<AuditLog, "id" | "createdAt">): AuditLo
   dbData.auditLogs.push(newLog);
   writeDb(dbData);
   return newLog;
+}
+
+export function getSystemMessages(userId?: string): SystemMessage[] {
+  const db = readDb();
+  if (!db.messages) return [];
+  if (!userId) return db.messages;
+  return db.messages.filter((m) => m.targetUserId === "all" || m.targetUserId === userId);
+}
+
+export function createSystemMessage(senderId: string, targetUserId: string, messageText: string, type: "INFO" | "WARNING" | "CRITICAL"): SystemMessage {
+  const db = readDb();
+  if (!db.messages) db.messages = [];
+  const newMsg: SystemMessage = {
+    id: `msg-${Math.random().toString(36).substr(2, 9)}`,
+    senderId,
+    targetUserId,
+    messageText,
+    type,
+    createdAt: new Date().toISOString(),
+  };
+  db.messages.push(newMsg);
+  writeDb(db);
+  return newMsg;
+}
+
+export function deleteSystemMessage(id: string): boolean {
+  const db = readDb();
+  if (!db.messages) return false;
+  const beforeLen = db.messages.length;
+  db.messages = db.messages.filter((m) => m.id !== id);
+  if (db.messages.length === beforeLen) return false;
+  writeDb(db);
+  return true;
 }

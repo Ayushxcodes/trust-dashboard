@@ -1,23 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function CommercialTab({ companyName }: { companyName: string }) {
   // Initialize values dynamically based on selected company
   const getInitialValues = (name: string) => {
     if (name.toLowerCase().includes("stark")) {
-      return { cap: 400000000, fol: 15000 };
+      return { cap: 400000000, fol: 15000, ind: "Manufacturing & Industrial" };
     }
     if (name.toLowerCase().includes("lex")) {
-      return { cap: 7500000, fol: 2000 };
+      return { cap: 7500000, fol: 2000, ind: "Healthcare & Pharma" };
     }
-    return { cap: 80000000, fol: 5000 }; // Acme Corporation / default
+    return { cap: 80000000, fol: 5000, ind: "Technology & Software" }; // Acme Corporation / default
   };
 
   const init = getInitialValues(companyName);
   const [capital, setCapital] = useState(init.cap);
   const [folios, setFolios] = useState(init.fol);
   const [isSettling, setIsSettling] = useState(false);
+
+  // Industry selection
+  const [industry, setIndustry] = useState<string>(init.ind);
 
   // Format currency in Indian numbering system
   const formatINR = (value: number) => {
@@ -28,15 +31,34 @@ export default function CommercialTab({ companyName }: { companyName: string }) 
     }).format(value);
   };
 
+  // Pricing params based on selected industry
+  const getIndustryMultiplier = (ind: string) => {
+    switch (ind) {
+      case "Banking & Finance":
+        return { amc: 35000, custody: 12 };
+      case "Manufacturing & Industrial":
+        return { amc: 25050, custody: 10 };
+      case "Healthcare & Pharma":
+        return { amc: 20000, custody: 9 };
+      case "Energy & Utilities":
+        return { amc: 30000, custody: 11 };
+      case "Technology & Software":
+      default:
+        return { amc: 17500, custody: 8 };
+    }
+  };
+
+  const industryParams = getIndustryMultiplier(industry);
+
   // Pricing comparison ledger parameters
   const legacyAdmissions = 2500000; // ₹25,00,000
   const trustlinkAdmissions = 0; // Waived
 
   const legacyAMC = 4500000; // ₹45,00,000
-  const trustlinkAMC = 17500; // ₹17,500
+  const trustlinkAMC = industryParams.amc; // Dynamic
 
   const legacyCustody = folios * 12; // ₹12 per folio
-  const trustlinkCustody = folios * 8; // ₹8 per folio
+  const trustlinkCustody = folios * industryParams.custody; // Dynamic
 
   const legacyTotal = legacyAdmissions + legacyAMC + legacyCustody;
   const trustlinkTotal = trustlinkAdmissions + trustlinkAMC + trustlinkCustody;
@@ -84,6 +106,24 @@ export default function CommercialTab({ companyName }: { companyName: string }) 
                 Configure share capital parameters to calculate institutional settlement fees.
               </p>
             </div>
+          </div>
+
+          {/* Industry Selection Dropdown */}
+          <div className="mb-6 p-5 rounded-xl bg-zinc-50 border border-zinc-150 space-y-2">
+            <label className="block text-[9px] font-extrabold text-zinc-450 uppercase tracking-widest font-mono">
+              Industry Sector (Updates Fee Projections)
+            </label>
+            <select
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-lg bg-white border border-zinc-250 text-xs font-bold text-[#0B1528] focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+            >
+              <option value="Technology & Software">Technology & Software (AMC: ₹17,500, Custody: ₹8/folio)</option>
+              <option value="Banking & Finance">Banking & Finance (AMC: ₹35,000, Custody: ₹12/folio)</option>
+              <option value="Manufacturing & Industrial">Manufacturing & Industrial (AMC: ₹25,050, Custody: ₹10/folio)</option>
+              <option value="Healthcare & Pharma">Healthcare & Pharma (AMC: ₹20,000, Custody: ₹9/folio)</option>
+              <option value="Energy & Utilities">Energy & Utilities (AMC: ₹30,000, Custody: ₹11/folio)</option>
+            </select>
           </div>
 
           {/* Paid Up Share Capital Slider */}

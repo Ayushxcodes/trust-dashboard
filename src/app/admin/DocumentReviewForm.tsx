@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { reviewDocument } from "../actions";
 
 interface DocumentReviewFormProps {
@@ -16,8 +16,15 @@ export default function DocumentReviewForm({
   currentStatus,
   adminRemark,
 }: DocumentReviewFormProps) {
+  const [statusState, setStatusState] = useState(currentStatus);
   const [remark, setRemark] = useState(adminRemark || "");
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setStatusState(currentStatus);
+    setRemark(adminRemark || "");
+  }, [documentId, currentStatus, adminRemark]);
+
   const [ocrText, setOcrText] = useState(
     `TRUSTLINK REGISTRY SYSTEM v4.2\n-----------------------------\nDOCUMENT_ID: ${documentId}\nFILE_NAME: ${fileName}\nMETADATA_INTEGRITY: AES-256 INTACT\nEXTRACTED_SIGNATORY: Verified Wet Signature Match\nREGISTRATION_STATUS: MCA SYSTEM SYNCED\n\n[PARSED PLAIN TEXT BODY]\n"We hereby submit the official authorization folios for conversion to electronic depository records under Rule 9B guidelines..."`
   );
@@ -27,7 +34,9 @@ export default function DocumentReviewForm({
     startTransition(async () => {
       try {
         const res = await reviewDocument(documentId, status, remark);
-        if (!res.success) {
+        if (res.success) {
+          setStatusState(status);
+        } else {
           alert(res.error || "Review submission failed.");
         }
       } catch (err) {
@@ -51,13 +60,13 @@ export default function DocumentReviewForm({
           </span>
         </div>
         <span className={`text-[8px] font-extrabold px-2 py-0.5 rounded border uppercase tracking-wider shrink-0 ${
-          currentStatus === "VERIFIED"
+          statusState === "VERIFIED"
             ? "bg-emerald-50 border-emerald-250 text-emerald-700"
-            : currentStatus === "REJECTED"
+            : statusState === "REJECTED"
             ? "bg-rose-50 border-rose-250 text-rose-700"
             : "bg-amber-50 border-amber-250 text-amber-700"
         }`}>
-          {currentStatus === "UPLOADED" ? "PENDING REVIEW" : currentStatus}
+          {statusState === "UPLOADED" ? "PENDING REVIEW" : statusState}
         </span>
       </div>
 

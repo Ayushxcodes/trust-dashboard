@@ -48,7 +48,19 @@
       "companyName": "sdfsf",
       "id": "usr-rpmve73v1",
       "corporateId": "ENT-3507-207",
-      "createdAt": "2026-07-08T09:57:43.077Z"
+      "createdAt": "2026-07-08T09:57:43.077Z",
+      "complianceDeadline": "SEPTEMBER 31, 2026",
+      "countdownDays": 592
+    },
+    {
+      "name": "asdad",
+      "email": "editor@gonzoom.com",
+      "passwordHash": "S3cr3t@Password",
+      "role": "USER",
+      "companyName": "asdad",
+      "id": "usr-sk2zo62z8",
+      "corporateId": "ENT-2895-584",
+      "createdAt": "2026-07-09T13:31:06.526Z"
     }
   ],
   "templates": [
@@ -95,7 +107,7 @@
       "status": "VERIFIED",
       "adminRemark": "Certificate verified. Corporate registry match confirmed.",
       "uploadedAt": "2026-06-30T09:47:47.395Z",
-      "reviewedAt": "2026-07-01T09:47:47.395Z"
+      "reviewedAt": "2026-07-09T13:16:41.760Z"
     },
     {
       "id": "doc-2",
@@ -103,10 +115,10 @@
       "templateId": "tpl-2",
       "uploadedFileUrl": "/uploads/acme_kyc_jane.pdf",
       "fileName": "acme_kyc_jane.pdf",
-      "status": "REJECTED",
+      "status": "VERIFIED",
       "adminRemark": "Passport photo is blurry. Please upload a clear high-resolution copy of the biographical page.",
       "uploadedAt": "2026-07-02T09:47:47.395Z",
-      "reviewedAt": "2026-07-03T09:47:47.395Z"
+      "reviewedAt": "2026-07-09T13:25:33.803Z"
     },
     {
       "id": "doc-3",
@@ -117,7 +129,7 @@
       "status": "VERIFIED",
       "adminRemark": "All registration details validated successfully.",
       "uploadedAt": "2026-07-04T09:47:47.395Z",
-      "reviewedAt": "2026-07-05T09:47:47.395Z"
+      "reviewedAt": "2026-07-09T13:24:48.371Z"
     },
     {
       "id": "doc-4",
@@ -125,10 +137,10 @@
       "templateId": "tpl-2",
       "uploadedFileUrl": "/uploads/stark_kyc_bruce.pdf",
       "fileName": "stark_kyc_bruce.pdf",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "adminRemark": "",
       "uploadedAt": "2026-07-07T09:47:47.395Z",
-      "reviewedAt": null
+      "reviewedAt": "2026-07-09T13:25:02.287Z"
     }
   ],
   "pipelineStages": [
@@ -419,6 +431,78 @@
       "stageOrder": 8,
       "adminNote": "Awaiting initial KYC and document uploads.",
       "updatedAt": "2026-07-08T09:57:43.085Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-1",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Account Created",
+      "status": "COMPLETED",
+      "stageOrder": 1,
+      "adminNote": "Account creation completed.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-2",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "KYC Submitted",
+      "status": "IN_PROGRESS",
+      "stageOrder": 2,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-3",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Documents Uploaded",
+      "status": "PENDING",
+      "stageOrder": 3,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-4",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Admin Review",
+      "status": "PENDING",
+      "stageOrder": 4,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-5",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Compliance Verification",
+      "status": "PENDING",
+      "stageOrder": 5,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-6",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Legal Processing",
+      "status": "PENDING",
+      "stageOrder": 6,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-7",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Final Approval",
+      "status": "PENDING",
+      "stageOrder": 7,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
+    },
+    {
+      "id": "pipe-usr-sk2zo62z8-8",
+      "userId": "usr-sk2zo62z8",
+      "stageName": "Completed",
+      "status": "PENDING",
+      "stageOrder": 8,
+      "adminNote": "Awaiting initial KYC and document uploads.",
+      "updatedAt": "2026-07-09T13:31:06.529Z"
     }
   ],
   "auditLogs": [
@@ -708,6 +792,282 @@
       "action": "User logged out",
       "id": "log-nh0g3c8b9",
       "createdAt": "2026-07-09T09:34:33.041Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-9hffefea0",
+      "createdAt": "2026-07-09T12:51:29.742Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged in: Bruce Wayne (USER) under ID ENT-2156-204",
+      "id": "log-tmonozemw",
+      "createdAt": "2026-07-09T12:51:47.314Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-r9ia73smo",
+      "createdAt": "2026-07-09T12:53:57.962Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-rpmve73v1",
+      "action": "Overrode compliance countdown to 592 days (Deadline: SEPTEMBER 31, 2026) for sdfsf",
+      "id": "log-inehx9ouf",
+      "createdAt": "2026-07-09T12:57:38.765Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-yygwmm8xj",
+      "createdAt": "2026-07-09T12:57:42.256Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-oaik2f21l",
+      "createdAt": "2026-07-09T12:57:45.207Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-hi3h2jnwz",
+      "createdAt": "2026-07-09T13:01:27.515Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-sr6fcz27d",
+      "createdAt": "2026-07-09T13:01:42.259Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-mikv9ct1o",
+      "createdAt": "2026-07-09T13:01:48.739Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-kr8r9lmfj",
+      "createdAt": "2026-07-09T13:01:56.835Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-pu1d5zbbx",
+      "createdAt": "2026-07-09T13:03:00.220Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-mzw4gjrm7",
+      "createdAt": "2026-07-09T13:03:19.263Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-2h3rg8ikd",
+      "createdAt": "2026-07-09T13:04:46.013Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Sent INFO system message/broadcast: \"do the wiork...\"",
+      "id": "log-5t943rxay",
+      "createdAt": "2026-07-09T13:05:08.132Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-wlcvpaswe",
+      "createdAt": "2026-07-09T13:05:12.510Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-6f5p9npoz",
+      "createdAt": "2026-07-09T13:05:15.668Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-6cmxdvuuu",
+      "createdAt": "2026-07-09T13:07:30.845Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged in: Bruce Wayne (USER) under ID ENT-2156-204",
+      "id": "log-aeaidc896",
+      "createdAt": "2026-07-09T13:07:34.076Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged out",
+      "id": "log-qfbua03nz",
+      "createdAt": "2026-07-09T13:10:03.666Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged in: Bruce Wayne (USER) under ID ENT-2156-204",
+      "id": "log-wi9whtuzu",
+      "createdAt": "2026-07-09T13:10:06.510Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client2",
+      "action": "User logged out",
+      "id": "log-uwispl24v",
+      "createdAt": "2026-07-09T13:10:09.035Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged in: Jane Doe (USER) under ID ENT-4229-701",
+      "id": "log-guvljrkhu",
+      "createdAt": "2026-07-09T13:10:10.991Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-client1",
+      "action": "User logged out",
+      "id": "log-fuzo7f8cr",
+      "createdAt": "2026-07-09T13:10:16.305Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": null,
+      "action": "User logged in: Alex Mercer (ADMIN) under ID ENT-ADMIN-000",
+      "id": "log-w73g27939",
+      "createdAt": "2026-07-09T13:10:18.172Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'Certificate of Incorporation Template' for Acme Corporation. Remark: Certificate verified. Corporate registry match confirmed.",
+      "id": "log-mld2cudnc",
+      "createdAt": "2026-07-09T13:16:38.518Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'Certificate of Incorporation Template' for Acme Corporation. Remark: Certificate verified. Corporate registry match confirmed.",
+      "id": "log-etbjsqp3l",
+      "createdAt": "2026-07-09T13:16:39.807Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'Certificate of Incorporation Template' for Acme Corporation. Remark: Certificate verified. Corporate registry match confirmed.",
+      "id": "log-pmmw1msz1",
+      "createdAt": "2026-07-09T13:16:40.681Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'Certificate of Incorporation Template' for Acme Corporation. Remark: Certificate verified. Corporate registry match confirmed.",
+      "id": "log-si5pdr4d7",
+      "createdAt": "2026-07-09T13:16:41.761Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client2",
+      "action": "Approved document 'Certificate of Incorporation Template' for Stark Industries. Remark: All registration details validated successfully.",
+      "id": "log-jp4bj1dfv",
+      "createdAt": "2026-07-09T13:24:48.372Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client2",
+      "action": "Approved document 'KYC Director Identification Form' for Stark Industries. Remark: None",
+      "id": "log-bvegk5jwc",
+      "createdAt": "2026-07-09T13:25:02.288Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'KYC Director Identification Form' for Acme Corporation. Remark: Passport photo is blurry. Please upload a clear high-resolution copy of the biographical page.",
+      "id": "log-je7ngl91z",
+      "createdAt": "2026-07-09T13:25:08.461Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Rejected document 'KYC Director Identification Form' for Acme Corporation. Remark: Passport photo is blurry. Please upload a clear high-resolution copy of the biographical page.",
+      "id": "log-oev8cptfm",
+      "createdAt": "2026-07-09T13:25:32.048Z"
+    },
+    {
+      "adminId": "usr-admin",
+      "userId": "usr-client1",
+      "action": "Approved document 'KYC Director Identification Form' for Acme Corporation. Remark: Passport photo is blurry. Please upload a clear high-resolution copy of the biographical page.",
+      "id": "log-8l09i62z2",
+      "createdAt": "2026-07-09T13:25:33.804Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-ip535ysbs",
+      "createdAt": "2026-07-09T13:26:02.989Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-sk2zo62z8",
+      "action": "Registered account: asdad (USER) with ID ENT-2895-584",
+      "id": "log-ie3iyguhq",
+      "createdAt": "2026-07-09T13:31:06.537Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-sk2zo62z8",
+      "action": "User logged out",
+      "id": "log-et3fgruj7",
+      "createdAt": "2026-07-09T13:31:13.299Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-sk2zo62z8",
+      "action": "User logged in: asdad (USER) under ID ENT-2895-584",
+      "id": "log-f5nopcbuy",
+      "createdAt": "2026-07-09T13:32:10.495Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-sk2zo62z8",
+      "action": "User logged out",
+      "id": "log-8vpjryv9e",
+      "createdAt": "2026-07-09T13:32:18.056Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg-2k30iyd8d",
+      "senderId": "usr-admin",
+      "targetUserId": "usr-client1",
+      "messageText": "do the wiork",
+      "type": "INFO",
+      "createdAt": "2026-07-09T13:05:08.131Z"
     }
   ]
 }

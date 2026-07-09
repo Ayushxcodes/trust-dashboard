@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, logout } from "../actions";
-import { getTemplates, getDocumentsByUserId, getPipelineStages, getUsers, getUserById } from "@/lib/db";
+import { getTemplates, getDocumentsByUserId, getPipelineStages, getUsers, getUserById, getSystemMessages } from "@/lib/db";
 import UploadButton from "./UploadButton";
 import CommercialTab from "./CommercialTab";
-import CompanySwitcher from "./CompanySwitcher";
+import { VerifyStatusButton, BriefActions } from "./ActionButtons";
+import SettingsTab from "./SettingsTab";
+import SupportTab from "./SupportTab";
 
 interface PageProps {
   searchParams: Promise<{
@@ -27,16 +29,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
   const activeTab = params.tab || "vault";
-  const contextUserId = params.userContext || user.id;
+  const contextUserId = user.id;
 
-  const clients = getUsers().filter((u) => u.role === "USER");
-  const companyMap = clients.map((c) => ({ id: c.id, name: c.companyName }));
-
-  const activeCompanyUser = getUserById(contextUserId) || user;
+  const activeCompanyUser = user;
 
   const templates = getTemplates();
   const uploads = getDocumentsByUserId(contextUserId);
   const stages = getPipelineStages(contextUserId);
+  const messages = getSystemMessages(contextUserId);
 
   // Map upload files to template IDs for fast lookup
   const uploadMap = uploads.reduce((acc, doc) => {
@@ -75,7 +75,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
                 activeTab === "pipeline"
                   ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
-                  : "hover:bg-[#111C30] hover:text-slate-200"
+                  : "hover:bg-[#111C30] hover:text-slate-200 text-slate-400"
               }`}
             >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -89,7 +89,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
                 activeTab === "vault"
                   ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
-                  : "hover:bg-[#111C30] hover:text-slate-200"
+                  : "hover:bg-[#111C30] hover:text-slate-200 text-slate-400"
               }`}
             >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -103,7 +103,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
                 activeTab === "commercial"
                   ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
-                  : "hover:bg-[#111C30] hover:text-slate-200"
+                  : "hover:bg-[#111C30] hover:text-slate-200 text-slate-400"
               }`}
             >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -126,18 +126,28 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </Link>
           
           <div className="space-y-2 text-xs font-bold pl-2 text-slate-400">
-            <button className="flex items-center gap-2.5 hover:text-white transition-colors cursor-pointer w-full text-left">
+            <Link
+              href="/dashboard?tab=settings"
+              className={`flex items-center gap-2.5 hover:text-white transition-colors cursor-pointer w-full text-left ${
+                activeTab === "settings" ? "text-white font-extrabold" : "text-slate-400"
+              }`}
+            >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               </svg>
               Settings
-            </button>
-            <button className="flex items-center gap-2.5 hover:text-white transition-colors cursor-pointer w-full text-left">
+            </Link>
+            <Link
+              href="/dashboard?tab=support"
+              className={`flex items-center gap-2.5 hover:text-white transition-colors cursor-pointer w-full text-left ${
+                activeTab === "support" ? "text-white font-extrabold" : "text-slate-400"
+              }`}
+            >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536" />
               </svg>
               Support
-            </button>
+            </Link>
           </div>
         </div>
       </aside>
@@ -150,12 +160,11 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           
           {/* Global Account Switcher dropdown & Search Bar */}
           <div className="flex items-center gap-4 flex-1 max-w-xl">
-            {/* Account Switcher */}
-            <CompanySwitcher
-              currentContextId={contextUserId}
-              companyMap={companyMap}
-              activeTab={activeTab}
-            />
+            {/* Active Company Name display */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs font-bold text-zinc-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{activeCompanyUser.companyName}</span>
+            </div>
 
             {/* Global Search Bar */}
             <div className="relative flex-1 hidden sm:block">
@@ -181,11 +190,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             <span className="text-zinc-200 px-1 font-light hidden md:inline">|</span>
 
             {/* Verify Status primary button */}
-            <button
-              className="px-4.5 py-1.5 rounded border border-zinc-300 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-50 text-xs font-bold transition-colors cursor-pointer uppercase shadow-sm"
-            >
-              Verify Status
-            </button>
+            <VerifyStatusButton userId={contextUserId} />
 
             {/* Profile indicator */}
             <div className="w-7.5 h-7.5 rounded-full bg-[#0B1528] text-white flex items-center justify-center font-extrabold text-xs tracking-wider" title={user.name}>
@@ -202,6 +207,41 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </form>
           </div>
         </header>
+
+        {/* Global Notifications/Broadcast Banner */}
+        {messages.length > 0 && (
+          <div className="bg-zinc-50 border-b border-zinc-200 px-8 py-4 space-y-3">
+            <span className="text-[9px] font-extrabold text-zinc-450 uppercase tracking-widest font-mono block">
+              System Broadcasts & Administrative Updates
+            </span>
+            <div className="flex flex-col gap-2.5">
+              {messages.map((msg) => {
+                let cardColor = "bg-blue-50 border-blue-200 text-blue-800";
+                let typeLabel = "Info";
+                if (msg.type === "WARNING") {
+                  cardColor = "bg-amber-50 border-amber-250 text-amber-800";
+                  typeLabel = "Warning";
+                } else if (msg.type === "CRITICAL") {
+                  cardColor = "bg-rose-50 border-rose-250 text-rose-800";
+                  typeLabel = "Urgent";
+                }
+                return (
+                  <div key={msg.id} className={`flex items-start justify-between p-3.5 rounded-xl border text-xs gap-4 shadow-sm ${cardColor}`}>
+                    <div className="flex items-center gap-3">
+                      <span className="font-extrabold uppercase text-[9px] tracking-wider bg-white/70 px-2 py-0.5 rounded border border-current/10 leading-none">
+                        {typeLabel}
+                      </span>
+                      <p className="font-bold">{msg.messageText}</p>
+                    </div>
+                    <span className="text-[9px] text-zinc-400 font-mono shrink-0 font-bold">
+                      {new Date(msg.createdAt).toLocaleDateString()} at {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* 3. Main Content Switching Pane */}
         {activeTab === "vault" && (
@@ -409,20 +449,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   </p>
                 </div>
                 {/* Action Utilities Group */}
-                <div className="flex gap-2">
-                  <button className="px-4 py-2 rounded border border-zinc-300 bg-white hover:bg-zinc-50 text-xs font-bold text-zinc-650 flex items-center gap-1.5 cursor-pointer">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    EXPORT PDF
-                  </button>
-                  <button className="px-4 py-2 rounded bg-[#0B1528] text-white hover:bg-[#1E293B] text-xs font-bold flex items-center gap-1.5 cursor-pointer">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l4.828-2.414m0 5.414l-4.828-2.414m5.414 4.828a3 3 0 11-6 0 3 3 0 016 0zm-6-11a3 3 0 11-6 0 3 3 0 016 0zm6 0a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    SHARE BRIEF
-                  </button>
-                </div>
+                <BriefActions companyName={activeCompanyUser.companyName} />
               </div>
             </div>
 
@@ -441,7 +468,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="bg-rose-600 text-white font-mono px-2 py-0.5 rounded text-[9px] font-bold uppercase">
-                      DEADLINE: SEPTEMBER 30, 2026
+                      DEADLINE: {activeCompanyUser.complianceDeadline || "SEPTEMBER 30, 2026"}
                     </span>
                     <span className="text-[10px] font-bold text-rose-800 italic">
                       Action required: Immediate Audit
@@ -456,7 +483,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   Remaining Time
                 </span>
                 <div className="my-3">
-                  <span className="text-3xl font-extrabold tracking-tight">592</span>
+                  <span className="text-3xl font-extrabold tracking-tight">
+                    {activeCompanyUser.countdownDays !== undefined ? activeCompanyUser.countdownDays : 592}
+                  </span>
                   <span className="text-sm font-semibold text-zinc-450 ml-1.5">Days left</span>
                 </div>
                 <div className="flex justify-between items-center text-[9px] font-mono text-zinc-500 border-t border-zinc-800 pt-2.5">
@@ -561,6 +590,19 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           <main className="flex-1 p-8 overflow-y-auto bg-[#F8FAFC]">
             <CommercialTab key={contextUserId} companyName={activeCompanyUser.companyName} />
           </main>
+        )}
+
+        {activeTab === "settings" && (
+          <SettingsTab
+            userId={activeCompanyUser.id}
+            initialName={activeCompanyUser.name}
+            initialEmail={activeCompanyUser.email}
+            initialAvatarUrl={activeCompanyUser.avatarUrl}
+          />
+        )}
+
+        {activeTab === "support" && (
+          <SupportTab />
         )}
 
       </div>
