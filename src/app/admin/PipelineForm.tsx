@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { updatePipeline } from "../actions";
 
 interface PipelineStageData {
@@ -17,20 +17,23 @@ interface PipelineFormProps {
 }
 
 export default function PipelineForm({ userId, stages }: PipelineFormProps) {
-  const [selectedOrder, setSelectedOrder] = useState<number>(1);
-  const [status, setStatus] = useState<"PENDING" | "IN_PROGRESS" | "COMPLETED">("IN_PROGRESS");
-  const [note, setNote] = useState("");
+  const [prevUserId, setPrevUserId] = useState(userId);
+
+  const activeStage = stages.find((s) => s.status === "IN_PROGRESS") || stages.find((s) => s.status === "PENDING") || stages[0];
+
+  const [selectedOrder, setSelectedOrder] = useState<number>(activeStage?.stageOrder ?? 1);
+  const [status, setStatus] = useState<"PENDING" | "IN_PROGRESS" | "COMPLETED">(activeStage?.status ?? "IN_PROGRESS");
+  const [note, setNote] = useState(activeStage?.adminNote || "");
   const [isPending, startTransition] = useTransition();
 
-  // Find the active stage order on load to pre-fill
-  useEffect(() => {
-    const activeStage = stages.find((s) => s.status === "IN_PROGRESS") || stages.find((s) => s.status === "PENDING") || stages[0];
+  if (userId !== prevUserId) {
+    setPrevUserId(userId);
     if (activeStage) {
       setSelectedOrder(activeStage.stageOrder);
       setStatus(activeStage.status);
       setNote(activeStage.adminNote || "");
     }
-  }, [stages, userId]);
+  }
 
   // When a stage is clicked, load its information
   const handleStageSelect = (order: number) => {
@@ -107,7 +110,7 @@ export default function PipelineForm({ userId, stages }: PipelineFormProps) {
           </label>
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value as any)}
+            onChange={(e) => setStatus(e.target.value as "PENDING" | "IN_PROGRESS" | "COMPLETED")}
             className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
           >
             <option value="PENDING">PENDING (Not Started)</option>

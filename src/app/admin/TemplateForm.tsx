@@ -8,6 +8,7 @@ export default function TemplateForm() {
   const [description, setDescription] = useState("");
   const [requiredFor, setRequiredFor] = useState("Account Setup");
   const [fileUrl, setFileUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -20,6 +21,9 @@ export default function TemplateForm() {
         formData.append("description", description);
         formData.append("requiredFor", requiredFor);
         formData.append("fileUrl", fileUrl || "/templates/custom_placeholder.docx");
+        if (selectedFile) {
+          formData.append("file", selectedFile);
+        }
 
         const res = await addTemplate(formData);
         if (res.success) {
@@ -27,6 +31,7 @@ export default function TemplateForm() {
           setDescription("");
           setRequiredFor("Account Setup");
           setFileUrl("");
+          setSelectedFile(null);
           formRef.current?.reset();
         } else {
           alert(res.error || "Failed to create template.");
@@ -94,17 +99,33 @@ export default function TemplateForm() {
         />
       </div>
 
-      <div>
-        <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
-          Download File URL (Mock File Path)
-        </label>
-        <input
-          type="text"
-          value={fileUrl}
-          onChange={(e) => setFileUrl(e.target.value)}
-          placeholder="Defaults to /templates/custom_placeholder.docx"
-          className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:bg-white focus:outline-none focus:border-indigo-500 transition-colors"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            Upload Template File
+          </label>
+          <input
+            type="file"
+            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+            className="w-full px-3.5 py-2 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-550
+              file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0
+              file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700
+              hover:file:bg-indigo-100 cursor-pointer file:cursor-pointer transition-colors"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            Or enter fallback download File URL
+          </label>
+          <input
+            type="text"
+            value={fileUrl}
+            onChange={(e) => setFileUrl(e.target.value)}
+            placeholder="Defaults to /templates/custom_placeholder.docx"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 placeholder-zinc-400 focus:bg-white focus:outline-none focus:border-indigo-500 transition-colors"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end pt-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { overrideCountdown, sendSystemMessageAction, deleteSystemMessageAction } from "../actions";
 
 interface MessageData {
@@ -27,6 +27,7 @@ export default function AdminControlWidgets({
   initialCountdownDays = 592,
   initialMessages,
 }: AdminControlWidgetsProps) {
+  const [prevUserId, setPrevUserId] = useState(userId);
   const [deadline, setDeadline] = useState(initialDeadline);
   const [countdownDays, setCountdownDays] = useState(initialCountdownDays);
   const [isPendingDeadline, startTransitionDeadline] = useTransition();
@@ -37,13 +38,16 @@ export default function AdminControlWidgets({
   const [isPendingMessage, startTransitionMessage] = useTransition();
 
   const [messages, setMessages] = useState<MessageData[]>(initialMessages);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Sync state with selected client updates
-  useEffect(() => {
+  if (userId !== prevUserId) {
+    setPrevUserId(userId);
     setDeadline(initialDeadline);
     setCountdownDays(initialCountdownDays);
     setMsgTarget(userId);
-  }, [userId, initialDeadline, initialCountdownDays]);
+    setMessages(initialMessages);
+  }
 
   const handleUpdateDeadline = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,12 +88,13 @@ export default function AdminControlWidgets({
   };
 
   const handleDeleteMessage = async (msgId: string) => {
-    if (!confirm("Are you sure you want to retract/delete this system update?")) return;
-
+    console.log("handleDeleteMessage called for msgId:", msgId);
     try {
       const res = await deleteSystemMessageAction(msgId);
+      console.log("deleteSystemMessageAction response:", res);
       if (res.success) {
         setMessages((prev) => prev.filter((m) => m.id !== msgId));
+        setDeletingId(null);
       } else {
         alert(res.error || "Failed to retract message.");
       }
@@ -192,7 +197,7 @@ export default function AdminControlWidgets({
               </label>
               <select
                 value={msgType}
-                onChange={(e) => setMsgType(e.target.value as any)}
+                onChange={(e) => setMsgType(e.target.value as "INFO" | "WARNING" | "CRITICAL")}
                 className="w-full px-3 py-2 rounded-lg bg-zinc-50 border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
               >
                 <option value="INFO">INFO (Blue Accent)</option>
@@ -249,13 +254,47 @@ export default function AdminControlWidgets({
                         {msg.messageText}
                       </span>
                     </div>
-                    <button
-                      onClick={() => handleDeleteMessage(msg.id)}
-                      className="text-rose-600 hover:text-rose-800 font-bold shrink-0 cursor-pointer px-1"
-                      title="Retract System Update"
-                    >
-                      ✕
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {deletingId === msg.id ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteMessage(msg.id);
+                            }}
+                            className="text-rose-600 hover:text-rose-800 font-extrabold text-[10px] cursor-pointer px-1.5 py-0.5 bg-rose-50 border border-rose-200 rounded"
+                          >
+                            Delete
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDeletingId(null);
+                            }}
+                            className="text-zinc-500 hover:text-zinc-700 font-semibold text-[10px] cursor-pointer px-1"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDeletingId(msg.id);
+                          }}
+                          className="text-rose-600 hover:text-rose-800 font-bold cursor-pointer px-1"
+                          title="Retract System Update"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}

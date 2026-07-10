@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String   @id
+  name               String
+  email              String   @unique
+  passwordHash       String
+  role               String   // "USER" | "ADMIN"
+  companyName        String
+  corporateId        String
+  createdAt          DateTime @default(now())
+  complianceDeadline String?
+  countdownDays      Int?
+  avatarUrl          String?
+}
+
+model DocumentTemplate {
+  id          String   @id
+  title       String
+  description String
+  fileUrl     String
+  requiredFor String
+  createdAt   DateTime @default(now())
+}
+
+model UserDocument {
+  id              String    @id
+  userId          String
+  templateId      String
+  uploadedFileUrl String
+  fileName        String
+  status          String    // "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED"
+  adminRemark     String    @default("")
+  uploadedAt      DateTime  @default(now())
+  reviewedAt      DateTime?
+}
+
+model PipelineStage {
+  id         String   @id
+  userId     String
+  stageName  String
+  status     String   // "PENDING" | "IN_PROGRESS" | "COMPLETED"
+  stageOrder Int
+  adminNote  String   @default("")
+  updatedAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id
+  adminId   String?
+  userId    String?
+  action    String
+  createdAt DateTime @default(now())
+}
+
+model SystemMessage {
+  id           String   @id
+  senderId     String
+  targetUserId String   // "all" or userId
+  messageText  String
+  type         String   // "INFO" | "WARNING" | "CRITICAL"
+  createdAt    DateTime @default(now())
+}

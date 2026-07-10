@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { prisma } from "./prisma";
 
 // Define TypeScript interfaces for our database models
 
@@ -7,7 +6,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  passwordHash: string; // Plain password in mock for simplicity of testing
+  passwordHash: string;
   role: "USER" | "ADMIN";
   companyName: string;
   corporateId: string;
@@ -21,8 +20,8 @@ export interface DocumentTemplate {
   id: string;
   title: string;
   description: string;
-  fileUrl: string; // Path or simulated URL for download
-  requiredFor: string; // e.g. "All", "KYC", "Legal"
+  fileUrl: string;
+  requiredFor: string;
   createdAt: string;
 }
 
@@ -65,29 +64,7 @@ export interface SystemMessage {
   createdAt: string;
 }
 
-interface DatabaseSchema {
-  users: User[];
-  templates: DocumentTemplate[];
-  documents: UserDocument[];
-  pipelineStages: PipelineStage[];
-  auditLogs: AuditLog[];
-  messages: SystemMessage[];
-}
-
-const DB_PATH = path.join(process.cwd(), "src/lib/db.json");
-
-// Ensure the directory exists
-function ensureDirectoryExistence(filePath: string) {
-  const dirname = path.dirname(filePath);
-  if (fs.existsSync(dirname)) {
-    return true;
-  }
-  ensureDirectoryExistence(dirname);
-  fs.mkdirSync(dirname);
-}
-
-// Initial mockup data
-const DEFAULT_TEMPLATES: DocumentTemplate[] = [
+export const DEFAULT_TEMPLATES: DocumentTemplate[] = [
   {
     id: "tpl-1",
     title: "Certificate of Incorporation Template",
@@ -122,7 +99,7 @@ const DEFAULT_TEMPLATES: DocumentTemplate[] = [
   },
 ];
 
-const DEFAULT_STAGES = [
+export const DEFAULT_STAGES = [
   { order: 1, name: "Account Created" },
   { order: 2, name: "KYC Submitted" },
   { order: 3, name: "Documents Uploaded" },
@@ -133,565 +110,557 @@ const DEFAULT_STAGES = [
   { order: 8, name: "Completed" },
 ];
 
-function seedDatabase(): DatabaseSchema {
-  const users: User[] = [
-    {
-      id: "usr-admin",
-      name: "Alex Mercer",
-      email: "admin@trustlink.com",
-      passwordHash: "admin123", // Simple plain password for mock testing
-      role: "ADMIN",
-      companyName: "TrustLink Compliance Ltd",
-      corporateId: "ENT-ADMIN-000",
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "usr-client1",
-      name: "Jane Doe",
-      email: "jane@acme.com",
-      passwordHash: "jane123",
-      role: "USER",
-      companyName: "Acme Corporation",
-      corporateId: "ENT-8921-102",
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "usr-client2",
-      name: "Bruce Wayne",
-      email: "bruce@stark.com",
-      passwordHash: "bruce123",
-      role: "USER",
-      companyName: "Stark Industries",
-      corporateId: "ENT-7492-384",
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "usr-client3",
-      name: "Lex Luthor",
-      email: "lex@lexcorp.com",
-      passwordHash: "lex123",
-      role: "USER",
-      companyName: "LexCorp",
-      corporateId: "ENT-1049-583",
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ];
+// Deprecated mock DB structure for compatibility
+export function readDb(): any {
+  console.warn("readDb is deprecated. Use direct Prisma queries instead.");
+  return { users: [], templates: [], documents: [], pipelineStages: [], auditLogs: [], messages: [] };
+}
 
+export function writeDb(data: any): void {
+  console.warn("writeDb is deprecated. Use direct Prisma updates instead.");
+}
 
-  // Generate pipelines for each user
-  const pipelineStages: PipelineStage[] = [];
-  
-  // Client 1 (Acme Corp) - is in "Documents Uploaded" phase
-  DEFAULT_STAGES.forEach((stage) => {
-    let status: "PENDING" | "IN_PROGRESS" | "COMPLETED" = "PENDING";
-    let adminNote = "";
-    
-    if (stage.order < 3) {
-      status = "COMPLETED";
-    } else if (stage.order === 3) {
-      status = "IN_PROGRESS";
-      adminNote = "Pending client upload of the Master Service Agreement.";
-    }
-    
-    pipelineStages.push({
-      id: `pipe-client1-${stage.order}`,
-      userId: "usr-client1",
-      stageName: stage.name,
-      status,
-      stageOrder: stage.order,
-      adminNote,
-      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    });
-  });
+// Database Helpers (Async/Prisma)
 
-  // Client 2 (Stark Industries) - is in "Admin Review" phase (almost completed)
-  DEFAULT_STAGES.forEach((stage) => {
-    let status: "PENDING" | "IN_PROGRESS" | "COMPLETED" = "PENDING";
-    let adminNote = "";
-    
-    if (stage.order < 4) {
-      status = "COMPLETED";
-    } else if (stage.order === 4) {
-      status = "IN_PROGRESS";
-      adminNote = "Reviewing Certificate of Incorporation and KYC documents.";
-    }
-    
-    pipelineStages.push({
-      id: `pipe-client2-${stage.order}`,
-      userId: "usr-client2",
-      stageName: stage.name,
-      status,
-      stageOrder: stage.order,
-      adminNote,
-      updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    });
-  });
+export async function getUsers(): Promise<User[]> {
+  const users = await prisma.user.findMany();
+  return users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    passwordHash: u.passwordHash,
+    role: u.role as "USER" | "ADMIN",
+    companyName: u.companyName,
+    corporateId: u.corporateId,
+    createdAt: u.createdAt.toISOString(),
+    complianceDeadline: u.complianceDeadline ?? undefined,
+    countdownDays: u.countdownDays ?? undefined,
+    avatarUrl: u.avatarUrl ?? undefined,
+  }));
+}
 
-  // Client 3 (LexCorp) - newly registered, in "KYC Submitted" phase
-  DEFAULT_STAGES.forEach((stage) => {
-    let status: "PENDING" | "IN_PROGRESS" | "COMPLETED" = "PENDING";
-    let adminNote = "";
-    
-    if (stage.order < 2) {
-      status = "COMPLETED";
-    } else if (stage.order === 2) {
-      status = "IN_PROGRESS";
-      adminNote = "KYC Form submitted by client. Under administrative queue.";
-    }
-    
-    pipelineStages.push({
-      id: `pipe-client3-${stage.order}`,
-      userId: "usr-client3",
-      stageName: stage.name,
-      status,
-      stageOrder: stage.order,
-      adminNote,
-      updatedAt: new Date().toISOString(),
-    });
-  });
-
-  // Pre-seed some documents
-  const documents: UserDocument[] = [
-    // Client 1 (Acme Corp)
-    {
-      id: "doc-1",
-      userId: "usr-client1",
-      templateId: "tpl-1",
-      uploadedFileUrl: "/uploads/acme_incorporation.pdf",
-      fileName: "acme_incorporation_final.pdf",
-      status: "VERIFIED",
-      adminRemark: "Certificate verified. Corporate registry match confirmed.",
-      uploadedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
-      reviewedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "doc-2",
-      userId: "usr-client1",
-      templateId: "tpl-2",
-      uploadedFileUrl: "/uploads/acme_kyc_jane.pdf",
-      fileName: "acme_kyc_jane.pdf",
-      status: "REJECTED",
-      adminRemark: "Passport photo is blurry. Please upload a clear high-resolution copy of the biographical page.",
-      uploadedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-      reviewedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    
-    // Client 2 (Stark Industries)
-    {
-      id: "doc-3",
-      userId: "usr-client2",
-      templateId: "tpl-1",
-      uploadedFileUrl: "/uploads/stark_incorporation.pdf",
-      fileName: "stark_incorporation_official.pdf",
-      status: "VERIFIED",
-      adminRemark: "All registration details validated successfully.",
-      uploadedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-      reviewedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "doc-4",
-      userId: "usr-client2",
-      templateId: "tpl-2",
-      uploadedFileUrl: "/uploads/stark_kyc_bruce.pdf",
-      fileName: "stark_kyc_bruce.pdf",
-      status: "PENDING",
-      adminRemark: "",
-      uploadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      reviewedAt: null,
-    },
-  ];
-
-  // Pre-seed some logs
-  const auditLogs: AuditLog[] = [
-    {
-      id: "log-1",
-      adminId: null,
-      userId: "usr-client1",
-      action: "Registered user account for Acme Corporation",
-      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "log-2",
-      adminId: "usr-admin",
-      userId: "usr-client1",
-      action: "Approved document 'Certificate of Incorporation'",
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "log-3",
-      adminId: "usr-admin",
-      userId: "usr-client1",
-      action: "Rejected document 'KYC Director Identification Form' (Blurry photo)",
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ];
-
-  const messages: SystemMessage[] = [
-    {
-      id: "msg-1",
-      senderId: "usr-admin",
-      targetUserId: "all",
-      messageText: "Attention all corporate entities: Ensure NSDL/CDSL synchronization keys are set before requesting final audit approval.",
-      type: "WARNING",
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: "msg-2",
-      senderId: "usr-admin",
-      targetUserId: "usr-client1",
-      messageText: "Jane, we reviewed your Certificate of Incorporation and approved it. Please re-upload a clear copy of your passport photo to resolve the KYC rejection.",
-      type: "INFO",
-      createdAt: new Date().toISOString(),
-    }
-  ];
-
+export async function getUserById(id: string): Promise<User | undefined> {
+  const u = await prisma.user.findUnique({ where: { id } });
+  if (!u) return undefined;
   return {
-    users,
-    templates: DEFAULT_TEMPLATES,
-    documents,
-    pipelineStages,
-    auditLogs,
-    messages,
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    passwordHash: u.passwordHash,
+    role: u.role as "USER" | "ADMIN",
+    companyName: u.companyName,
+    corporateId: u.corporateId,
+    createdAt: u.createdAt.toISOString(),
+    complianceDeadline: u.complianceDeadline ?? undefined,
+    countdownDays: u.countdownDays ?? undefined,
+    avatarUrl: u.avatarUrl ?? undefined,
   };
 }
 
-export function readDb(): DatabaseSchema {
-  try {
-    ensureDirectoryExistence(DB_PATH);
-    if (!fs.existsSync(DB_PATH)) {
-      const initialData = seedDatabase();
-      fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2), "utf-8");
-      return initialData;
-    }
-    const data = fs.readFileSync(DB_PATH, "utf-8");
-    const parsed = JSON.parse(data) as DatabaseSchema;
-    if (!parsed.messages) {
-      parsed.messages = [];
-    }
-
-    // Backfill missing corporateId
-    let updated = false;
-    parsed.users.forEach((u) => {
-      if (!u.corporateId) {
-        if (u.role === "ADMIN") {
-          u.corporateId = "ENT-ADMIN-000";
-        } else {
-          u.corporateId = `ENT-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
-        }
-        updated = true;
-      }
-    });
-
-    if (updated) {
-      fs.writeFileSync(DB_PATH, JSON.stringify(parsed, null, 2), "utf-8");
-    }
-
-    return parsed;
-  } catch (error) {
-    console.error("Database read error, returning default seeded database", error);
-    return seedDatabase();
-  }
+export async function getUserByEmail(email: string): Promise<User | undefined> {
+  const u = await prisma.user.findUnique({ where: { email } });
+  if (!u) return undefined;
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    passwordHash: u.passwordHash,
+    role: u.role as "USER" | "ADMIN",
+    companyName: u.companyName,
+    corporateId: u.corporateId,
+    createdAt: u.createdAt.toISOString(),
+    complianceDeadline: u.complianceDeadline ?? undefined,
+    countdownDays: u.countdownDays ?? undefined,
+    avatarUrl: u.avatarUrl ?? undefined,
+  };
 }
 
-export function writeDb(data: DatabaseSchema) {
-  try {
-    ensureDirectoryExistence(DB_PATH);
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), "utf-8");
-  } catch (error) {
-    console.error("Database write error", error);
-  }
-}
-
-// DB helper functions
-
-export function getUsers(): User[] {
-  return readDb().users;
-}
-
-export function getUserById(id: string): User | undefined {
-  return readDb().users.find((u) => u.id === id);
-}
-
-export function getUserByEmail(email: string): User | undefined {
-  return readDb().users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-}
-
-export function createUser(user: Omit<User, "id" | "createdAt" | "corporateId">): User {
-  const dbData = readDb();
+export async function createUser(user: Omit<User, "id" | "createdAt" | "corporateId">): Promise<User> {
+  const id = `usr-${Math.random().toString(36).substr(2, 9)}`;
   const corporateId = user.role === "ADMIN"
     ? "ENT-ADMIN-000"
     : `ENT-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(100 + Math.random() * 900)}`;
 
-  const newUser: User = {
-    ...user,
-    id: `usr-${Math.random().toString(36).substr(2, 9)}`,
-    corporateId,
-    createdAt: new Date().toISOString(),
-  };
-  dbData.users.push(newUser);
-  writeDb(dbData);
-  
-  // Initialize pipeline for this user
-  initializePipelineForUser(newUser.id);
-  
-  createAuditLog({
-    adminId: null,
-    userId: newUser.id,
-    action: `Registered account: ${newUser.companyName} (${newUser.role}) with ID ${corporateId}`,
+  const created = await prisma.user.create({
+    data: {
+      id,
+      corporateId,
+      name: user.name,
+      email: user.email,
+      passwordHash: user.passwordHash,
+      role: user.role,
+      companyName: user.companyName,
+      complianceDeadline: user.complianceDeadline || null,
+      countdownDays: user.countdownDays !== undefined ? user.countdownDays : null,
+      avatarUrl: user.avatarUrl || null,
+    },
   });
-  
-  return newUser;
-}
 
+  // Initialize pipeline for this user
+  await initializePipelineForUser(created.id);
 
-export function getTemplates(): DocumentTemplate[] {
-  return readDb().templates;
-}
+  await createAuditLog({
+    adminId: null,
+    userId: created.id,
+    action: `Registered account: ${created.companyName} (${created.role}) with ID ${corporateId}`,
+  });
 
-export function getTemplateById(id: string): DocumentTemplate | undefined {
-  return readDb().templates.find((t) => t.id === id);
-}
-
-export function createTemplate(template: Omit<DocumentTemplate, "id" | "createdAt">): DocumentTemplate {
-  const dbData = readDb();
-  const newTemplate: DocumentTemplate = {
-    ...template,
-    id: `tpl-${Math.random().toString(36).substr(2, 9)}`,
-    createdAt: new Date().toISOString(),
+  return {
+    id: created.id,
+    name: created.name,
+    email: created.email,
+    passwordHash: created.passwordHash,
+    role: created.role as "USER" | "ADMIN",
+    companyName: created.companyName,
+    corporateId: created.corporateId,
+    createdAt: created.createdAt.toISOString(),
+    complianceDeadline: created.complianceDeadline ?? undefined,
+    countdownDays: created.countdownDays ?? undefined,
+    avatarUrl: created.avatarUrl ?? undefined,
   };
-  dbData.templates.push(newTemplate);
-  writeDb(dbData);
-  return newTemplate;
 }
 
-export function updateTemplate(id: string, updates: Partial<DocumentTemplate>): DocumentTemplate | null {
-  const dbData = readDb();
-  const idx = dbData.templates.findIndex((t) => t.id === id);
-  if (idx === -1) return null;
-  
-  dbData.templates[idx] = {
-    ...dbData.templates[idx],
-    ...updates,
+export async function getTemplates(): Promise<DocumentTemplate[]> {
+  const templates = await prisma.documentTemplate.findMany();
+  return templates.map((t) => ({
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    fileUrl: t.fileUrl,
+    requiredFor: t.requiredFor,
+    createdAt: t.createdAt.toISOString(),
+  }));
+}
+
+export async function getTemplateById(id: string): Promise<DocumentTemplate | undefined> {
+  const t = await prisma.documentTemplate.findUnique({ where: { id } });
+  if (!t) return undefined;
+  return {
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    fileUrl: t.fileUrl,
+    requiredFor: t.requiredFor,
+    createdAt: t.createdAt.toISOString(),
   };
-  writeDb(dbData);
-  return dbData.templates[idx];
 }
 
-export function deleteTemplate(id: string): boolean {
-  const dbData = readDb();
-  const lenBefore = dbData.templates.length;
-  dbData.templates = dbData.templates.filter((t) => t.id !== id);
-  if (dbData.templates.length === lenBefore) return false;
-  writeDb(dbData);
-  return true;
+export async function createTemplate(template: Omit<DocumentTemplate, "id" | "createdAt">): Promise<DocumentTemplate> {
+  const id = `tpl-${Math.random().toString(36).substr(2, 9)}`;
+  const created = await prisma.documentTemplate.create({
+    data: {
+      id,
+      title: template.title,
+      description: template.description,
+      fileUrl: template.fileUrl,
+      requiredFor: template.requiredFor,
+    },
+  });
+  return {
+    id: created.id,
+    title: created.title,
+    description: created.description,
+    fileUrl: created.fileUrl,
+    requiredFor: created.requiredFor,
+    createdAt: created.createdAt.toISOString(),
+  };
 }
 
-export function getUserDocuments(): UserDocument[] {
-  return readDb().documents;
+export async function updateTemplate(id: string, updates: Partial<DocumentTemplate>): Promise<DocumentTemplate | null> {
+  try {
+    const updated = await prisma.documentTemplate.update({
+      where: { id },
+      data: {
+        title: updates.title,
+        description: updates.description,
+        fileUrl: updates.fileUrl,
+        requiredFor: updates.requiredFor,
+      },
+    });
+    return {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description,
+      fileUrl: updated.fileUrl,
+      requiredFor: updated.requiredFor,
+      createdAt: updated.createdAt.toISOString(),
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
-export function getDocumentsByUserId(userId: string): UserDocument[] {
-  return readDb().documents.filter((doc) => doc.userId === userId);
+export async function deleteTemplate(id: string): Promise<boolean> {
+  try {
+    await prisma.documentTemplate.delete({ where: { id } });
+    return true;
+  } catch (e) {
+    console.error("Prisma deleteTemplate error:", e);
+    return false;
+  }
 }
 
-export function uploadUserDocument(userId: string, templateId: string, fileName: string, fileUrl: string): UserDocument {
-  const dbData = readDb();
-  
-  // Check if document already exists for this template/user
-  const existingIdx = dbData.documents.findIndex((doc) => doc.userId === userId && doc.templateId === templateId);
-  
-  const template = dbData.templates.find((t) => t.id === templateId);
+export async function getUserDocuments(): Promise<UserDocument[]> {
+  const docs = await prisma.userDocument.findMany();
+  return docs.map((d) => ({
+    id: d.id,
+    userId: d.userId,
+    templateId: d.templateId,
+    uploadedFileUrl: d.uploadedFileUrl,
+    fileName: d.fileName,
+    status: d.status as "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED",
+    adminRemark: d.adminRemark,
+    uploadedAt: d.uploadedAt.toISOString(),
+    reviewedAt: d.reviewedAt ? d.reviewedAt.toISOString() : null,
+  }));
+}
+
+export async function getDocumentsByUserId(userId: string): Promise<UserDocument[]> {
+  const docs = await prisma.userDocument.findMany({ where: { userId } });
+  return docs.map((d) => ({
+    id: d.id,
+    userId: d.userId,
+    templateId: d.templateId,
+    uploadedFileUrl: d.uploadedFileUrl,
+    fileName: d.fileName,
+    status: d.status as "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED",
+    adminRemark: d.adminRemark,
+    uploadedAt: d.uploadedAt.toISOString(),
+    reviewedAt: d.reviewedAt ? d.reviewedAt.toISOString() : null,
+  }));
+}
+
+export async function uploadUserDocument(userId: string, templateId: string, fileName: string, fileUrl: string): Promise<UserDocument> {
+  const existing = await prisma.userDocument.findFirst({
+    where: { userId, templateId },
+  });
+
+  const template = await prisma.documentTemplate.findUnique({ where: { id: templateId } });
   const title = template ? template.title : "Document";
 
-  if (existingIdx !== -1) {
-    const updatedDoc: UserDocument = {
-      ...dbData.documents[existingIdx],
-      fileName,
-      uploadedFileUrl: fileUrl,
-      status: "UPLOADED",
-      adminRemark: "",
-      uploadedAt: new Date().toISOString(),
-      reviewedAt: null,
-    };
-    dbData.documents[existingIdx] = updatedDoc;
-    writeDb(dbData);
-    
-    createAuditLog({
+  if (existing) {
+    const updated = await prisma.userDocument.update({
+      where: { id: existing.id },
+      data: {
+        fileName,
+        uploadedFileUrl: fileUrl,
+        status: "UPLOADED",
+        adminRemark: "",
+        uploadedAt: new Date(),
+        reviewedAt: null,
+      },
+    });
+
+    await createAuditLog({
       adminId: null,
       userId,
       action: `Re-uploaded document: ${title}`,
     });
-    
-    return updatedDoc;
-  } else {
-    const newDoc: UserDocument = {
-      id: `doc-${Math.random().toString(36).substr(2, 9)}`,
-      userId,
-      templateId,
-      uploadedFileUrl: fileUrl,
-      fileName,
-      status: "UPLOADED",
-      adminRemark: "",
-      uploadedAt: new Date().toISOString(),
-      reviewedAt: null,
+
+    return {
+      id: updated.id,
+      userId: updated.userId,
+      templateId: updated.templateId,
+      uploadedFileUrl: updated.uploadedFileUrl,
+      fileName: updated.fileName,
+      status: updated.status as "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED",
+      adminRemark: updated.adminRemark,
+      uploadedAt: updated.uploadedAt.toISOString(),
+      reviewedAt: updated.reviewedAt ? updated.reviewedAt.toISOString() : null,
     };
-    dbData.documents.push(newDoc);
-    writeDb(dbData);
-    
-    createAuditLog({
+  } else {
+    const id = `doc-${Math.random().toString(36).substr(2, 9)}`;
+    const created = await prisma.userDocument.create({
+      data: {
+        id,
+        userId,
+        templateId,
+        uploadedFileUrl: fileUrl,
+        fileName,
+        status: "UPLOADED",
+        adminRemark: "",
+        uploadedAt: new Date(),
+        reviewedAt: null,
+      },
+    });
+
+    await createAuditLog({
       adminId: null,
       userId,
       action: `Uploaded document: ${title}`,
     });
-    
-    return newDoc;
+
+    return {
+      id: created.id,
+      userId: created.userId,
+      templateId: created.templateId,
+      uploadedFileUrl: created.uploadedFileUrl,
+      fileName: created.fileName,
+      status: created.status as "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED",
+      adminRemark: created.adminRemark,
+      uploadedAt: created.uploadedAt.toISOString(),
+      reviewedAt: created.reviewedAt ? created.reviewedAt.toISOString() : null,
+    };
   }
 }
 
-export function reviewUserDocument(adminId: string, docId: string, status: "VERIFIED" | "REJECTED", remark: string): UserDocument | null {
-  const dbData = readDb();
-  const idx = dbData.documents.findIndex((doc) => doc.id === docId);
-  if (idx === -1) return null;
-  
-  const oldDoc = dbData.documents[idx];
-  const template = dbData.templates.find((t) => t.id === oldDoc.templateId);
-  const title = template ? template.title : "Document";
-  const user = dbData.users.find((u) => u.id === oldDoc.userId);
-  const company = user ? user.companyName : "Client";
-  
-  dbData.documents[idx] = {
-    ...oldDoc,
-    status,
-    adminRemark: remark,
-    reviewedAt: new Date().toISOString(),
-  };
-  
-  writeDb(dbData);
-  
-  createAuditLog({
-    adminId,
-    userId: oldDoc.userId,
-    action: `${status === "VERIFIED" ? "Approved" : "Rejected"} document '${title}' for ${company}. Remark: ${remark || "None"}`,
-  });
-  
-  return dbData.documents[idx];
-}
-
-export function getPipelineStages(userId: string): PipelineStage[] {
-  const stages = readDb().pipelineStages.filter((s) => s.userId === userId);
-  return stages.sort((a, b) => a.stageOrder - b.stageOrder);
-}
-
-export function initializePipelineForUser(userId: string) {
-  const dbData = readDb();
-  
-  // Clean existing stages if any
-  dbData.pipelineStages = dbData.pipelineStages.filter((s) => s.userId !== userId);
-  
-  DEFAULT_STAGES.forEach((stage) => {
-    dbData.pipelineStages.push({
-      id: `pipe-${userId}-${stage.order}`,
-      userId,
-      stageName: stage.name,
-      status: stage.order === 1 ? "COMPLETED" : stage.order === 2 ? "IN_PROGRESS" : "PENDING",
-      stageOrder: stage.order,
-      adminNote: stage.order === 1 ? "Account creation completed." : "Awaiting initial KYC and document uploads.",
-      updatedAt: new Date().toISOString(),
+export async function reviewUserDocument(adminId: string, docId: string, status: "VERIFIED" | "REJECTED", remark: string): Promise<UserDocument | null> {
+  try {
+    const updated = await prisma.userDocument.update({
+      where: { id: docId },
+      data: {
+        status,
+        adminRemark: remark,
+        reviewedAt: new Date(),
+      },
     });
-  });
-  
-  writeDb(dbData);
+
+    const template = await prisma.documentTemplate.findUnique({ where: { id: updated.templateId } });
+    const title = template ? template.title : "Document";
+    const user = await prisma.user.findUnique({ where: { id: updated.userId } });
+    const company = user ? user.companyName : "Client";
+
+    await createAuditLog({
+      adminId,
+      userId: updated.userId,
+      action: `Reviewed document '${title}' (${company}): Status set to ${status}. Remark: ${remark || "None"}`,
+    });
+
+    return {
+      id: updated.id,
+      userId: updated.userId,
+      templateId: updated.templateId,
+      uploadedFileUrl: updated.uploadedFileUrl,
+      fileName: updated.fileName,
+      status: updated.status as "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED",
+      adminRemark: updated.adminRemark,
+      uploadedAt: updated.uploadedAt.toISOString(),
+      reviewedAt: updated.reviewedAt ? updated.reviewedAt.toISOString() : null,
+    };
+  } catch (e) {
+    return null;
+  }
 }
 
-export function updatePipelineProgress(adminId: string, userId: string, currentStageOrder: number, stageStatus: "PENDING" | "IN_PROGRESS" | "COMPLETED", note: string): PipelineStage[] {
-  const dbData = readDb();
-  const userStages = dbData.pipelineStages.filter((s) => s.userId === userId);
-  
-  userStages.forEach((stage) => {
+export async function getPipelineStages(userId: string): Promise<PipelineStage[]> {
+  const stages = await prisma.pipelineStage.findMany({
+    where: { userId },
+  });
+  return stages
+    .sort((a, b) => a.stageOrder - b.stageOrder)
+    .map((s) => ({
+      id: s.id,
+      userId: s.userId,
+      stageName: s.stageName,
+      status: s.status as "PENDING" | "IN_PROGRESS" | "COMPLETED",
+      stageOrder: s.stageOrder,
+      adminNote: s.adminNote,
+      updatedAt: s.updatedAt.toISOString(),
+    }));
+}
+
+export async function getAllPipelineStages(): Promise<PipelineStage[]> {
+  const stages = await prisma.pipelineStage.findMany();
+  return stages.map((s) => ({
+    id: s.id,
+    userId: s.userId,
+    stageName: s.stageName,
+    status: s.status as "PENDING" | "IN_PROGRESS" | "COMPLETED",
+    stageOrder: s.stageOrder,
+    adminNote: s.adminNote,
+    updatedAt: s.updatedAt.toISOString(),
+  }));
+}
+
+export async function initializePipelineForUser(userId: string): Promise<void> {
+  // Clean existing stages if any
+  await prisma.pipelineStage.deleteMany({ where: { userId } });
+
+  const stagesData = DEFAULT_STAGES.map((stage) => ({
+    id: `pipe-${userId}-${stage.order}`,
+    userId,
+    stageName: stage.name,
+    status: stage.order === 1 ? "COMPLETED" : stage.order === 2 ? "IN_PROGRESS" : "PENDING",
+    stageOrder: stage.order,
+    adminNote: stage.order === 1 ? "Account creation completed." : "Awaiting initial KYC and document uploads.",
+    updatedAt: new Date(),
+  }));
+
+  await prisma.pipelineStage.createMany({
+    data: stagesData,
+  });
+}
+
+export async function updatePipelineProgress(
+  adminId: string,
+  userId: string,
+  currentStageOrder: number,
+  stageStatus: "PENDING" | "IN_PROGRESS" | "COMPLETED",
+  note: string
+): Promise<PipelineStage[]> {
+  const userStages = await prisma.pipelineStage.findMany({ where: { userId } });
+
+  for (const stage of userStages) {
+    let status: "PENDING" | "IN_PROGRESS" | "COMPLETED" = "PENDING";
+    let adminNote = "";
+
     if (stage.stageOrder < currentStageOrder) {
-      stage.status = "COMPLETED";
-      stage.updatedAt = new Date().toISOString();
+      status = "COMPLETED";
     } else if (stage.stageOrder === currentStageOrder) {
-      stage.status = stageStatus;
-      stage.adminNote = note;
-      stage.updatedAt = new Date().toISOString();
+      status = stageStatus;
+      adminNote = note;
     } else {
-      stage.status = "PENDING";
-      stage.adminNote = "";
-      stage.updatedAt = new Date().toISOString();
+      status = "PENDING";
+      adminNote = "";
     }
-  });
-  
-  // Find matches in global list and update them
-  dbData.pipelineStages = dbData.pipelineStages.map((s) => {
-    if (s.userId === userId) {
-      const match = userStages.find((us) => us.stageOrder === s.stageOrder);
-      return match || s;
-    }
-    return s;
-  });
-  
-  writeDb(dbData);
-  
-  const user = dbData.users.find((u) => u.id === userId);
+
+    await prisma.pipelineStage.update({
+      where: { id: stage.id },
+      data: {
+        status,
+        adminNote,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   const company = user ? user.companyName : "Client";
   const activeStage = userStages.find((s) => s.stageOrder === currentStageOrder);
-  
-  createAuditLog({
+
+  await createAuditLog({
     adminId,
     userId,
     action: `Updated pipeline for ${company} to stage '${activeStage?.stageName}' (${stageStatus}). Note: ${note || "None"}`,
   });
-  
+
   return getPipelineStages(userId);
 }
 
-export function getAuditLogs(): AuditLog[] {
-  const logs = readDb().auditLogs;
-  return [...logs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+export async function getAuditLogs(): Promise<AuditLog[]> {
+  const logs = await prisma.auditLog.findMany();
+  return [...logs]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .map((l) => ({
+      id: l.id,
+      adminId: l.adminId,
+      userId: l.userId,
+      action: l.action,
+      createdAt: l.createdAt.toISOString(),
+    }));
 }
 
-export function createAuditLog(log: Omit<AuditLog, "id" | "createdAt">): AuditLog {
-  const dbData = readDb();
-  const newLog: AuditLog = {
-    ...log,
-    id: `log-${Math.random().toString(36).substr(2, 9)}`,
-    createdAt: new Date().toISOString(),
+export async function createAuditLog(log: Omit<AuditLog, "id" | "createdAt">): Promise<AuditLog> {
+  const id = `log-${Math.random().toString(36).substr(2, 9)}`;
+  const created = await prisma.auditLog.create({
+    data: {
+      id,
+      adminId: log.adminId || null,
+      userId: log.userId || null,
+      action: log.action,
+      createdAt: new Date(),
+    },
+  });
+  return {
+    id: created.id,
+    adminId: created.adminId,
+    userId: created.userId,
+    action: created.action,
+    createdAt: created.createdAt.toISOString(),
   };
-  dbData.auditLogs.push(newLog);
-  writeDb(dbData);
-  return newLog;
 }
 
-export function getSystemMessages(userId?: string): SystemMessage[] {
-  const db = readDb();
-  if (!db.messages) return [];
-  if (!userId) return db.messages;
-  return db.messages.filter((m) => m.targetUserId === "all" || m.targetUserId === userId);
+export async function getSystemMessages(userId?: string): Promise<SystemMessage[]> {
+  let messages;
+  if (!userId) {
+    messages = await prisma.systemMessage.findMany();
+  } else {
+    messages = await prisma.systemMessage.findMany({
+      where: {
+        OR: [
+          { targetUserId: "all" },
+          { targetUserId: userId },
+        ],
+      },
+    });
+  }
+
+  return messages.map((m) => ({
+    id: m.id,
+    senderId: m.senderId,
+    targetUserId: m.targetUserId,
+    messageText: m.messageText,
+    type: m.type as "INFO" | "WARNING" | "CRITICAL",
+    createdAt: m.createdAt.toISOString(),
+  }));
 }
 
-export function createSystemMessage(senderId: string, targetUserId: string, messageText: string, type: "INFO" | "WARNING" | "CRITICAL"): SystemMessage {
-  const db = readDb();
-  if (!db.messages) db.messages = [];
-  const newMsg: SystemMessage = {
-    id: `msg-${Math.random().toString(36).substr(2, 9)}`,
-    senderId,
-    targetUserId,
-    messageText,
-    type,
-    createdAt: new Date().toISOString(),
+export async function createSystemMessage(
+  senderId: string,
+  targetUserId: string,
+  messageText: string,
+  type: "INFO" | "WARNING" | "CRITICAL"
+): Promise<SystemMessage> {
+  const id = `msg-${Math.random().toString(36).substr(2, 9)}`;
+  const created = await prisma.systemMessage.create({
+    data: {
+      id,
+      senderId,
+      targetUserId,
+      messageText,
+      type,
+      createdAt: new Date(),
+    },
+  });
+  return {
+    id: created.id,
+    senderId: created.senderId,
+    targetUserId: created.targetUserId,
+    messageText: created.messageText,
+    type: created.type as "INFO" | "WARNING" | "CRITICAL",
+    createdAt: created.createdAt.toISOString(),
   };
-  db.messages.push(newMsg);
-  writeDb(db);
-  return newMsg;
 }
 
-export function deleteSystemMessage(id: string): boolean {
-  const db = readDb();
-  if (!db.messages) return false;
-  const beforeLen = db.messages.length;
-  db.messages = db.messages.filter((m) => m.id !== id);
-  if (db.messages.length === beforeLen) return false;
-  writeDb(db);
-  return true;
+export async function deleteSystemMessage(id: string): Promise<boolean> {
+  try {
+    await prisma.systemMessage.delete({ where: { id } });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// User settings & countdown overrides (originally directly modified dbData in actions.ts)
+
+export async function updateUserProfile(
+  userId: string,
+  name: string,
+  email: string,
+  newPassword?: string,
+  avatarUrl?: string
+): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name,
+      email,
+      ...(newPassword ? { passwordHash: newPassword } : {}),
+      ...(avatarUrl ? { avatarUrl } : {}),
+    },
+  });
+}
+
+export async function overrideComplianceDeadline(
+  userId: string,
+  deadline: string,
+  countdownDays: number
+): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      complianceDeadline: deadline,
+      countdownDays,
+    },
+  });
 }

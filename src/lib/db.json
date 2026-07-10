@@ -68,7 +68,7 @@
       "id": "tpl-1",
       "title": "Certificate of Incorporation Template",
       "description": "Standard incorporation form for proof of company registration and legal formation.",
-      "fileUrl": "/templates/certificate_of_incorporation.docx",
+      "fileUrl": "/templates/certificate_of_incorporation.txt",
       "requiredFor": "Account Setup",
       "createdAt": "2026-07-08T09:47:47.393Z"
     },
@@ -76,7 +76,7 @@
       "id": "tpl-2",
       "title": "KYC Director Identification Form",
       "description": "Official form to identify directors, verify address, and submit passport/ID details.",
-      "fileUrl": "/templates/kyc_director_verification.pdf",
+      "fileUrl": "/templates/kyc_director_verification.txt",
       "requiredFor": "Identity Verification",
       "createdAt": "2026-07-08T09:47:47.393Z"
     },
@@ -84,7 +84,7 @@
       "id": "tpl-3",
       "title": "Tax Status Declaration Form (W8/W9)",
       "description": "Self-certification form declaring tax residency and taxpayer identification status.",
-      "fileUrl": "/templates/tax_status_declaration.pdf",
+      "fileUrl": "/templates/tax_status_declaration.txt",
       "requiredFor": "Compliance",
       "createdAt": "2026-07-08T09:47:47.393Z"
     },
@@ -92,7 +92,7 @@
       "id": "tpl-4",
       "title": "Standard Master Service Agreement",
       "description": "Agreement outlining standard engagement terms, confidentiality, and service levels.",
-      "fileUrl": "/templates/master_service_agreement.docx",
+      "fileUrl": "/templates/master_service_agreement.txt",
       "requiredFor": "Legal Processing",
       "createdAt": "2026-07-08T09:47:47.393Z"
     }
@@ -1058,6 +1058,13 @@
       "action": "User logged out",
       "id": "log-8vpjryv9e",
       "createdAt": "2026-07-09T13:32:18.056Z"
+    },
+    {
+      "adminId": null,
+      "userId": "usr-admin",
+      "action": "User logged out",
+      "id": "log-8w3oxypcw",
+      "createdAt": "2026-07-10T06:14:45.207Z"
     }
   ],
   "messages": [

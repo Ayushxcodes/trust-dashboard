@@ -9,12 +9,14 @@ import {
   getPipelineStages,
   getAuditLogs,
   getSystemMessages,
+  getAllPipelineStages,
 } from "@/lib/db";
 import DocumentReviewForm from "./DocumentReviewForm";
 import PipelineForm from "./PipelineForm";
 import TemplateForm from "./TemplateForm";
 import DeleteTemplateButton from "./DeleteTemplateButton";
 import AdminControlWidgets from "./AdminControlWidgets";
+import { getDownloadUrl } from "@/lib/s3";
 
 interface SearchParams {
   client?: string;
@@ -40,11 +42,26 @@ export default async function AdminPage({
   }
 
   const params = await searchParams;
-  const allUsers = getUsers();
+  const allUsers = await getUsers();
   const clients = allUsers.filter((u) => u.role === "USER");
-  const documents = getUserDocuments();
-  const templates = getTemplates();
-  const auditLogs = getAuditLogs();
+  const rawDocuments = await getUserDocuments();
+  const rawTemplates = await getTemplates();
+  const auditLogs = await getAuditLogs();
+  const allStages = await getAllPipelineStages();
+
+  const documents = await Promise.all(
+    rawDocuments.map(async (doc) => ({
+      ...doc,
+      uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
+    }))
+  );
+
+  const templates = await Promise.all(
+    rawTemplates.map(async (tpl) => ({
+      ...tpl,
+      fileUrl: await getDownloadUrl(tpl.fileUrl),
+    }))
+  );
 
   const activeTab = params.tab || "entity-review"; // Default to the mockup active tab
   const searchFilter = params.search || "";
@@ -59,9 +76,17 @@ export default async function AdminPage({
 
   const activeClientId = params.client || (filteredClients[0]?.id || "");
   const activeClient = filteredClients.find((c) => c.id === activeClientId) || clients.find((c) => c.id === activeClientId);
-  const activeClientDocs = activeClient ? getDocumentsByUserId(activeClient.id) : [];
-  const activeClientStages = activeClient ? getPipelineStages(activeClient.id) : [];
-  const allMessages = getSystemMessages();
+  
+  const rawActiveClientDocs = activeClient ? await getDocumentsByUserId(activeClient.id) : [];
+  const activeClientDocs = await Promise.all(
+    rawActiveClientDocs.map(async (doc) => ({
+      ...doc,
+      uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
+    }))
+  );
+
+  const activeClientStages = activeClient ? await getPipelineStages(activeClient.id) : [];
+  const allMessages = await getSystemMessages();
 
   // Metrics
   const pendingReviewCount = documents.filter((d) => d.status === "UPLOADED").length;
@@ -343,8 +368,8 @@ export default async function AdminPage({
                   const isActive = client.id === activeClientId;
                   const clientDocs = documents.filter((d) => d.userId === client.id);
                   const clientPendingCount = clientDocs.filter((d) => d.status === "UPLOADED").length;
-                  const clientStages = getPipelineStages(client.id);
-                  const currentActiveStage = clientStages.find((s) => s.status === "IN_PROGRESS")?.stageName || "Completed";
+                  const clientStages = allStages.filter((s) => s.userId === client.id);
+                  const currentActiveStage = [...clientStages].sort((a, b) => a.stageOrder - b.stageOrder).find((s) => s.status === "IN_PROGRESS")?.stageName || "Completed";
 
                   return (
                     <Link

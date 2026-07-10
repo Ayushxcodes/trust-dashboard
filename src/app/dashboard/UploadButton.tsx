@@ -17,7 +17,12 @@ export default function UploadButton({ templateId, templateTitle, activeUserId }
   const handleUpload = (file: File) => {
     startTransition(async () => {
       try {
-        const res = await uploadDocument(templateId, file.name, activeUserId);
+        const formData = new FormData();
+        formData.append("templateId", templateId);
+        formData.append("activeUserId", activeUserId);
+        formData.append("file", file);
+
+        const res = await uploadDocument(formData);
         if (!res.success) {
           alert(res.error || "Failed to upload document");
         }

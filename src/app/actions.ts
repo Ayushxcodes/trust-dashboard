@@ -3,6 +3,8 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import fs from "fs/promises";
+import path from "path";
 import {
   getUserByEmail,
   createUser,
@@ -13,19 +15,20 @@ import {
   createTemplate,
   deleteTemplate,
   createAuditLog,
-  readDb,
-  writeDb,
   createSystemMessage,
   deleteSystemMessage,
+  updateUserProfile,
+  overrideComplianceDeadline,
   User,
 } from "@/lib/db";
+import { uploadFileToS3 } from "@/lib/s3";
 
 // Helper to get current authenticated user
 export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = await cookies();
   const userId = cookieStore.get("session_user_id")?.value;
   if (!userId) return null;
-  return getUserById(userId) || null;
+  return (await getUserById(userId)) || null;
 }
 
 // Authentication Actions
@@ -38,7 +41,7 @@ export async function login(formData: FormData) {
     return { success: false, error: "Please enter all fields." };
   }
 
-  const user = getUserByEmail(email);
+  const user = await getUserByEmail(email);
   if (!user || user.corporateId.toLowerCase() !== corporateId.toLowerCase() || user.passwordHash !== password) {
     return { success: false, error: "Invalid Corporate ID, email, or password." };
   }
@@ -52,7 +55,7 @@ export async function login(formData: FormData) {
     maxAge: 60 * 60 * 24 * 7, // 1 week
   });
 
-  createAuditLog({
+  await createAuditLog({
     adminId: user.role === "ADMIN" ? user.id : null,
     userId: user.role === "USER" ? user.id : null,
     action: `User logged in: ${user.name} (${user.role}) under ID ${user.corporateId}`,
@@ -70,7 +73,6 @@ export async function login(formData: FormData) {
   }
 }
 
-
 export async function register(formData: FormData) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
@@ -82,14 +84,14 @@ export async function register(formData: FormData) {
     return { success: false, error: "All fields are required." };
   }
 
-  const existing = getUserByEmail(email);
+  const existing = await getUserByEmail(email);
   if (existing) {
     return { success: false, error: "Email is already registered." };
   }
 
   const role = roleType === "ADMIN" ? "ADMIN" : "USER";
 
-  const newUser = createUser({
+  const newUser = await createUser({
     name,
     email,
     passwordHash: password,
@@ -120,9 +122,9 @@ export async function register(formData: FormData) {
 export async function logout() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("session_user_id")?.value;
-  
+
   if (userId) {
-    createAuditLog({
+    await createAuditLog({
       adminId: null,
       userId,
       action: "User logged out",
@@ -130,31 +132,61 @@ export async function logout() {
   }
 
   cookieStore.delete("session_user_id");
-  
+
   revalidatePath("/dashboard");
   revalidatePath("/admin");
   revalidatePath("/");
-  
+
   redirect("/login");
 }
 
 // Client-Specific Actions
-export async function uploadDocument(templateId: string, fileName: string, targetUserId?: string) {
+export async function uploadDocument(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) {
     return { success: false, error: "Unauthorized access." };
   }
 
-  const activeUserId = targetUserId || user.id;
+  const templateId = formData.get("templateId") as string;
+  const activeUserId = (formData.get("activeUserId") as string) || user.id;
+  const file = formData.get("file") as File | null;
 
-  // Simulate file upload path
-  const simulatedUrl = `/uploads/${activeUserId}/${Date.now()}_${fileName}`;
-  
-  uploadUserDocument(activeUserId, templateId, fileName, simulatedUrl);
+  if (!templateId || !file) {
+    return { success: false, error: "Missing required parameters." };
+  }
+
+  const fileName = file.name;
+  let fileUrl = "";
+
+  if (file.size > 0) {
+    const s3Url = await uploadFileToS3(file, `uploads/${activeUserId}`);
+    if (s3Url) {
+      fileUrl = s3Url;
+    } else {
+      try {
+        const uploadDir = path.join(process.cwd(), "public", "uploads", activeUserId);
+        await fs.mkdir(uploadDir, { recursive: true });
+
+        const localFileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+        const filePath = path.join(uploadDir, localFileName);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(filePath, buffer);
+
+        fileUrl = `/uploads/${activeUserId}/${localFileName}`;
+      } catch (err) {
+        console.error("Local file save error:", err);
+        return { success: false, error: "Failed to save file locally." };
+      }
+    }
+  } else {
+    return { success: false, error: "Uploaded file is empty." };
+  }
+
+  await uploadUserDocument(activeUserId, templateId, fileName, fileUrl);
 
   revalidatePath("/dashboard");
   revalidatePath("/admin");
-  
+
   return { success: true };
 }
 
@@ -165,7 +197,7 @@ export async function reviewDocument(docId: string, status: "VERIFIED" | "REJECT
     return { success: false, error: "Unauthorized access." };
   }
 
-  const result = reviewUserDocument(admin.id, docId, status, remark);
+  const result = await reviewUserDocument(admin.id, docId, status, remark);
   if (!result) {
     return { success: false, error: "Document not found." };
   }
@@ -182,7 +214,7 @@ export async function updatePipeline(userId: string, stageOrder: number, status:
     return { success: false, error: "Unauthorized access." };
   }
 
-  updatePipelineProgress(admin.id, userId, stageOrder, status, note);
+  await updatePipelineProgress(admin.id, userId, stageOrder, status, note);
 
   revalidatePath("/dashboard");
   revalidatePath("/admin");
@@ -199,13 +231,36 @@ export async function addTemplate(formData: FormData) {
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const requiredFor = formData.get("requiredFor") as string;
-  const fileUrl = formData.get("fileUrl") as string || "/templates/default_placeholder.pdf";
+  const file = formData.get("file") as File | null;
+  let fileUrl = formData.get("fileUrl") as string || "/templates/default_placeholder.pdf";
 
   if (!title || !description || !requiredFor) {
     return { success: false, error: "All fields are required." };
   }
 
-  createTemplate({
+  if (file && file.size > 0) {
+    const s3Url = await uploadFileToS3(file, "templates");
+    if (s3Url) {
+      fileUrl = s3Url;
+    } else {
+      try {
+        const templatesDir = path.join(process.cwd(), "public", "templates");
+        await fs.mkdir(templatesDir, { recursive: true });
+
+        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+        const filePath = path.join(templatesDir, fileName);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(filePath, buffer);
+
+        fileUrl = `/templates/${fileName}`;
+      } catch (err) {
+        console.error("Failed to save template file:", err);
+        return { success: false, error: "Failed to upload the template file." };
+      }
+    }
+  }
+
+  await createTemplate({
     title,
     description,
     fileUrl,
@@ -224,7 +279,7 @@ export async function removeTemplate(templateId: string) {
     return { success: false, error: "Unauthorized access." };
   }
 
-  const success = deleteTemplate(templateId);
+  const success = await deleteTemplate(templateId);
   if (!success) {
     return { success: false, error: "Template not found." };
   }
@@ -241,24 +296,17 @@ export async function overrideCountdown(userId: string, deadline: string, countd
     return { success: false, error: "Unauthorized access." };
   }
 
-  const dbData = readDb();
-  const userIdx = dbData.users.findIndex((u) => u.id === userId);
-  if (userIdx === -1) {
+  const clientUser = await getUserById(userId);
+  if (!clientUser) {
     return { success: false, error: "Client not found." };
   }
 
-  dbData.users[userIdx] = {
-    ...dbData.users[userIdx],
-    complianceDeadline: deadline,
-    countdownDays: Number(countdownDays),
-  };
+  await overrideComplianceDeadline(userId, deadline, Number(countdownDays));
 
-  writeDb(dbData);
-
-  createAuditLog({
+  await createAuditLog({
     adminId: admin.id,
     userId,
-    action: `Overrode compliance countdown to ${countdownDays} days (Deadline: ${deadline}) for ${dbData.users[userIdx].companyName}`,
+    action: `Overrode compliance countdown to ${countdownDays} days (Deadline: ${deadline}) for ${clientUser.companyName}`,
   });
 
   revalidatePath("/dashboard");
@@ -277,9 +325,9 @@ export async function sendSystemMessageAction(targetUserId: string, messageText:
     return { success: false, error: "Message content cannot be empty." };
   }
 
-  const newMsg = createSystemMessage(admin.id, targetUserId, messageText.trim(), type);
+  const newMsg = await createSystemMessage(admin.id, targetUserId, messageText.trim(), type);
 
-  createAuditLog({
+  await createAuditLog({
     adminId: admin.id,
     userId: targetUserId === "all" ? null : targetUserId,
     action: `Sent ${type} system message/broadcast: "${messageText.substring(0, 50)}..."`,
@@ -297,7 +345,7 @@ export async function deleteSystemMessageAction(messageId: string) {
     return { success: false, error: "Unauthorized access." };
   }
 
-  const success = deleteSystemMessage(messageId);
+  const success = await deleteSystemMessage(messageId);
   if (!success) {
     return { success: false, error: "Message not found." };
   }
@@ -317,24 +365,14 @@ export async function updateProfileSettings(userId: string, name: string, email:
     return { success: false, error: "Unauthorized access: You cannot modify another user's profile." };
   }
 
-  const dbData = readDb();
-  const userIdx = dbData.users.findIndex((u) => u.id === userId);
-  if (userIdx === -1) {
+  const clientUser = await getUserById(userId);
+  if (!clientUser) {
     return { success: false, error: "Client profile not found." };
   }
 
-  dbData.users[userIdx].name = name;
-  dbData.users[userIdx].email = email;
-  if (avatarUrl) {
-    dbData.users[userIdx].avatarUrl = avatarUrl;
-  }
-  if (newPassword && newPassword.trim() !== "") {
-    dbData.users[userIdx].passwordHash = newPassword;
-  }
+  await updateUserProfile(userId, name, email, newPassword, avatarUrl);
 
-  writeDb(dbData);
-
-  createAuditLog({
+  await createAuditLog({
     adminId: null,
     userId,
     action: `Updated client user profile parameters (Name: ${name}, Email: ${email})`,

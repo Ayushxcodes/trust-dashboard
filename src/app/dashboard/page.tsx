@@ -7,6 +7,7 @@ import CommercialTab from "./CommercialTab";
 import { VerifyStatusButton, BriefActions } from "./ActionButtons";
 import SettingsTab from "./SettingsTab";
 import SupportTab from "./SupportTab";
+import { getDownloadUrl } from "@/lib/s3";
 
 interface PageProps {
   searchParams: Promise<{
@@ -33,10 +34,27 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const activeCompanyUser = user;
 
-  const templates = getTemplates();
-  const uploads = getDocumentsByUserId(contextUserId);
-  const stages = getPipelineStages(contextUserId);
-  const messages = getSystemMessages(contextUserId);
+  const rawTemplates = await getTemplates();
+  const templates = await Promise.all(
+    rawTemplates.map(async (tpl) => ({
+      ...tpl,
+      fileUrl: await getDownloadUrl(tpl.fileUrl),
+    }))
+  );
+  const rawUploads = await getDocumentsByUserId(contextUserId);
+  const uploads = await Promise.all(
+    rawUploads.map(async (doc) => ({
+      ...doc,
+      uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
+    }))
+  );
+  const stages = await getPipelineStages(contextUserId);
+  const messages = await getSystemMessages(contextUserId);
+
+  const totalStages = stages.length;
+  const completedStages = stages.filter((s) => s.status === "COMPLETED").length;
+  const progressPercent = totalStages > 0 ? Math.round((completedStages / totalStages) * 100) : 0;
+  const sortedStages = [...stages].sort((a, b) => a.stageOrder - b.stageOrder);
 
   // Map upload files to template IDs for fast lookup
   const uploadMap = uploads.reduce((acc, doc) => {
@@ -252,72 +270,53 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 Compliance Journey
               </h4>
               <span className="text-[10px] text-zinc-500 font-bold block mb-4">
-                4 of 12 Tasks Completed
+                {completedStages} of {totalStages} Stages Completed
               </span>
 
               {/* Progress Status Tracker completion bar */}
               <div className="w-full bg-zinc-200 h-1.5 rounded overflow-hidden mb-8">
                 <div
                   className="bg-emerald-500 h-full transition-all duration-500"
-                  style={{ width: "33%" }}
+                  style={{ width: `${progressPercent}%` }}
                 />
               </div>
 
               {/* Checklist phases (Sequential Stage Registry) */}
-              <div className="space-y-6">
-                <div>
-                  <span className="text-[9px] font-extrabold text-zinc-450 uppercase tracking-widest block mb-3">
-                    Phase 1: Corporate Identity
-                  </span>
-                  <div className="space-y-3 pl-1.5">
-                    <div className="flex items-center gap-2.5 text-xs text-emerald-600 font-bold">
-                      <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[9px]">✓</span>
-                      Primary KYC Forms
-                    </div>
-                    <div className="flex items-center gap-2.5 text-xs text-emerald-600 font-bold">
-                      <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[9px]">✓</span>
-                      UBO Declaration
-                    </div>
-                  </div>
-                </div>
+              <div className="space-y-4">
+                {sortedStages.map((stage) => {
+                  let statusIcon = null;
+                  let textColor = "text-zinc-450 font-bold";
 
-                <div>
-                  <span className="text-[9px] font-extrabold text-teal-600 uppercase tracking-widest block mb-3">
-                    Phase 2: Professional Authorizations
-                  </span>
-                  <div className="space-y-3 pl-1.5">
-                    <div className="flex items-center gap-2.5 text-xs text-[#0B1528] font-extrabold">
-                      <span className="w-4 h-4 rounded-full bg-[#0B1528] flex items-center justify-center text-white text-[8px] font-bold">
+                  if (stage.status === "COMPLETED") {
+                    statusIcon = (
+                      <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[9px] font-extrabold shrink-0">
+                        ✓
+                      </span>
+                    );
+                    textColor = "text-emerald-600 font-bold";
+                  } else if (stage.status === "IN_PROGRESS") {
+                    statusIcon = (
+                      <span className="w-4 h-4 rounded-full bg-[#0B1528] text-white flex items-center justify-center text-[8px] font-bold shrink-0 animate-pulse">
                         ●
                       </span>
-                      Certificate Collection
-                    </div>
-                    <div className="flex items-center gap-2.5 text-xs text-zinc-450 font-bold">
-                      <span className="w-4 h-4 rounded-full border border-zinc-300 bg-white" />
-                      Financial Attestation
-                    </div>
-                  </div>
-                </div>
+                    );
+                    textColor = "text-[#0B1528] font-extrabold";
+                  } else {
+                    statusIcon = (
+                      <span className="w-4 h-4 rounded-full border border-zinc-300 bg-white shrink-0" />
+                    );
+                    textColor = "text-zinc-400 font-medium";
+                  }
 
-                <div>
-                  <span className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block mb-3">
-                    Phase 3: Depository Execution Forms
-                  </span>
-                  <div className="space-y-3 pl-1.5">
-                    <div className="flex items-center gap-2.5 text-xs text-zinc-400 font-bold">
-                      <svg className="w-4 h-4 text-zinc-350 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      Registry Transfer Master
+                  return (
+                    <div key={stage.id} className="flex items-center gap-2.5 text-xs">
+                      {statusIcon}
+                      <span className={`${textColor} truncate`} title={stage.stageName}>
+                        {stage.stageName}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2.5 text-xs text-zinc-400 font-bold">
-                      <svg className="w-4 h-4 text-zinc-350 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      Execution Signature Page
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </aside>
 
@@ -387,9 +386,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                               </span>
                             )}
                             
-                            <span className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 px-2 py-1 rounded text-zinc-500 truncate max-w-[100px]" title={doc.fileName}>
+                            <a
+                              href={doc.uploadedFileUrl}
+                              download
+                              className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 hover:border-zinc-350 hover:text-indigo-600 transition-colors px-2 py-1 rounded text-zinc-500 truncate max-w-[100px] cursor-pointer"
+                              title={`Download ${doc.fileName}`}
+                            >
                               {doc.fileName}
-                            </span>
+                            </a>
                           </div>
                         )}
 

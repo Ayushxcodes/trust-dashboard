@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { reviewDocument } from "../actions";
 
 interface DocumentReviewFormProps {
@@ -16,14 +16,16 @@ export default function DocumentReviewForm({
   currentStatus,
   adminRemark,
 }: DocumentReviewFormProps) {
+  const [prevDocumentId, setPrevDocumentId] = useState(documentId);
   const [statusState, setStatusState] = useState(currentStatus);
   const [remark, setRemark] = useState(adminRemark || "");
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
+  if (documentId !== prevDocumentId) {
+    setPrevDocumentId(documentId);
     setStatusState(currentStatus);
     setRemark(adminRemark || "");
-  }, [documentId, currentStatus, adminRemark]);
+  }
 
   const [ocrText, setOcrText] = useState(
     `TRUSTLINK REGISTRY SYSTEM v4.2\n-----------------------------\nDOCUMENT_ID: ${documentId}\nFILE_NAME: ${fileName}\nMETADATA_INTEGRITY: AES-256 INTACT\nEXTRACTED_SIGNATORY: Verified Wet Signature Match\nREGISTRATION_STATUS: MCA SYSTEM SYNCED\n\n[PARSED PLAIN TEXT BODY]\n"We hereby submit the official authorization folios for conversion to electronic depository records under Rule 9B guidelines..."`
@@ -102,10 +104,10 @@ export default function DocumentReviewForm({
             </div>
             <button
               onClick={() => handleReview("VERIFIED")}
-              disabled={isPending}
-              className="w-full py-1.5 rounded bg-[#0B1528] hover:bg-[#152238] text-white font-extrabold text-[9px] tracking-widest uppercase transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+              disabled={isPending || statusState === "VERIFIED"}
+              className="w-full py-1.5 rounded bg-[#0B1528] hover:bg-[#152238] text-white font-extrabold text-[9px] tracking-widest uppercase transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Approve Record (Stamp Metadata)
+              {statusState === "VERIFIED" ? "Record Approved" : "Approve Record (Stamp Metadata)"}
             </button>
           </div>
 
@@ -146,10 +148,10 @@ export default function DocumentReviewForm({
       <div className="flex gap-2.5 pt-2">
         <button
           onClick={() => handleReview("VERIFIED")}
-          disabled={isPending}
-          className="flex-1 py-2 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors cursor-pointer shadow disabled:opacity-50"
+          disabled={isPending || statusState === "VERIFIED"}
+          className="flex-1 py-2 rounded bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-700/60 text-white font-bold text-xs transition-colors shadow disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? "Stamping..." : "Approve"}
+          {statusState === "VERIFIED" ? "Approved" : (isPending ? "Stamping..." : "Approve")}
         </button>
         <button
           onClick={() => handleReview("REJECTED")}
