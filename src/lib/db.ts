@@ -292,6 +292,7 @@ export async function updateTemplate(id: string, updates: Partial<DocumentTempla
 
 export async function deleteTemplate(id: string): Promise<boolean> {
   try {
+    await prisma.userDocument.deleteMany({ where: { templateId: id } });
     await prisma.documentTemplate.delete({ where: { id } });
     return true;
   } catch (e) {

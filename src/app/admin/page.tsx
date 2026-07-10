@@ -49,19 +49,20 @@ export default async function AdminPage({
   const auditLogs = await getAuditLogs();
   const allStages = await getAllPipelineStages();
 
-  const documents = await Promise.all(
-    rawDocuments.map(async (doc) => ({
-      ...doc,
-      uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
-    }))
-  );
-
   const templates = await Promise.all(
     rawTemplates.map(async (tpl) => ({
       ...tpl,
       fileUrl: await getDownloadUrl(tpl.fileUrl),
     }))
   );
+
+  const resolvedDocs = await Promise.all(
+    rawDocuments.map(async (doc) => ({
+      ...doc,
+      uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
+    }))
+  );
+  const documents = resolvedDocs.filter((doc) => templates.some((t) => t.id === doc.templateId));
 
   const activeTab = params.tab || "entity-review"; // Default to the mockup active tab
   const searchFilter = params.search || "";
@@ -78,12 +79,13 @@ export default async function AdminPage({
   const activeClient = filteredClients.find((c) => c.id === activeClientId) || clients.find((c) => c.id === activeClientId);
   
   const rawActiveClientDocs = activeClient ? await getDocumentsByUserId(activeClient.id) : [];
-  const activeClientDocs = await Promise.all(
+  const resolvedActiveClientDocs = await Promise.all(
     rawActiveClientDocs.map(async (doc) => ({
       ...doc,
       uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
     }))
   );
+  const activeClientDocs = resolvedActiveClientDocs.filter((doc) => templates.some((t) => t.id === doc.templateId));
 
   const activeClientStages = activeClient ? await getPipelineStages(activeClient.id) : [];
   const allMessages = await getSystemMessages();
