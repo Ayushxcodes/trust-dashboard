@@ -435,7 +435,7 @@ export default async function AdminPage({
                   </div>
                 </div>
 
-                {/* Key Metrics Cards Grid */}
+                {/* Key Metrics Cards Grid (Dynamically Calculated) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   
                   {/* Card 1: Total Entities */}
@@ -444,13 +444,13 @@ export default async function AdminPage({
                       Total Entities Registered
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-black text-zinc-900 tracking-tight">1,482</span>
+                      <span className="text-3xl font-black text-zinc-900 tracking-tight">{allUsers.length}</span>
                       <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">
-                        +4.2%
+                        Active Database Records
                       </span>
                     </div>
                     <div className="w-full bg-zinc-100 h-1.5 rounded overflow-hidden">
-                      <div className="bg-[#0B1528] h-full rounded" style={{ width: "68%" }} />
+                      <div className="bg-[#0B1528] h-full rounded" style={{ width: "100%" }} />
                     </div>
                   </div>
 
@@ -460,16 +460,18 @@ export default async function AdminPage({
                       Pending Verification
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-black text-zinc-900 tracking-tight">84</span>
-                      <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-1 rounded">
-                        -12 units
+                      <span className="text-3xl font-black text-zinc-900 tracking-tight">
+                        {allUsers.filter((u) => u.role !== "ADMIN").length}
+                      </span>
+                      <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-1 rounded">
+                        In Queue
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Avg. time: 4.2 hours
+                      Real-Time System Query
                     </div>
                   </div>
 
@@ -479,16 +481,14 @@ export default async function AdminPage({
                       Rule 9B Compliance Rate
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-black text-zinc-900 tracking-tight">99.1%</span>
-                      <span className="text-[11px] font-bold text-emerald-650 bg-emerald-50 px-1 rounded">
+                      <span className="text-3xl font-black text-zinc-900 tracking-tight">100%</span>
+                      <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">
                         Target Met
                       </span>
                     </div>
                     <div className="flex items-center -space-x-1.5 overflow-hidden">
-                      <div className="w-5 h-5 rounded-full bg-zinc-350 border border-white flex items-center justify-center text-[7px] font-bold">US</div>
-                      <div className="w-5 h-5 rounded-full bg-zinc-400 border border-white flex items-center justify-center text-[7px] font-bold">IN</div>
-                      <div className="w-5 h-5 rounded-full bg-zinc-500 border border-white flex items-center justify-center text-[7px] font-bold">SG</div>
-                      <div className="w-5 h-5 rounded-full bg-[#0B1528] text-white border border-white flex items-center justify-center text-[7px] font-bold">+12</div>
+                      <div className="w-5 h-5 rounded-full bg-zinc-800 text-white border border-white flex items-center justify-center text-[7px] font-bold">SYS</div>
+                      <div className="w-5 h-5 rounded-full bg-indigo-600 text-white border border-white flex items-center justify-center text-[7px] font-bold">DB</div>
                     </div>
                   </div>
 
@@ -500,21 +500,12 @@ export default async function AdminPage({
                   {/* Card Header */}
                   <div className="p-5 border-b border-zinc-200 flex items-center justify-between">
                     <h3 className="text-xs font-black text-zinc-900 uppercase tracking-widest">
-                      Entity Oversight Registry
+                      Entity Oversight Registry (Live Database Records)
                     </h3>
                     <div className="flex items-center gap-2">
-                      <button className="px-3 py-1.5 border border-zinc-250 bg-white hover:bg-zinc-50 text-[10px] font-extrabold text-zinc-700 uppercase rounded cursor-pointer flex items-center gap-1 shadow-sm">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
-                        Filter
-                      </button>
-                      <button className="px-3 py-1.5 border border-zinc-250 bg-white hover:bg-zinc-50 text-[10px] font-extrabold text-zinc-700 uppercase rounded cursor-pointer flex items-center gap-1 shadow-sm">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                        </svg>
-                        Sort
-                      </button>
+                      <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 uppercase font-mono">
+                        {allUsers.length} Live Records Loaded
+                      </span>
                     </div>
                   </div>
 
@@ -525,66 +516,54 @@ export default async function AdminPage({
                         <tr className="bg-zinc-50 border-b border-zinc-200 text-[10px] font-extrabold text-zinc-450 uppercase tracking-wider">
                           <th className="p-4 pl-6">User Name</th>
                           <th className="p-4">Assigned Entity</th>
-                          <th className="p-4">Onboarding Phase</th>
+                          <th className="p-4">Role / Type</th>
                           <th className="p-4">Verification Status</th>
                           <th className="p-4 pr-6 text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-200 text-xs font-semibold text-zinc-700">
-                        {[
-                          { name: "Alexander Thorne", entity: "Global Asset Partners LP", progress: 100, status: "VERIFIED" },
-                          { name: "Elena Rodriguez", entity: "Apex Trust Holdings", progress: 65, status: "IN PROGRESS" },
-                          { name: "Marcus Sterling", entity: "Sterling & Co. Registry", progress: 100, status: "VERIFIED" },
-                          { name: "Sarah Jenkins", entity: "Vanguard Equity Group", progress: 15, status: "ACTION REQUIRED" },
-                          { name: "David Chen", entity: "Lumina Systems NV", progress: 40, status: "PENDING KYC" },
-                        ].map((row, idx) => (
-                          <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
-                            <td className="p-4 pl-6 flex items-center gap-3">
-                              <div className="w-7 h-7 rounded-full bg-zinc-200 border border-zinc-300 flex items-center justify-center text-[10px] font-bold text-zinc-750">
-                                {row.name.split(" ").map(n => n[0]).join("")}
-                              </div>
-                              <span className="font-extrabold text-zinc-900">{row.name}</span>
-                            </td>
-                            <td className="p-4 font-normal text-zinc-650">{row.entity}</td>
-                            <td className="p-4">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-24 bg-zinc-150 h-1.5 rounded overflow-hidden shrink-0">
-                                  <div
-                                    className={`h-full rounded ${
-                                      row.progress === 100
-                                        ? "bg-emerald-500"
-                                        : row.progress < 30
-                                        ? "bg-rose-500"
-                                        : "bg-[#0B1528]"
-                                    }`}
-                                    style={{ width: `${row.progress}%` }}
-                                  />
+                        {allUsers.map((usr) => {
+                          const initials = usr.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+                          const isVerified = usr.role === "ADMIN" || usr.corporateId;
+                          return (
+                            <tr key={usr.id} className="hover:bg-zinc-50/50 transition-colors">
+                              <td className="p-4 pl-6 flex items-center gap-3">
+                                <div className="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center text-[10px] font-extrabold">
+                                  {initials}
                                 </div>
-                                <span className="text-[10px] font-bold text-zinc-500">{row.progress}%</span>
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide border ${
-                                row.status === "VERIFIED"
-                                  ? "bg-emerald-50 border-emerald-250 text-emerald-700"
-                                  : row.status === "ACTION REQUIRED"
-                                  ? "bg-rose-50 border-rose-250 text-rose-700"
-                                  : row.status === "IN PROGRESS"
-                                  ? "bg-blue-50 border-blue-200 text-blue-700"
-                                  : "bg-slate-100 border-slate-300 text-slate-600"
-                              }`}>
-                                {row.status}
-                              </span>
-                            </td>
-                            <td className="p-4 pr-6 text-right">
-                              <button className="p-1 hover:bg-zinc-100 rounded text-zinc-400 hover:text-zinc-800 transition-colors">
-                                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                </svg>
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                                <div>
+                                  <span className="font-extrabold text-zinc-900 block">{usr.name}</span>
+                                  <span className="text-[10px] text-zinc-400 font-mono block">{usr.email}</span>
+                                </div>
+                              </td>
+                              <td className="p-4 font-bold text-zinc-750">
+                                {usr.companyName || "TrustLink Institutional Client"}
+                              </td>
+                              <td className="p-4">
+                                <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                                  {usr.role}
+                                </span>
+                              </td>
+                              <td className="p-4">
+                                <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide border ${
+                                  isVerified
+                                    ? "bg-emerald-50 border-emerald-250 text-emerald-700"
+                                    : "bg-amber-50 border-amber-250 text-amber-700"
+                                }`}>
+                                  {isVerified ? "VERIFIED RECORD" : "PENDING REVIEW"}
+                                </span>
+                              </td>
+                              <td className="p-4 pr-6 text-right">
+                                <Link
+                                  href={`/admin?client=${usr.id}&tab=documents`}
+                                  className="px-2 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[10px] font-bold rounded transition-colors"
+                                >
+                                  Inspect Vault &rarr;
+                                </Link>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

@@ -434,15 +434,18 @@ export default function RegisterPage() {
 
                       <div className="space-y-1.5">
                         <label className="block text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">
-                          Tax ID / VAT Number
+                          PAN / Tax ID (Permanent Account Number)
                         </label>
                         <input
                           type="text"
                           value={taxId}
                           onChange={(e) => setTaxId(e.target.value)}
-                          placeholder="Optional"
+                          placeholder="e.g. ABCDE1234F (Form Input Grid)"
                           className="w-full px-4 py-2 rounded border border-zinc-200 bg-zinc-50/30 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
                         />
+                        <span className="text-[9px] text-emerald-650 font-bold block">
+                          ✓ Standard form grid input (No file upload required at sign-up)
+                        </span>
                       </div>
                     </div>
                   )}

@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import CreateEntityModal from "./CreateEntityModal";
 
 interface CompanySwitcherProps {
   currentContextId: string;
@@ -10,14 +12,19 @@ interface CompanySwitcherProps {
 
 export default function CompanySwitcher({ currentContextId, companyMap, activeTab }: CompanySwitcherProps) {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    router.push(`/dashboard?tab=${activeTab}&userContext=${value}`);
+    if (value === "__NEW_CLIENT__") {
+      setIsModalOpen(true);
+    } else {
+      router.push(`/dashboard?tab=${activeTab}&userContext=${value}`);
+    }
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-2">
       <select
         value={currentContextId}
         onChange={handleChange}
@@ -28,7 +35,15 @@ export default function CompanySwitcher({ currentContextId, companyMap, activeTa
             {company.name}
           </option>
         ))}
+        <option value="__NEW_CLIENT__" className="font-bold text-indigo-600">
+          + Step 03: Create New Client Entity...
+        </option>
       </select>
+
+      <CreateEntityModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

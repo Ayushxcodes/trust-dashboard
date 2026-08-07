@@ -221,20 +221,47 @@ export default function CommercialTab({ companyName }: { companyName: string }) 
 
         {/* Secure Banking Gateway Selector */}
         <div className="p-5 rounded-xl border border-zinc-200 bg-white space-y-4 shadow-sm">
-          <div>
-            <span className="block text-xs font-bold text-zinc-800">Secure Banking Gateway</span>
-            <span className="block text-[10px] text-zinc-450">Exposes direct institutional settlement options for active transfers.</span>
+          <div className="flex justify-between items-start">
+            <div>
+              <span className="text-[9px] font-extrabold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                Step 06-07 — Payment / Settlement
+              </span>
+              <h4 className="text-xs font-extrabold text-zinc-900 mt-1">Secure Banking Gateway</h4>
+              <span className="block text-[10px] text-zinc-500 font-medium mt-0.5">
+                Exposes direct institutional settlement options for active transfers.
+              </span>
+            </div>
+            <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 uppercase font-mono">
+              ✓ No documents — banking/payment instruments only
+            </span>
+          </div>
+
+          <div className="p-3 rounded-lg bg-emerald-50/50 border border-emerald-200 text-[10px] text-emerald-800 font-semibold flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+            <span>Commercial Settlement Phase: Pure electronic settlement via connected banking rails. No file uploads required.</span>
           </div>
           
           <div className="grid grid-cols-3 gap-3">
-            <button className="py-3 rounded border border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50/20 text-center font-extrabold text-[10px] uppercase text-zinc-700 cursor-pointer">
-              NetBanking / API
+            <button
+              onClick={() => alert("Selected Payment Rail: NetBanking / Corporate API Direct Transfer")}
+              className="py-3 px-2 rounded-lg border border-indigo-200 bg-indigo-50/30 hover:bg-indigo-50 text-center font-extrabold text-[10px] uppercase text-indigo-900 cursor-pointer transition-all shadow-sm flex flex-col items-center gap-1"
+            >
+              <span>🏛️ NetBanking</span>
+              <span className="text-[8px] text-indigo-600 font-mono">Direct API Rail</span>
             </button>
-            <button className="py-3 rounded border border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50/20 text-center font-extrabold text-[10px] uppercase text-zinc-700 cursor-pointer">
-              Escrow Route (RTGS)
+            <button
+              onClick={() => alert("Selected Payment Rail: Escrow Route (RTGS Institutional)")}
+              className="py-3 px-2 rounded-lg border border-teal-200 bg-teal-50/30 hover:bg-teal-50 text-center font-extrabold text-[10px] uppercase text-teal-900 cursor-pointer transition-all shadow-sm flex flex-col items-center gap-1"
+            >
+              <span>🔒 Escrow Route</span>
+              <span className="text-[8px] text-teal-600 font-mono">RTGS Lockup</span>
             </button>
-            <button className="py-3 rounded border border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50/20 text-center font-extrabold text-[10px] uppercase text-zinc-700 cursor-pointer">
-              Corporate Cards
+            <button
+              onClick={() => alert("Selected Payment Rail: Corporate Cards Gateway")}
+              className="py-3 px-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-center font-extrabold text-[10px] uppercase text-slate-800 cursor-pointer transition-all shadow-sm flex flex-col items-center gap-1"
+            >
+              <span>💳 Corporate Cards</span>
+              <span className="text-[8px] text-slate-500 font-mono">Visa / Mastercard</span>
             </button>
           </div>
         </div>

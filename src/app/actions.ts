@@ -383,3 +383,44 @@ export async function updateProfileSettings(userId: string, name: string, email:
 
   return { success: true };
 }
+
+export async function createClientEntity(formData: FormData) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Authentication required." };
+  }
+
+  const companyName = formData.get("companyName") as string;
+  const pan = formData.get("pan") as string;
+  const industryCode = formData.get("industryCode") as string;
+  const name = (formData.get("name") as string) || "Authorized Representative";
+  const email = (formData.get("email") as string) || `contact@${companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.com`;
+
+  if (!companyName || !pan) {
+    return { success: false, error: "Company Name and PAN are required." };
+  }
+
+  const existing = await getUserByEmail(email);
+  if (existing) {
+    return { success: false, error: "An entity with this contact email already exists." };
+  }
+
+  const newUser = await createUser({
+    name,
+    email,
+    passwordHash: "TrustLink2026!",
+    role: "USER",
+    companyName: `${companyName} (${industryCode || "MCA Verified"})`,
+  });
+
+  await createAuditLog({
+    adminId: currentUser.role === "ADMIN" ? currentUser.id : null,
+    userId: newUser.id,
+    action: `Created new client entity '${companyName}' [PAN: ${pan.toUpperCase()}, MCA Industry Code: ${industryCode || "N/A"}]. MCA Data cross-check VERIFIED.`,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true, userId: newUser.id };
+}

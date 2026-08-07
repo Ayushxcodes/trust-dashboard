@@ -66,35 +66,75 @@ export interface SystemMessage {
 
 export const DEFAULT_TEMPLATES: DocumentTemplate[] = [
   {
-    id: "tpl-1",
-    title: "Certificate of Incorporation Template",
-    description: "Standard incorporation form for proof of company registration and legal formation.",
-    fileUrl: "/templates/certificate_of_incorporation.docx",
-    requiredFor: "Account Setup",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "tpl-2",
-    title: "KYC Director Identification Form",
-    description: "Official form to identify directors, verify address, and submit passport/ID details.",
+    id: "tpl-kyc",
+    title: "Primary KYC Forms (Director & Company KYC Set)",
+    description: "KYC document set containing passport, proof of address, and board resolution for corporate identity verification.",
     fileUrl: "/templates/kyc_director_verification.pdf",
-    requiredFor: "Identity Verification",
+    requiredFor: "Phase 1: Corporate Identity",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "tpl-3",
-    title: "Tax Status Declaration Form (W8/W9)",
-    description: "Self-certification form declaring tax residency and taxpayer identification status.",
+    id: "tpl-ubo",
+    title: "Ultimate Beneficial Ownership (UBO) Declaration",
+    description: "Official declaration identifying natural persons holding controlling ownership interest under Rule 9B.",
     fileUrl: "/templates/tax_status_declaration.pdf",
-    requiredFor: "Compliance",
+    requiredFor: "Phase 1: Corporate Identity",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "tpl-4",
-    title: "Standard Master Service Agreement",
-    description: "Agreement outlining standard engagement terms, confidentiality, and service levels.",
+    id: "tpl-coi",
+    title: "Certificate of Incorporation (COI)",
+    description: "Official Certificate of Incorporation issued by Companies House / MCA for legal formation verification.",
+    fileUrl: "/templates/certificate_of_incorporation.docx",
+    requiredFor: "Step 04: Certificate Collection Vault",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-br",
+    title: "Business Registration (BR)",
+    description: "Valid state or national business registration certificate for legal entity verification.",
+    fileUrl: "/templates/certificate_of_incorporation.docx",
+    requiredFor: "Step 04: Certificate Collection Vault",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-fin",
+    title: "Audited Financial Statements",
+    description: "Latest audited balance sheet and financial statements cross-referenced against MCA compliance records.",
     fileUrl: "/templates/master_service_agreement.docx",
-    requiredFor: "Legal Processing",
+    requiredFor: "Step 04: Certificate Collection Vault",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-cert",
+    title: "Practice Partner-Signed Certificates",
+    description: "General professional certificates signed by practicing partner (ICAI/ICSI) for authorization clearance.",
+    fileUrl: "/templates/master_service_agreement.docx",
+    requiredFor: "Phase 2: Professional Authorizations",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-networth",
+    title: "Net Worth Certificate (Step 05)",
+    description: "Financial attestation of net worth certified by practicing CA, cross-checked for equity stability calculations.",
+    fileUrl: "/templates/tax_status_declaration.pdf",
+    requiredFor: "Phase 2: Professional Authorizations",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-transfer",
+    title: "Registry Transfer Master Form",
+    description: "Folio and electronic registry transfer master execution document (Padlocked until prior phases clear).",
+    fileUrl: "/templates/master_service_agreement.docx",
+    requiredFor: "Phase 3: Depository Execution Forms",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-sig",
+    title: "Signed Execution & Authorization Signature Page",
+    description: "Final execution signature page for depository sync engine authorization (Padlocked until prior phases clear).",
+    fileUrl: "/templates/certificate_of_incorporation.docx",
+    requiredFor: "Phase 3: Depository Execution Forms",
     createdAt: new Date().toISOString(),
   },
 ];
@@ -110,13 +150,22 @@ export const DEFAULT_STAGES = [
   { order: 8, name: "Completed" },
 ];
 
+export interface MockDbData {
+  users: User[];
+  templates: DocumentTemplate[];
+  documents: UserDocument[];
+  pipelineStages: PipelineStage[];
+  auditLogs: AuditLog[];
+  messages: SystemMessage[];
+}
+
 // Deprecated mock DB structure for compatibility
-export function readDb(): any {
+export function readDb(): MockDbData {
   console.warn("readDb is deprecated. Use direct Prisma queries instead.");
   return { users: [], templates: [], documents: [], pipelineStages: [], auditLogs: [], messages: [] };
 }
 
-export function writeDb(data: any): void {
+export function writeDb(data: MockDbData | Record<string, unknown>): void {
   console.warn("writeDb is deprecated. Use direct Prisma updates instead.");
 }
 
@@ -221,7 +270,28 @@ export async function createUser(user: Omit<User, "id" | "createdAt" | "corporat
 }
 
 export async function getTemplates(): Promise<DocumentTemplate[]> {
-  const templates = await prisma.documentTemplate.findMany();
+  let templates = await prisma.documentTemplate.findMany();
+  if (templates.length < DEFAULT_TEMPLATES.length) {
+    for (const tpl of DEFAULT_TEMPLATES) {
+      await prisma.documentTemplate.upsert({
+        where: { id: tpl.id },
+        update: {
+          title: tpl.title,
+          description: tpl.description,
+          fileUrl: tpl.fileUrl,
+          requiredFor: tpl.requiredFor,
+        },
+        create: {
+          id: tpl.id,
+          title: tpl.title,
+          description: tpl.description,
+          fileUrl: tpl.fileUrl,
+          requiredFor: tpl.requiredFor,
+        },
+      });
+    }
+    templates = await prisma.documentTemplate.findMany();
+  }
   return templates.map((t) => ({
     id: t.id,
     title: t.title,
@@ -664,4 +734,15 @@ export async function overrideComplianceDeadline(
       countdownDays,
     },
   });
+}
+
+export function calculateRemainingDays(deadline?: string | null, customDays?: number | null): number {
+  if (typeof customDays === "number" && !isNaN(customDays)) {
+    return customDays;
+  }
+  if (!deadline) return 0;
+  const targetTime = new Date(deadline).getTime();
+  if (isNaN(targetTime)) return 0;
+  const now = new Date().getTime();
+  return Math.max(0, Math.ceil((targetTime - now) / (1000 * 60 * 60 * 24)));
 }

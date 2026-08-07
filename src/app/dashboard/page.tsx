@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, logout } from "../actions";
-import { getTemplates, getDocumentsByUserId, getPipelineStages, getUsers, getUserById, getSystemMessages } from "@/lib/db";
+import { getTemplates, getDocumentsByUserId, getPipelineStages, getUsers, getUserById, getSystemMessages, calculateRemainingDays } from "@/lib/db";
 import UploadButton from "./UploadButton";
 import CommercialTab from "./CommercialTab";
 import { VerifyStatusButton, BriefActions } from "./ActionButtons";
 import SettingsTab from "./SettingsTab";
 import SupportTab from "./SupportTab";
+import EquityCalculator from "./EquityCalculator";
+import DepositorySyncEngine from "./DepositorySyncEngine";
 import { getDownloadUrl } from "@/lib/s3";
 
 interface PageProps {
@@ -64,6 +66,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   const verifiedCount = uploads.filter((d) => d.status === "VERIFIED").length;
   const totalTasks = templates.length;
+  const calculatedCountdownDays = calculateRemainingDays(activeCompanyUser.complianceDeadline, activeCompanyUser.countdownDays);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans selection:bg-indigo-500 selection:text-white">
@@ -129,6 +132,20 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </svg>
               Commercial
             </Link>
+
+            <Link
+              href="/dashboard?tab=settings"
+              className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
+                activeTab === "settings"
+                  ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
+                  : "hover:bg-[#111C30] hover:text-slate-200 text-slate-400"
+              }`}
+            >
+              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              </svg>
+              Settings
+            </Link>
           </nav>
         </div>
 
@@ -183,20 +200,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>{activeCompanyUser.companyName}</span>
             </div>
-
-            {/* Global Search Bar */}
-            <div className="relative flex-1 hidden sm:block">
-              <input
-                type="text"
-                placeholder="Search across registry..."
-                className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-1.5 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-[#0B1528] focus:bg-white transition-all font-semibold"
-              />
-              <span className="absolute right-3 top-2.5 text-zinc-400">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </span>
-            </div>
           </div>
 
           {/* Quick Context Links & Profile Action */}
@@ -210,7 +213,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             {/* Verify Status primary button */}
             <VerifyStatusButton userId={contextUserId} />
 
-            {/* Profile indicator */}
+            {/* Profile indicator & Settings Link */}
+            <Link
+              href="/dashboard?tab=settings"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold transition-colors"
+              title="Account & Entity Settings"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              </svg>
+              <span>Settings</span>
+            </Link>
+
             <div className="w-7.5 h-7.5 rounded-full bg-[#0B1528] text-white flex items-center justify-center font-extrabold text-xs tracking-wider" title={user.name}>
               {user.name.slice(0, 2).toUpperCase()}
             </div>
@@ -320,92 +334,203 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </div>
             </aside>
 
-            {/* Vault Right Main Table Panel (File Upload Stack) */}
-            <main className="flex-1 p-8 bg-white overflow-y-auto space-y-6">
+            {/* Vault Right Main Table Panel (Spec Grouped Phases) */}
+            <main className="flex-1 p-8 bg-white overflow-y-auto space-y-8">
               <div className="flex justify-between items-end border-b border-zinc-200 pb-4">
                 <div>
-                  <span className="text-[10px] font-bold text-zinc-450 uppercase tracking-wider font-mono">
-                    Vault &gt; Professional Authorizations
+                  <span className="text-[10px] font-extrabold text-teal-600 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                    Compliance Architecture
                   </span>
-                  <h2 className="text-xl font-bold text-zinc-900 mt-1">Certificate Collection Vault</h2>
+                  <h2 className="text-xl font-extrabold text-zinc-900 mt-1">Document Vault &amp; Authorization Matrix</h2>
                 </div>
                 <div className="text-right leading-none">
-                  <span className="block text-[9px] uppercase font-bold text-zinc-400">Deadline</span>
-                  <span className="text-xs font-bold text-rose-600 mt-1 block font-mono">OCT 24 2026</span>
+                  <span className="block text-[9px] uppercase font-bold text-zinc-400">Compliance Target</span>
+                  <span className="text-xs font-bold text-rose-600 mt-1 block font-mono uppercase">
+                    {activeCompanyUser.complianceDeadline
+                      ? new Date(activeCompanyUser.complianceDeadline).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })
+                      : "OCT 24 2026"}
+                  </span>
                 </div>
               </div>
 
-              {/* Document rows */}
-              <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                {templates.map((tpl) => {
-                  const doc = uploadMap[tpl.id];
-                  return (
-                    <div key={tpl.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:bg-zinc-50/50 transition-colors">
-                      <div className="space-y-1 flex-1">
-                        <h3 className="text-xs font-bold text-zinc-900">{tpl.title}</h3>
-                        <p className="text-zinc-550 text-[11px] leading-relaxed">{tpl.description}</p>
-                        
-                        {/* Admin Remarks warning banner */}
-                        {doc && doc.status === "REJECTED" && doc.adminRemark && (
-                          <div className="mt-2.5 p-2 rounded-lg bg-rose-50 border border-rose-150 text-[10px] text-rose-750 font-medium">
-                            <span className="font-extrabold uppercase text-[8px] block tracking-wide">
-                              Rejection Remark:
-                            </span>
-                            {doc.adminRemark}
+              {/* 1. Phase 1 — Corporate Identity */}
+              <section className="space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-zinc-900 text-white text-[10px] font-black flex items-center justify-center font-mono">
+                      P1
+                    </span>
+                    <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
+                      Vault: Phase 1 — Corporate Identity
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Primary KYC &amp; UBO Verification
+                  </span>
+                </div>
+
+                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  {templates
+                    .filter((t) => t.requiredFor.includes("Phase 1"))
+                    .map((tpl) => {
+                      const doc = uploadMap[tpl.id];
+                      return (
+                        <div key={tpl.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
+                          <div className="space-y-1 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
+                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">
+                                Green Verified Check on Completion
+                              </span>
+                            </div>
+                            <p className="text-zinc-550 text-[11px]">{tpl.description}</p>
                           </div>
-                        )}
-                      </div>
 
-                      <div className="flex items-center gap-4.5 shrink-0">
-                        {/* Download link */}
-                        <a
-                          href={tpl.fileUrl}
-                          download
-                          className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
-                          Download Template
-                        </a>
+                          <div className="flex items-center gap-3 shrink-0">
+                            {doc && doc.status === "VERIFIED" ? (
+                              <span className="text-[10px] font-extrabold px-2.5 py-1 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center gap-1">
+                                ✓ Green Check Verified
+                              </span>
+                            ) : doc ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-600">
+                                {doc.status}
+                              </span>
+                            ) : null}
+                            <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </section>
 
-                        {/* Status badges */}
-                        {doc && (
-                          <div className="flex items-center gap-2">
-                            {doc.status === "VERIFIED" ? (
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-600">
-                                Verified
+              {/* 2. Step 04 — Certificate Collection Vault */}
+              <section className="space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-indigo-900 text-white text-[10px] font-black flex items-center justify-center font-mono">
+                      S4
+                    </span>
+                    <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
+                      Vault: Certificate Collection Vault (Step 04)
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                    Legal Upload Rows (COI, BR, Financials)
+                  </span>
+                </div>
+
+                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  {templates
+                    .filter((t) => t.requiredFor.includes("Step 04"))
+                    .map((tpl) => {
+                      const doc = uploadMap[tpl.id];
+                      return (
+                        <div key={tpl.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
+                          <div className="space-y-1 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
+                              <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                OCR compliance scan &rarr; green &nbsp; Verified &nbsp; chip
                               </span>
-                            ) : doc.status === "REJECTED" ? (
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-600">
-                                Rejected
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-600 animate-pulse">
-                                Pending
-                              </span>
+                            </div>
+                            <p className="text-zinc-550 text-[11px]">{tpl.description}</p>
+                          </div>
+
+                          <div className="flex items-center gap-3 shrink-0">
+                            {doc && (
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
+                                  doc.status === "VERIFIED" ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold" : "bg-amber-50 text-amber-700 border-amber-200"
+                                }`}>
+                                  {doc.status === "VERIFIED" ? "✓ VERIFIED CHIP" : doc.status}
+                                </span>
+                              </div>
                             )}
-                            
-                            <a
-                              href={doc.uploadedFileUrl}
-                              download
-                              className="text-[10px] font-mono bg-zinc-50 border border-zinc-200 hover:border-zinc-350 hover:text-indigo-600 transition-colors px-2 py-1 rounded text-zinc-500 truncate max-w-[100px] cursor-pointer"
-                              title={`Download ${doc.fileName}`}
-                            >
-                              {doc.fileName}
-                            </a>
+                            <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
                           </div>
-                        )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </section>
 
-                        {/* Upload trigger button */}
-                        {(!doc || doc.status !== "VERIFIED") && (
-                          <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* 3. Phase 2 — Professional Authorizations */}
+              <section className="space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-teal-700 text-white text-[10px] font-black flex items-center justify-center font-mono">
+                      P2
+                    </span>
+                    <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
+                      Vault: Phase 2 — Professional Authorizations
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    Active Focus per Spec
+                  </span>
+                </div>
+
+                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm p-4 space-y-4">
+                  {templates
+                    .filter((t) => t.requiredFor.includes("Phase 2"))
+                    .map((tpl) => {
+                      const doc = uploadMap[tpl.id];
+                      return (
+                        <div key={tpl.id} className="p-3 rounded-lg bg-zinc-50/50 border border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="space-y-1 flex-1">
+                            <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
+                            <p className="text-zinc-550 text-[11px]">{tpl.description}</p>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                  {/* Embedded Step 05 Equity Stability Calculator */}
+                  <EquityCalculator />
+                </div>
+              </section>
+
+              {/* 4. Phase 3 — Depository Execution Forms (Padlocked) */}
+              <section className="space-y-3">
+                <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded bg-zinc-400 text-white text-[10px] font-black flex items-center justify-center font-mono">
+                      🔒
+                    </span>
+                    <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
+                      Vault: Phase 3 — Depository Execution Forms
+                    </h3>
+                  </div>
+                  <span className="text-[9px] font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    🔒 Padlocked until prior phases clear
+                  </span>
+                </div>
+
+                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50/50 shadow-sm p-4 space-y-3">
+                  {templates
+                    .filter((t) => t.requiredFor.includes("Phase 3"))
+                    .map((tpl) => {
+                      return (
+                        <div key={tpl.id} className="p-3.5 rounded-lg border border-zinc-200 bg-zinc-100/60 flex items-center justify-between gap-4 opacity-75">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-mono font-bold text-zinc-500">🔒 [PADLOCKED]</span>
+                              <h4 className="text-xs font-bold text-zinc-700">{tpl.title}</h4>
+                            </div>
+                            <p className="text-zinc-500 text-[10px] mt-0.5">{tpl.description}</p>
+                          </div>
+                          <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-2 py-1 rounded font-mono border border-amber-250">
+                            Locked (Clear Phase 1 &amp; 2)
+                          </span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </section>
 
               {/* Technical Guidance Card */}
               <div className="p-5 rounded-xl bg-[#EBF3FC] border-l-4 border-[#3B82F6] flex gap-4 text-xs">
@@ -417,19 +542,6 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   <p className="text-zinc-650 leading-relaxed">
                     Ensure all uploaded documents are in high-resolution PDF format. Scanned copies must be clearly legible and feature original wet signatures where specified. All documents will undergo automated OCR validation before being queued for manual registrar review. Verification typically takes 24 to 48 business hours.
                   </p>
-                </div>
-              </div>
-
-              {/* Mock Scan Thumbnails */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-200">
-                <div className="h-16 rounded-lg bg-zinc-50 border border-zinc-150 flex items-center justify-center text-[10px] text-zinc-400 font-mono">
-                  [OCR SCANNING MOCK]
-                </div>
-                <div className="h-16 rounded-lg bg-zinc-50 border border-zinc-150 flex items-center justify-center text-[10px] text-zinc-400 font-mono">
-                  [SIGNATURE DETECTOR]
-                </div>
-                <div className="h-16 rounded-lg bg-zinc-50 border border-zinc-150 flex items-center justify-center text-[10px] text-zinc-400 font-mono">
-                  [PDF METADATA WRITER]
                 </div>
               </div>
             </main>
@@ -472,7 +584,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   </p>
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="bg-rose-600 text-white font-mono px-2 py-0.5 rounded text-[9px] font-bold uppercase">
-                      DEADLINE: {activeCompanyUser.complianceDeadline || "SEPTEMBER 30, 2026"}
+                      DEADLINE: {activeCompanyUser.complianceDeadline
+                        ? new Date(activeCompanyUser.complianceDeadline).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }).toUpperCase()
+                        : "NOT SPECIFIED"}
                     </span>
                     <span className="text-[10px] font-bold text-rose-800 italic">
                       Action required: Immediate Audit
@@ -481,14 +595,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 </div>
               </div>
 
-              {/* Urgency Countdown Widget */}
+              {/* Urgency Countdown Widget (Dynamic Calculation) */}
               <div className="p-5 rounded-xl bg-[#121B2A] text-white flex flex-col justify-between shadow-lg">
                 <span className="text-[9px] font-bold text-teal-400 uppercase tracking-widest">
                   Remaining Time
                 </span>
                 <div className="my-3">
                   <span className="text-3xl font-extrabold tracking-tight">
-                    {activeCompanyUser.countdownDays !== undefined ? activeCompanyUser.countdownDays : 592}
+                    {calculatedCountdownDays}
                   </span>
                   <span className="text-sm font-semibold text-zinc-450 ml-1.5">Days left</span>
                 </div>
@@ -502,6 +616,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               </div>
 
             </div>
+
+            {/* Step 08 — Depository Sync Engine (NSDL & CDSL System-Fetched Letters) */}
+            <DepositorySyncEngine />
 
             {/* GTM Briefing Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
