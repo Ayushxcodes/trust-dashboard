@@ -13,6 +13,7 @@ import {
   reviewUserDocument,
   updatePipelineProgress,
   createTemplate,
+  updateTemplate,
   deleteTemplate,
   createAuditLog,
   createSystemMessage,
@@ -236,7 +237,7 @@ export async function addTemplate(formData: FormData) {
   const description = formData.get("description") as string;
   const requiredFor = formData.get("requiredFor") as string;
   const file = formData.get("file") as File | null;
-  let fileUrl = formData.get("fileUrl") as string || "/templates/default_placeholder.pdf";
+  let fileUrl = (formData.get("fileUrl") as string) || "";
 
   if (!title || !description || !requiredFor) {
     return { success: false, error: "All fields are required." };
@@ -270,6 +271,65 @@ export async function addTemplate(formData: FormData) {
     fileUrl,
     requiredFor,
   });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+export async function editTemplate(formData: FormData) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const id = formData.get("id") as string;
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  const requiredFor = formData.get("requiredFor") as string;
+  const file = formData.get("file") as File | null;
+  let fileUrl = formData.get("fileUrl") as string;
+
+  if (!id || !title || !description || !requiredFor) {
+    return { success: false, error: "Missing required parameters." };
+  }
+
+  if (file && file.size > 0) {
+    const s3Url = await uploadFileToS3(file, "templates");
+    if (s3Url) {
+      fileUrl = s3Url;
+    } else {
+      try {
+        const templatesDir = path.join(process.cwd(), "public", "templates");
+        await fs.mkdir(templatesDir, { recursive: true });
+
+        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+        const filePath = path.join(templatesDir, fileName);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(filePath, buffer);
+
+        fileUrl = `/templates/${fileName}`;
+      } catch (err) {
+        console.error("Failed to save updated template file:", err);
+        return { success: false, error: "Failed to upload replacement template file." };
+      }
+    }
+  }
+
+  const updates: { title: string; description: string; requiredFor: string; fileUrl?: string } = {
+    title,
+    description,
+    requiredFor,
+  };
+  if (fileUrl && fileUrl.trim() !== "") {
+    updates.fileUrl = fileUrl;
+  }
+
+  const updated = await updateTemplate(id, updates);
+  if (!updated) {
+    return { success: false, error: "Failed to update template." };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/admin");

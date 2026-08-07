@@ -89,10 +89,8 @@ export default function AdminControlWidgets({
   };
 
   const handleDeleteMessage = async (msgId: string) => {
-    console.log("handleDeleteMessage called for msgId:", msgId);
     try {
       const res = await deleteSystemMessageAction(msgId);
-      console.log("deleteSystemMessageAction response:", res);
       if (res.success) {
         toast.success("Message retracted.");
         setMessages((prev) => prev.filter((m) => m.id !== msgId));
@@ -101,7 +99,7 @@ export default function AdminControlWidgets({
         toast.error(res.error || "Failed to retract message.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Delete system message error:", err);
       toast.error("An error occurred while retracting message.");
     }
   };

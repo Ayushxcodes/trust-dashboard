@@ -66,75 +66,59 @@ export interface SystemMessage {
 
 export const DEFAULT_TEMPLATES: DocumentTemplate[] = [
   {
-    id: "tpl-kyc",
-    title: "Primary KYC Forms (Director & Company KYC Set)",
-    description: "KYC document set containing passport, proof of address, and board resolution for corporate identity verification.",
-    fileUrl: "/templates/kyc_director_verification.pdf",
-    requiredFor: "Phase 1: Corporate Identity",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "tpl-ubo",
-    title: "Ultimate Beneficial Ownership (UBO) Declaration",
-    description: "Official declaration identifying natural persons holding controlling ownership interest under Rule 9B.",
-    fileUrl: "/templates/tax_status_declaration.pdf",
-    requiredFor: "Phase 1: Corporate Identity",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "tpl-coi",
-    title: "Certificate of Incorporation (COI)",
-    description: "Official Certificate of Incorporation issued by Companies House / MCA for legal formation verification.",
-    fileUrl: "/templates/certificate_of_incorporation.docx",
-    requiredFor: "Step 04: Certificate Collection Vault",
-    createdAt: new Date().toISOString(),
-  },
-  {
     id: "tpl-br",
-    title: "Business Registration (BR)",
-    description: "Valid state or national business registration certificate for legal entity verification.",
-    fileUrl: "/templates/certificate_of_incorporation.docx",
-    requiredFor: "Step 04: Certificate Collection Vault",
+    title: "Board Resolution",
+    description: "Format attached — Board Resolution authorizing dematerialization of shares and designating authorized signatories under CDSL Rule 9B.",
+    fileUrl: "/templates/board_resolution_format.docx",
+    requiredFor: "Vault → Phase 2: Professional Authorizations",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "tpl-fin",
-    title: "Audited Financial Statements",
-    description: "Latest audited balance sheet and financial statements cross-referenced against MCA compliance records.",
-    fileUrl: "/templates/master_service_agreement.docx",
-    requiredFor: "Step 04: Certificate Collection Vault",
+    id: "tpl-checklist",
+    title: "Documents Checklist",
+    description: "Master reference list & row-by-row reconciliation checklist for CDSL dematerialization requirements.",
+    fileUrl: "/templates/demat_documents_checklist.pdf",
+    requiredFor: "Vault → Master Reference & Reconciliation",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "tpl-cert",
-    title: "Practice Partner-Signed Certificates",
-    description: "General professional certificates signed by practicing partner (ICAI/ICSI) for authorization clearance.",
-    fileUrl: "/templates/master_service_agreement.docx",
-    requiredFor: "Phase 2: Professional Authorizations",
+    id: "tpl-freeze",
+    title: "Freeze / Unfreeze Declaration",
+    description: "Format attached — Standalone compliance declaration form tied to Rule 9B freeze and unfreeze provisions.",
+    fileUrl: "/templates/freeze_unfreeze_declaration.pdf",
+    requiredFor: "Vault → Phase 3: Depository Execution Forms",
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "tpl-mcf",
+    title: "Signed MCF Form A & B",
+    description: "Format attached — Prefilled Master Creation Form A & B for CDSL entity creation and depository admission.",
+    fileUrl: "/templates/mcf_form_a_b.pdf",
+    requiredFor: "Vault → Phase 1: Corporate Identity",
     createdAt: new Date().toISOString(),
   },
   {
     id: "tpl-networth",
-    title: "Net Worth Certificate (Step 05)",
-    description: "Financial attestation of net worth certified by practicing CA, cross-checked for equity stability calculations.",
-    fileUrl: "/templates/tax_status_declaration.pdf",
-    requiredFor: "Phase 2: Professional Authorizations",
+    title: "Networth Certificate",
+    description: "Format attached — Financial net worth attestation certified by practicing CA/CS for equity stability calculation.",
+    fileUrl: "/templates/networth_certificate_format.pdf",
+    requiredFor: "Vault → Phase 2: Financial Attestation",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "tpl-transfer",
-    title: "Registry Transfer Master Form",
-    description: "Folio and electronic registry transfer master execution document (Padlocked until prior phases clear).",
-    fileUrl: "/templates/master_service_agreement.docx",
-    requiredFor: "Phase 3: Depository Execution Forms",
+    id: "tpl-undertaking",
+    title: "Undertaking",
+    description: "Format attached — Compliance undertaking and execution signature page for CDSL depository admission.",
+    fileUrl: "/templates/undertaking_format.docx",
+    requiredFor: "Vault → Phase 3: Depository Execution Forms",
     createdAt: new Date().toISOString(),
   },
   {
-    id: "tpl-sig",
-    title: "Signed Execution & Authorization Signature Page",
-    description: "Final execution signature page for depository sync engine authorization (Padlocked until prior phases clear).",
-    fileUrl: "/templates/certificate_of_incorporation.docx",
-    requiredFor: "Phase 3: Depository Execution Forms",
+    id: "tpl-tripartite",
+    title: "Signed Tripartite Agreement",
+    description: "Format attached — System-generated tripartite agreement draft shared for execution between Issuer, RTA, and Depository.",
+    fileUrl: "/templates/tripartite_agreement_draft.pdf",
+    requiredFor: "Vault → Phase 3: Depository Execution Forms",
     createdAt: new Date().toISOString(),
   },
 ];
@@ -161,12 +145,11 @@ export interface MockDbData {
 
 // Deprecated mock DB structure for compatibility
 export function readDb(): MockDbData {
-  console.warn("readDb is deprecated. Use direct Prisma queries instead.");
   return { users: [], templates: [], documents: [], pipelineStages: [], auditLogs: [], messages: [] };
 }
 
 export function writeDb(data: MockDbData | Record<string, unknown>): void {
-  console.warn("writeDb is deprecated. Use direct Prisma updates instead.");
+  // no-op for compatibility
 }
 
 // Database Helpers (Async/Prisma)

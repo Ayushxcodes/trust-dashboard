@@ -65,35 +65,59 @@
   ],
   "templates": [
     {
-      "id": "tpl-1",
-      "title": "Certificate of Incorporation Template",
-      "description": "Standard incorporation form for proof of company registration and legal formation.",
-      "fileUrl": "/templates/certificate_of_incorporation.txt",
-      "requiredFor": "Account Setup",
+      "id": "tpl-br",
+      "title": "Board Resolution",
+      "description": "Format attached — Board Resolution authorizing dematerialization of shares and designating authorized signatories under CDSL Rule 9B.",
+      "fileUrl": "/templates/board_resolution_format.docx",
+      "requiredFor": "Vault → Phase 2: Professional Authorizations",
       "createdAt": "2026-07-08T09:47:47.393Z"
     },
     {
-      "id": "tpl-2",
-      "title": "KYC Director Identification Form",
-      "description": "Official form to identify directors, verify address, and submit passport/ID details.",
-      "fileUrl": "/templates/kyc_director_verification.txt",
-      "requiredFor": "Identity Verification",
+      "id": "tpl-checklist",
+      "title": "Documents Checklist",
+      "description": "Master reference list & row-by-row reconciliation checklist for CDSL dematerialization requirements.",
+      "fileUrl": "/templates/demat_documents_checklist.pdf",
+      "requiredFor": "Vault → Master Reference & Reconciliation",
       "createdAt": "2026-07-08T09:47:47.393Z"
     },
     {
-      "id": "tpl-3",
-      "title": "Tax Status Declaration Form (W8/W9)",
-      "description": "Self-certification form declaring tax residency and taxpayer identification status.",
-      "fileUrl": "/templates/tax_status_declaration.txt",
-      "requiredFor": "Compliance",
+      "id": "tpl-freeze",
+      "title": "Freeze / Unfreeze Declaration",
+      "description": "Format attached — Standalone compliance declaration form tied to Rule 9B freeze and unfreeze provisions.",
+      "fileUrl": "/templates/freeze_unfreeze_declaration.pdf",
+      "requiredFor": "Vault → Phase 3: Depository Execution Forms",
       "createdAt": "2026-07-08T09:47:47.393Z"
     },
     {
-      "id": "tpl-4",
-      "title": "Standard Master Service Agreement",
-      "description": "Agreement outlining standard engagement terms, confidentiality, and service levels.",
-      "fileUrl": "/templates/master_service_agreement.txt",
-      "requiredFor": "Legal Processing",
+      "id": "tpl-mcf",
+      "title": "Signed MCF Form A & B",
+      "description": "Format attached — Prefilled Master Creation Form A & B for CDSL entity creation and depository admission.",
+      "fileUrl": "/templates/mcf_form_a_b.pdf",
+      "requiredFor": "Vault → Phase 1: Corporate Identity",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    },
+    {
+      "id": "tpl-networth",
+      "title": "Networth Certificate",
+      "description": "Format attached — Financial net worth attestation certified by practicing CA/CS for equity stability calculation.",
+      "fileUrl": "/templates/networth_certificate_format.pdf",
+      "requiredFor": "Vault → Phase 2: Financial Attestation",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    },
+    {
+      "id": "tpl-undertaking",
+      "title": "Undertaking",
+      "description": "Format attached — Compliance undertaking and execution signature page for CDSL depository admission.",
+      "fileUrl": "/templates/undertaking_format.docx",
+      "requiredFor": "Vault → Phase 3: Depository Execution Forms",
+      "createdAt": "2026-07-08T09:47:47.393Z"
+    },
+    {
+      "id": "tpl-tripartite",
+      "title": "Signed Tripartite Agreement",
+      "description": "Format attached — System-generated tripartite agreement draft shared for execution between Issuer, RTA, and Depository.",
+      "fileUrl": "/templates/tripartite_agreement_draft.pdf",
+      "requiredFor": "Vault → Phase 3: Depository Execution Forms",
       "createdAt": "2026-07-08T09:47:47.393Z"
     }
   ],

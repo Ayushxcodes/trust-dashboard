@@ -31,16 +31,21 @@ export async function uploadFileToS3(file: File, folder: string): Promise<string
   const key = `${folder}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  await s3Client.send(
-    new PutObjectCommand({
-      Bucket: bucketName,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    })
-  );
+  try {
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: file.type,
+      })
+    );
 
-  return `s3://${bucketName}/${key}`;
+    return `s3://${bucketName}/${key}`;
+  } catch (err) {
+    console.error("S3 Upload error, falling back to local file storage:", err);
+    return null;
+  }
 }
 
 /**

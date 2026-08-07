@@ -353,182 +353,184 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 </div>
               </div>
 
-              {/* 1. Phase 1 — Corporate Identity */}
-              <section className="space-y-3">
+              {/* SECTION A: Admin Provided Templates & Formats */}
+              <section className="space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-zinc-900 text-white text-[10px] font-black flex items-center justify-center font-mono">
-                      P1
+                    <span className="w-5 h-5 rounded bg-[#0B1528] text-white text-[10px] font-black flex items-center justify-center font-mono">
+                      A
                     </span>
                     <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
-                      Vault: Phase 1 — Corporate Identity
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    Primary KYC &amp; UBO Verification
-                  </span>
-                </div>
-
-                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                  {templates
-                    .filter((t) => t.requiredFor.includes("Phase 1"))
-                    .map((tpl) => {
-                      const doc = uploadMap[tpl.id];
-                      return (
-                        <div key={tpl.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
-                          <div className="space-y-1 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
-                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/60 px-1.5 py-0.5 rounded">
-                                Green Verified Check on Completion
-                              </span>
-                            </div>
-                            <p className="text-zinc-550 text-[11px]">{tpl.description}</p>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0">
-                            {doc && doc.status === "VERIFIED" ? (
-                              <span className="text-[10px] font-extrabold px-2.5 py-1 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center gap-1">
-                                ✓ Green Check Verified
-                              </span>
-                            ) : doc ? (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-600">
-                                {doc.status}
-                              </span>
-                            ) : null}
-                            <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </section>
-
-              {/* 2. Step 04 — Certificate Collection Vault */}
-              <section className="space-y-3">
-                <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-indigo-900 text-white text-[10px] font-black flex items-center justify-center font-mono">
-                      S4
-                    </span>
-                    <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
-                      Vault: Certificate Collection Vault (Step 04)
+                      CDSL Execution Formats (Provided by Admin — Format Attached)
                     </h3>
                   </div>
                   <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                    Legal Upload Rows (COI, BR, Financials)
+                    Download Format &rarr; Sign &amp; Upload
                   </span>
                 </div>
 
                 <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                  {templates
-                    .filter((t) => t.requiredFor.includes("Step 04"))
-                    .map((tpl) => {
-                      const doc = uploadMap[tpl.id];
-                      return (
-                        <div key={tpl.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
-                          <div className="space-y-1 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
-                              <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                OCR compliance scan &rarr; green &nbsp; Verified &nbsp; chip
-                              </span>
-                            </div>
-                            <p className="text-zinc-550 text-[11px]">{tpl.description}</p>
-                          </div>
+                  {templates.map((tpl) => {
+                    const doc = uploadMap[tpl.id];
+                    const hasFormat = Boolean(
+                      tpl.fileUrl &&
+                      tpl.fileUrl.trim() !== "" &&
+                      tpl.fileUrl !== "#" &&
+                      !tpl.fileUrl.toLowerCase().includes("placeholder")
+                    );
 
-                          <div className="flex items-center gap-3 shrink-0">
-                            {doc && (
-                              <div className="flex items-center gap-2">
-                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                                  doc.status === "VERIFIED" ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold" : "bg-amber-50 text-amber-700 border-amber-200"
-                                }`}>
-                                  {doc.status === "VERIFIED" ? "✓ VERIFIED CHIP" : doc.status}
-                                </span>
-                              </div>
+                    return (
+                      <div key={tpl.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
+                            {hasFormat ? (
+                              <span className="text-[9px] font-bold text-indigo-700 bg-indigo-100/70 px-1.5 py-0.5 rounded border border-indigo-200 font-mono">
+                                Format Attached
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-bold text-zinc-600 bg-zinc-100 px-1.5 py-0.5 rounded border border-zinc-200 font-mono">
+                                Document Required
+                              </span>
                             )}
-                            <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
+                            {doc && doc.status === "VERIFIED" && (
+                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-250">
+                                ✓ Verified
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-zinc-550 text-[11px] leading-relaxed">{tpl.description}</p>
+                          <div className="text-[9px] font-mono text-zinc-400">
+                            Requirement Phase: {tpl.requiredFor}
                           </div>
                         </div>
-                      );
-                    })}
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          {/* Download Template Format Button — ONLY shown if format is attached */}
+                          {hasFormat && (
+                            <a
+                              href={tpl.fileUrl}
+                              download
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-250 text-zinc-750 font-bold text-[10px] transition-colors flex items-center gap-1.5 shrink-0"
+                              title="Download Admin Provided Format"
+                            >
+                              <svg className="w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                              </svg>
+                              Download Format
+                            </a>
+                          )}
+
+                          <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
 
-              {/* 3. Phase 2 — Professional Authorizations */}
-              <section className="space-y-3">
+              {/* SECTION B: Direct Client Upload Items (No Admin Template Required) */}
+              <section className="space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded bg-teal-700 text-white text-[10px] font-black flex items-center justify-center font-mono">
-                      P2
+                      B
                     </span>
                     <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
-                      Vault: Phase 2 — Professional Authorizations
+                      Client Statutory Documents (Direct Upload — DSC Required)
                     </h3>
                   </div>
-                  <span className="text-[10px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
-                    Active Focus per Spec
+                  <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-250">
+                    Upload Direct Client Files
                   </span>
                 </div>
 
-                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm p-4 space-y-4">
-                  {templates
-                    .filter((t) => t.requiredFor.includes("Phase 2"))
-                    .map((tpl) => {
-                      const doc = uploadMap[tpl.id];
-                      return (
-                        <div key={tpl.id} className="p-3 rounded-lg bg-zinc-50/50 border border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div className="space-y-1 flex-1">
-                            <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
-                            <p className="text-zinc-550 text-[11px]">{tpl.description}</p>
+                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  {[
+                    {
+                      id: "direct-coi",
+                      title: "Certificate of Incorporation (COI)",
+                      remarks: "Document required. (In case of name change during the tenure of the Company, copy of all COIs required).",
+                      dscNote: "DSC of authorized signatory needs to be affixed on COI.",
+                    },
+                    {
+                      id: "direct-financials",
+                      title: "Financial Statements",
+                      remarks: "Document required.",
+                      dscNote: "DSC of authorized signatory needs to be affixed on Balance Sheet and Profit and Loss Account.",
+                    },
+                    {
+                      id: "direct-moa",
+                      title: "MOA and AOA",
+                      remarks: "Document required.",
+                      dscNote: "DSC of authorized signatory needs to be affixed on first and last page of MOA and AOA.",
+                    },
+                    {
+                      id: "direct-gst",
+                      title: "GST Certificate",
+                      remarks: "Document required.",
+                      dscNote: "DSC of authorized signatory needs to be affixed on first and last page of GST Certificate.",
+                    },
+                    {
+                      id: "direct-pan",
+                      title: "PAS3 / SH7 or PAN Card",
+                      remarks: "Required in case of alteration of Capital. If no change of capital, copy of PAN Card is required (mandatory field).",
+                      dscNote: "DSC of authorized signatory needs to be affixed on PAN Card.",
+                    },
+                  ].map((item) => {
+                    const doc = uploadMap[item.id];
+                    return (
+                      <div key={item.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-bold text-zinc-900">{item.title}</h4>
+                            <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 font-mono">
+                              Direct Upload
+                            </span>
+                            {doc && doc.status === "VERIFIED" && (
+                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-250">
+                                ✓ Verified
+                              </span>
+                            )}
                           </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
+                          <p className="text-zinc-550 text-[11px] leading-relaxed">{item.remarks}</p>
+                          <div className="text-[9px] font-bold text-amber-700 bg-amber-50/70 border border-amber-200/60 px-2 py-0.5 rounded inline-block">
+                            🔒 {item.dscNote}
                           </div>
                         </div>
-                      );
-                    })}
 
-                  {/* Embedded Step 05 Equity Stability Calculator */}
-                  <EquityCalculator />
+                        <div className="flex items-center gap-3 shrink-0">
+                          {doc && (
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
+                              doc.status === "VERIFIED" ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold" : "bg-amber-50 text-amber-700 border-amber-200"
+                            }`}>
+                              {doc.status}
+                            </span>
+                          )}
+                          <UploadButton templateId={item.id} templateTitle={item.title} activeUserId={contextUserId} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
 
-              {/* 4. Phase 3 — Depository Execution Forms (Padlocked) */}
+              {/* Embedded Step 05 Equity Stability Calculator */}
               <section className="space-y-3">
                 <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded bg-zinc-400 text-white text-[10px] font-black flex items-center justify-center font-mono">
-                      🔒
+                    <span className="w-5 h-5 rounded bg-zinc-800 text-white text-[10px] font-black flex items-center justify-center font-mono">
+                      C
                     </span>
                     <h3 className="text-xs font-extrabold text-zinc-900 uppercase tracking-wider">
-                      Vault: Phase 3 — Depository Execution Forms
+                      Equity Capitalization &amp; Stability Verification
                     </h3>
                   </div>
-                  <span className="text-[9px] font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    🔒 Padlocked until prior phases clear
-                  </span>
                 </div>
-
-                <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50/50 shadow-sm p-4 space-y-3">
-                  {templates
-                    .filter((t) => t.requiredFor.includes("Phase 3"))
-                    .map((tpl) => {
-                      return (
-                        <div key={tpl.id} className="p-3.5 rounded-lg border border-zinc-200 bg-zinc-100/60 flex items-center justify-between gap-4 opacity-75">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-mono font-bold text-zinc-500">🔒 [PADLOCKED]</span>
-                              <h4 className="text-xs font-bold text-zinc-700">{tpl.title}</h4>
-                            </div>
-                            <p className="text-zinc-500 text-[10px] mt-0.5">{tpl.description}</p>
-                          </div>
-                          <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-2 py-1 rounded font-mono border border-amber-250">
-                            Locked (Clear Phase 1 &amp; 2)
-                          </span>
-                        </div>
-                      );
-                    })}
+                <div className="border border-zinc-200 rounded-xl overflow-hidden bg-white p-4 shadow-sm">
+                  <EquityCalculator />
                 </div>
               </section>
 

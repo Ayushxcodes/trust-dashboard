@@ -14,7 +14,7 @@ import {
 import DocumentReviewForm from "./DocumentReviewForm";
 import PipelineForm from "./PipelineForm";
 import TemplateForm from "./TemplateForm";
-import DeleteTemplateButton from "./DeleteTemplateButton";
+import AdminTemplateActions from "./AdminTemplateActions";
 import AdminControlWidgets from "./AdminControlWidgets";
 import { getDownloadUrl } from "@/lib/s3";
 
@@ -62,7 +62,7 @@ export default async function AdminPage({
       uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
     }))
   );
-  const documents = resolvedDocs.filter((doc) => templates.some((t) => t.id === doc.templateId));
+  const documents = resolvedDocs;
 
   const activeTab = params.tab || "entity-review"; // Default to the mockup active tab
   const searchFilter = params.search || "";
@@ -85,7 +85,7 @@ export default async function AdminPage({
       uploadedFileUrl: await getDownloadUrl(doc.uploadedFileUrl),
     }))
   );
-  const activeClientDocs = resolvedActiveClientDocs.filter((doc) => templates.some((t) => t.id === doc.templateId));
+  const activeClientDocs = resolvedActiveClientDocs;
 
   const activeClientStages = activeClient ? await getPipelineStages(activeClient.id) : [];
   const allMessages = await getSystemMessages();
@@ -651,11 +651,25 @@ export default async function AdminPage({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {activeClientDocs.map((doc) => {
                         const tpl = templates.find((t) => t.id === doc.templateId);
+                        const docTitle = tpl
+                          ? tpl.title
+                          : doc.templateId === "direct-coi"
+                          ? "Certificate of Incorporation (COI)"
+                          : doc.templateId === "direct-financials"
+                          ? "Financial Statements"
+                          : doc.templateId === "direct-moa"
+                          ? "MOA and AOA"
+                          : doc.templateId === "direct-gst"
+                          ? "GST Certificate"
+                          : doc.templateId === "direct-pan"
+                          ? "PAS3 / SH7 or PAN Card"
+                          : "Document Requirement";
+
                         return (
                           <div key={doc.id} className="p-5 rounded-xl border border-zinc-200 bg-white space-y-4 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start gap-4">
                               <div>
-                                <h4 className="text-xs font-bold text-zinc-800 line-clamp-1">{tpl?.title || "Document"}</h4>
+                                <h4 className="text-xs font-bold text-zinc-800 line-clamp-1">{docTitle}</h4>
                                 <span className="text-[10px] font-mono text-zinc-455 truncate block max-w-[200px]" title={doc.fileName}>
                                   {doc.fileName}
                                 </span>
@@ -663,6 +677,8 @@ export default async function AdminPage({
                               <a
                                 href={doc.uploadedFileUrl}
                                 download
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="px-3 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700 flex items-center gap-1 cursor-pointer"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -855,7 +871,7 @@ export default async function AdminPage({
                           </div>
                         </div>
 
-                        <DeleteTemplateButton templateId={tpl.id} />
+                        <AdminTemplateActions template={tpl} />
                       </div>
                     ))}
 
