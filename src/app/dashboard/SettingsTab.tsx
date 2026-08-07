@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { updateProfileSettings } from "../actions";
 
 interface SettingsTabProps {
@@ -44,14 +45,14 @@ export default function SettingsTab({
           avatarUrl
         );
         if (res.success) {
-          alert("Profile configurations saved successfully!");
+          toast.success("Profile configurations saved successfully!");
           setPassword("");
         } else {
-          alert(res.error || "Failed to update profile settings.");
+          toast.error(res.error || "Failed to update profile settings.");
         }
       } catch (err) {
         console.error(err);
-        alert("An error occurred during profile updates.");
+        toast.error("An error occurred during profile updates.");
       }
     });
   };

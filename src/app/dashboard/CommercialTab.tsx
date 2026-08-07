@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function CommercialTab({ companyName }: { companyName: string }) {
   // Initialize values dynamically based on selected company
@@ -75,7 +76,9 @@ export default function CommercialTab({ companyName }: { companyName: string }) 
   const handleInitializeFlow = () => {
     setIsSettling(true);
     setTimeout(() => {
-      alert("Commercial settlement flow initialized successfully. Bank escrow gateway credit lock active.");
+      toast.success("Commercial Settlement Initialized", {
+        description: "Bank escrow gateway credit lock active.",
+      });
       setIsSettling(false);
     }, 1500);
   };
@@ -243,21 +246,21 @@ export default function CommercialTab({ companyName }: { companyName: string }) 
           
           <div className="grid grid-cols-3 gap-3">
             <button
-              onClick={() => alert("Selected Payment Rail: NetBanking / Corporate API Direct Transfer")}
+              onClick={() => toast.info("Payment Rail Selected", { description: "NetBanking / Corporate API Direct Transfer" })}
               className="py-3 px-2 rounded-lg border border-indigo-200 bg-indigo-50/30 hover:bg-indigo-50 text-center font-extrabold text-[10px] uppercase text-indigo-900 cursor-pointer transition-all shadow-sm flex flex-col items-center gap-1"
             >
               <span>🏛️ NetBanking</span>
               <span className="text-[8px] text-indigo-600 font-mono">Direct API Rail</span>
             </button>
             <button
-              onClick={() => alert("Selected Payment Rail: Escrow Route (RTGS Institutional)")}
+              onClick={() => toast.info("Payment Rail Selected", { description: "Escrow Route (RTGS Institutional)" })}
               className="py-3 px-2 rounded-lg border border-teal-200 bg-teal-50/30 hover:bg-teal-50 text-center font-extrabold text-[10px] uppercase text-teal-900 cursor-pointer transition-all shadow-sm flex flex-col items-center gap-1"
             >
               <span>🔒 Escrow Route</span>
               <span className="text-[8px] text-teal-600 font-mono">RTGS Lockup</span>
             </button>
             <button
-              onClick={() => alert("Selected Payment Rail: Corporate Cards Gateway")}
+              onClick={() => toast.info("Payment Rail Selected", { description: "Corporate Cards Gateway" })}
               className="py-3 px-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-center font-extrabold text-[10px] uppercase text-slate-800 cursor-pointer transition-all shadow-sm flex flex-col items-center gap-1"
             >
               <span>💳 Corporate Cards</span>

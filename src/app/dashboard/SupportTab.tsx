@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface FAQItem {
   question: string;
@@ -64,11 +65,10 @@ export default function SupportTab() {
     e.preventDefault();
     setIsSubmitting(true);
     setTimeout(() => {
-      alert(
-        `Support ticket received!\n\nSubject: ${ticketSubject}\nTicket Reference: TL-TK-${Math.floor(
-          100000 + Math.random() * 900000
-        )}\n\nOur compliance audit helpdesk will review this request and contact you shortly.`
-      );
+      const ticketRef = `TL-TK-${Math.floor(100000 + Math.random() * 900000)}`;
+      toast.success(`Support Ticket Received: ${ticketRef}`, {
+        description: `Subject: ${ticketSubject}. Our compliance helpdesk will review this request shortly.`,
+      });
       setTicketSubject("");
       setTicketBody("");
       setIsSubmitting(false);

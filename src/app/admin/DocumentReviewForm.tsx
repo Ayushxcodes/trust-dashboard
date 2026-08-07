@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { reviewDocument } from "../actions";
 
 interface DocumentReviewFormProps {
@@ -38,12 +39,21 @@ export default function DocumentReviewForm({
         const res = await reviewDocument(documentId, status, remark);
         if (res.success) {
           setStatusState(status);
+          if (status === "VERIFIED") {
+            toast.success("Document Verified & Stamped!", {
+              description: `Immutable approval stamp applied to ${fileName}`,
+            });
+          } else {
+            toast.error("Document Rejected", {
+              description: `${fileName} has been marked as rejected.`,
+            });
+          }
         } else {
-          alert(res.error || "Review submission failed.");
+          toast.error(res.error || "Review submission failed.");
         }
       } catch (err) {
         console.error("Review submit error:", err);
-        alert("An error occurred during document review.");
+        toast.error("An error occurred during document review.");
       }
     });
   };

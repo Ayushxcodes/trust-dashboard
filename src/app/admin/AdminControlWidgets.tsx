@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { overrideCountdown, sendSystemMessageAction, deleteSystemMessageAction } from "../actions";
 
 interface MessageData {
@@ -55,13 +56,13 @@ export default function AdminControlWidgets({
       try {
         const res = await overrideCountdown(userId, deadline, countdownDays);
         if (res.success) {
-          alert(`Successfully updated compliance target parameters for ${companyName}.`);
+          toast.success(`Compliance parameters updated for ${companyName}`);
         } else {
-          alert(res.error || "Failed to update deadline.");
+          toast.error(res.error || "Failed to update deadline.");
         }
       } catch (err) {
         console.error(err);
-        alert("An error occurred while updating deadline.");
+        toast.error("An error occurred while updating deadline.");
       }
     });
   };
@@ -74,15 +75,15 @@ export default function AdminControlWidgets({
       try {
         const res = await sendSystemMessageAction(msgTarget, msgText, msgType);
         if (res.success && res.message) {
-          alert("Alert / Notification dispatched successfully.");
+          toast.success("Notification dispatched successfully!");
           setMsgText("");
           setMessages((prev) => [res.message as MessageData, ...prev]);
         } else {
-          alert(res.error || "Failed to dispatch message.");
+          toast.error(res.error || "Failed to dispatch message.");
         }
       } catch (err) {
         console.error(err);
-        alert("An error occurred while sending message.");
+        toast.error("An error occurred while sending message.");
       }
     });
   };
@@ -93,14 +94,15 @@ export default function AdminControlWidgets({
       const res = await deleteSystemMessageAction(msgId);
       console.log("deleteSystemMessageAction response:", res);
       if (res.success) {
+        toast.success("Message retracted.");
         setMessages((prev) => prev.filter((m) => m.id !== msgId));
         setDeletingId(null);
       } else {
-        alert(res.error || "Failed to retract message.");
+        toast.error(res.error || "Failed to retract message.");
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred while retracting message.");
+      toast.error("An error occurred while retracting message.");
     }
   };
 

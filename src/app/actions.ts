@@ -124,11 +124,15 @@ export async function logout() {
   const userId = cookieStore.get("session_user_id")?.value;
 
   if (userId) {
-    await createAuditLog({
-      adminId: null,
-      userId,
-      action: "User logged out",
-    });
+    try {
+      await createAuditLog({
+        adminId: null,
+        userId,
+        action: "User logged out",
+      });
+    } catch (err) {
+      console.warn("Failed to create logout audit log:", err);
+    }
   }
 
   cookieStore.delete("session_user_id");

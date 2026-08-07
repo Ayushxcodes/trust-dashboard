@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { uploadDocument } from "../actions";
 
 interface UploadButtonProps {
@@ -23,12 +24,16 @@ export default function UploadButton({ templateId, templateTitle, activeUserId }
         formData.append("file", file);
 
         const res = await uploadDocument(formData);
-        if (!res.success) {
-          alert(res.error || "Failed to upload document");
+        if (res.success) {
+          toast.success("Document uploaded successfully!", {
+            description: `${file.name} attached to ${templateTitle}`,
+          });
+        } else {
+          toast.error(res.error || "Failed to upload document");
         }
       } catch (err) {
         console.error("Upload error:", err);
-        alert("An error occurred during document upload.");
+        toast.error("An error occurred during document upload.");
       }
     });
   };

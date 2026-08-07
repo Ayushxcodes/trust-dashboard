@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function VerifyStatusButton({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(false);
@@ -10,9 +11,9 @@ export function VerifyStatusButton({ userId }: { userId: string }) {
     // Simulate real-time API request to central NSDL/CDSL databases
     setTimeout(() => {
       setLoading(false);
-      alert(
-        `TrustLink Depository Sync Success!\n\nAll physical-to-demat verification checks for client ID ${userId} were successfully updated against central depository records.`
-      );
+      toast.success("TrustLink Depository Sync Success!", {
+        description: `Physical-to-demat verification checks for client ID ${userId} updated against central depository records.`
+      });
     }, 1500);
   };
 
@@ -60,10 +61,10 @@ export function BriefActions({ companyName }: { companyName: string }) {
       // Fallback: Copy to clipboard
       try {
         await navigator.clipboard.writeText(`${shareText}\nLink: ${shareUrl}`);
-        alert("Compliance Briefing Share Link copied to clipboard!");
+        toast.success("Compliance Briefing Share Link copied to clipboard!");
       } catch (err) {
         console.error("Clipboard copy failed:", err);
-        alert(`Share information: ${shareText} - URL: ${shareUrl}`);
+        toast.info("Share Information", { description: `${shareText} - URL: ${shareUrl}` });
       }
     }
   };

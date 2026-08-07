@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useTransition } from "react";
+import { toast } from "sonner";
 import { addTemplate } from "../actions";
 
 export default function TemplateForm() {
@@ -27,6 +28,7 @@ export default function TemplateForm() {
 
         const res = await addTemplate(formData);
         if (res.success) {
+          toast.success("Document template created successfully!");
           setTitle("");
           setDescription("");
           setRequiredFor("Account Setup");
@@ -34,11 +36,11 @@ export default function TemplateForm() {
           setSelectedFile(null);
           formRef.current?.reset();
         } else {
-          alert(res.error || "Failed to create template.");
+          toast.error(res.error || "Failed to create template.");
         }
       } catch (err) {
         console.error("Create template error:", err);
-        alert("An error occurred during template creation.");
+        toast.error("An error occurred during template creation.");
       }
     });
   };

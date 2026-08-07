@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { updatePipeline } from "../actions";
 
 interface PipelineStageData {
@@ -50,12 +51,14 @@ export default function PipelineForm({ userId, stages }: PipelineFormProps) {
     startTransition(async () => {
       try {
         const res = await updatePipeline(userId, selectedOrder, status, note);
-        if (!res.success) {
-          alert(res.error || "Failed to update pipeline stage.");
+        if (res.success) {
+          toast.success(`Pipeline Stage ${selectedOrder} updated successfully!`);
+        } else {
+          toast.error(res.error || "Failed to update pipeline stage.");
         }
       } catch (err) {
         console.error("Pipeline update error:", err);
-        alert("An error occurred during pipeline update.");
+        toast.error("An error occurred during pipeline update.");
       }
     });
   };

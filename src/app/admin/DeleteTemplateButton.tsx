@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { removeTemplate } from "../actions";
 
 interface DeleteTemplateButtonProps {
@@ -15,13 +16,15 @@ export default function DeleteTemplateButton({ templateId }: DeleteTemplateButto
     startTransition(async () => {
       try {
         const res = await removeTemplate(templateId);
-        if (!res.success) {
-          alert(res.error || "Failed to delete template.");
+        if (res.success) {
+          toast.success("Template deleted successfully.");
+        } else {
+          toast.error(res.error || "Failed to delete template.");
           setShowConfirm(false);
         }
       } catch (err) {
         console.error("Delete template error:", err);
-        alert("An error occurred while deleting the template.");
+        toast.error("An error occurred while deleting the template.");
         setShowConfirm(false);
       }
     });

@@ -623,22 +623,34 @@ export async function getAuditLogs(): Promise<AuditLog[]> {
 
 export async function createAuditLog(log: Omit<AuditLog, "id" | "createdAt">): Promise<AuditLog> {
   const id = `log-${Math.random().toString(36).substr(2, 9)}`;
-  const created = await prisma.auditLog.create({
-    data: {
+  const now = new Date();
+  try {
+    const created = await prisma.auditLog.create({
+      data: {
+        id,
+        adminId: log.adminId || null,
+        userId: log.userId || null,
+        action: log.action,
+        createdAt: now,
+      },
+    });
+    return {
+      id: created.id,
+      adminId: created.adminId,
+      userId: created.userId,
+      action: created.action,
+      createdAt: created.createdAt.toISOString(),
+    };
+  } catch (err) {
+    console.warn("Failed to persist audit log to DB (network/database offline):", err);
+    return {
       id,
       adminId: log.adminId || null,
       userId: log.userId || null,
       action: log.action,
-      createdAt: new Date(),
-    },
-  });
-  return {
-    id: created.id,
-    adminId: created.adminId,
-    userId: created.userId,
-    action: created.action,
-    createdAt: created.createdAt.toISOString(),
-  };
+      createdAt: now.toISOString(),
+    };
+  }
 }
 
 export async function getSystemMessages(userId?: string): Promise<SystemMessage[]> {
