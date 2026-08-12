@@ -33,7 +33,6 @@ export default function RegisterPage() {
 
   // Step 3: Entity Classification
   const [entityType, setEntityType] = useState("Private Limited Company (Ltd / Corp)");
-  const [isAdmin, setIsAdmin] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -153,7 +152,7 @@ export default function RegisterPage() {
       formData.append("email", email);
       formData.append("password", password);
       formData.append("companyName", companyName);
-      formData.append("role", isAdmin ? "ADMIN" : "USER");
+      formData.append("role", "USER");
 
       const res = await register(formData);
       if (res && !res.success) {
@@ -650,28 +649,6 @@ export default function RegisterPage() {
                       />
                     </label>
                   ))}
-                </div>
-
-                {/* Sandbox Administrator Role Switch */}
-                <div className="p-5 rounded bg-zinc-50 border border-zinc-200 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="block text-xs font-bold text-zinc-800">
-                      Compliance Administrator Role
-                    </span>
-                    <span className="block text-[9px] text-zinc-500">
-                      Register as an administrative reviewer instead of standard client dashboard permissions.
-                    </span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      disabled={isPending}
-                      checked={isAdmin}
-                      onChange={(e) => setIsAdmin(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0B1528]" />
-                  </label>
                 </div>
 
                 <div className="pt-4 border-t border-zinc-150 flex justify-between">
