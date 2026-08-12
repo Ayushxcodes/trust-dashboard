@@ -20,6 +20,9 @@ import {
   deleteSystemMessage,
   updateUserProfile,
   overrideComplianceDeadline,
+  deleteUser,
+  deleteUserDocument,
+  getUserDocumentById,
   User,
 } from "@/lib/db";
 import { uploadFileToS3 } from "@/lib/s3";
@@ -487,4 +490,69 @@ export async function createClientEntity(formData: FormData) {
   revalidatePath("/admin");
 
   return { success: true, userId: newUser.id };
+}
+
+export async function deleteClientAccount(targetUserId: string) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  if (admin.id === targetUserId) {
+    return { success: false, error: "Cannot delete active administrator account." };
+  }
+
+  const clientUser = await getUserById(targetUserId);
+  if (!clientUser) {
+    return { success: false, error: "Client not found." };
+  }
+
+  const success = await deleteUser(targetUserId);
+  if (!success) {
+    return { success: false, error: "Failed to delete client account." };
+  }
+
+  await createAuditLog({
+    adminId: admin.id,
+    userId: null,
+    action: `Deleted client account '${clientUser.companyName}' (${clientUser.email}, ID: ${clientUser.corporateId})`,
+  });
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+  revalidatePath("/");
+
+  return { success: true };
+}
+
+export async function deleteUploadedDocument(documentId: string) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const doc = await getUserDocumentById(documentId);
+  if (!doc) {
+    return { success: false, error: "Document record not found." };
+  }
+
+  const clientUser = await getUserById(doc.userId);
+  const clientName = clientUser ? clientUser.companyName : "Client";
+
+  const success = await deleteUserDocument(documentId);
+  if (!success) {
+    return { success: false, error: "Failed to delete document from database." };
+  }
+
+  await createAuditLog({
+    adminId: admin.id,
+    userId: doc.userId,
+    action: `Deleted uploaded document '${doc.fileName}' for client '${clientName}'`,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/dashboard");
+
+  return { success: true };
 }

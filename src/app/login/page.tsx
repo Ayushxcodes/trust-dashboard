@@ -282,7 +282,7 @@ export default function LoginPage() {
           {/* Company Registration CTA Option */}
           <div className="pt-4 border-t border-zinc-150 flex flex-col items-center gap-2">
             <span className="text-[11px] font-medium text-zinc-550">
-              Don't have an institutional account yet?
+              Don&apos;t have an institutional account yet?
             </span>
             <Link
               href="/register"

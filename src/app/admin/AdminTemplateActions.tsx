@@ -3,6 +3,7 @@
 import { useState } from "react";
 import DeleteTemplateButton from "./DeleteTemplateButton";
 import EditTemplateModal from "./EditTemplateModal";
+import DocumentPreviewButton from "./DocumentPreviewButton";
 
 interface TemplateData {
   id: string;
@@ -18,6 +19,12 @@ export default function AdminTemplateActions({ template }: { template: TemplateD
   return (
     <>
       <div className="flex items-center gap-2 shrink-0">
+        <DocumentPreviewButton
+          fileUrl={template.fileUrl}
+          fileName={template.fileUrl.split("/").pop() || template.title}
+          title={template.title}
+          variant="icon"
+        />
         <button
           onClick={() => setIsEditing(true)}
           className="p-1.5 rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:text-indigo-650 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors flex items-center justify-center cursor-pointer shrink-0"

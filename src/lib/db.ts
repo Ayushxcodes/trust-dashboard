@@ -252,6 +252,19 @@ export async function createUser(user: Omit<User, "id" | "createdAt" | "corporat
   };
 }
 
+export async function deleteUser(userId: string): Promise<boolean> {
+  try {
+    await prisma.userDocument.deleteMany({ where: { userId } });
+    await prisma.pipelineStage.deleteMany({ where: { userId } });
+    await prisma.systemMessage.deleteMany({ where: { targetUserId: userId } });
+    await prisma.user.delete({ where: { id: userId } });
+    return true;
+  } catch (e) {
+    console.error("Prisma deleteUser error:", e);
+    return false;
+  }
+}
+
 export async function getTemplates(): Promise<DocumentTemplate[]> {
   let templates = await prisma.documentTemplate.findMany();
   if (templates.length < DEFAULT_TEMPLATES.length) {
@@ -493,6 +506,36 @@ export async function reviewUserDocument(adminId: string, docId: string, status:
     };
   } catch (e) {
     return null;
+  }
+}
+
+export async function getUserDocumentById(docId: string): Promise<UserDocument | null> {
+  try {
+    const doc = await prisma.userDocument.findUnique({ where: { id: docId } });
+    if (!doc) return null;
+    return {
+      id: doc.id,
+      userId: doc.userId,
+      templateId: doc.templateId,
+      uploadedFileUrl: doc.uploadedFileUrl,
+      fileName: doc.fileName,
+      status: doc.status as "PENDING" | "UPLOADED" | "VERIFIED" | "REJECTED",
+      adminRemark: doc.adminRemark,
+      uploadedAt: doc.uploadedAt.toISOString(),
+      reviewedAt: doc.reviewedAt ? doc.reviewedAt.toISOString() : null,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function deleteUserDocument(docId: string): Promise<boolean> {
+  try {
+    await prisma.userDocument.delete({ where: { id: docId } });
+    return true;
+  } catch (e) {
+    console.error("Prisma deleteUserDocument error:", e);
+    return false;
   }
 }
 

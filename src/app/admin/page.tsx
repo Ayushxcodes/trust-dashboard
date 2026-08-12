@@ -16,6 +16,9 @@ import PipelineForm from "./PipelineForm";
 import TemplateForm from "./TemplateForm";
 import AdminTemplateActions from "./AdminTemplateActions";
 import AdminControlWidgets from "./AdminControlWidgets";
+import DeleteClientButton from "./DeleteClientButton";
+import DocumentPreviewButton from "./DocumentPreviewButton";
+import DeleteDocumentButton from "./DeleteDocumentButton";
 import { getDownloadUrl } from "@/lib/s3";
 
 interface SearchParams {
@@ -387,11 +390,18 @@ export default async function AdminPage({
                         <span className={`text-xs font-extrabold ${isActive ? "text-indigo-650" : "text-zinc-850"}`}>
                           {client.companyName}
                         </span>
-                        {clientPendingCount > 0 && (
-                          <span className="text-[8px] font-bold bg-amber-500 text-zinc-950 px-1.5 py-0.5 rounded shrink-0">
-                            {clientPendingCount}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {clientPendingCount > 0 && (
+                            <span className="text-[8px] font-bold bg-amber-500 text-zinc-950 px-1.5 py-0.5 rounded">
+                              {clientPendingCount}
+                            </span>
+                          )}
+                          <DeleteClientButton
+                            userId={client.id}
+                            clientName={client.companyName}
+                            variant="icon"
+                          />
+                        </div>
                       </div>
                       <span className="text-[10px] text-zinc-500 mt-1">Rep: {client.name}</span>
                       <div className="flex items-center justify-between text-[9px] font-mono text-zinc-400 mt-3 pt-2.5 border-t border-zinc-200/60">
@@ -444,9 +454,9 @@ export default async function AdminPage({
                       Total Entities Registered
                     </span>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-black text-zinc-900 tracking-tight">{allUsers.length}</span>
+                      <span className="text-3xl font-black text-zinc-900 tracking-tight">{clients.length}</span>
                       <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">
-                        Active Database Records
+                        Client Entities
                       </span>
                     </div>
                     <div className="w-full bg-zinc-100 h-1.5 rounded overflow-hidden">
@@ -457,14 +467,14 @@ export default async function AdminPage({
                   {/* Card 2: Pending Verification */}
                   <div className="p-6 bg-white border border-zinc-200 rounded shadow-sm space-y-4">
                     <span className="text-[10px] font-extrabold text-zinc-450 uppercase tracking-widest block">
-                      Pending Verification
+                      Pending Document Submissions
                     </span>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-black text-zinc-900 tracking-tight">
-                        {allUsers.filter((u) => u.role !== "ADMIN").length}
+                        {pendingReviewCount}
                       </span>
                       <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-1 rounded">
-                        In Queue
+                        Awaiting Review
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold">
@@ -504,7 +514,7 @@ export default async function AdminPage({
                     </h3>
                     <div className="flex items-center gap-2">
                       <span className="text-[9px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200 uppercase font-mono">
-                        {allUsers.length} Live Records Loaded
+                        {allUsers.length} Live Records ({clients.length} Client Entities)
                       </span>
                     </div>
                   </div>
@@ -554,12 +564,21 @@ export default async function AdminPage({
                                 </span>
                               </td>
                               <td className="p-4 pr-6 text-right">
-                                <Link
-                                  href={`/admin?client=${usr.id}&tab=documents`}
-                                  className="px-2 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[10px] font-bold rounded transition-colors"
-                                >
-                                  Inspect Vault &rarr;
-                                </Link>
+                                <div className="flex items-center justify-end gap-2">
+                                  <Link
+                                    href={`/admin?client=${usr.id}&tab=vault`}
+                                    className="px-2 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[10px] font-bold rounded transition-colors"
+                                  >
+                                    Inspect Vault &rarr;
+                                  </Link>
+                                  {usr.role !== "ADMIN" && (
+                                    <DeleteClientButton
+                                      userId={usr.id}
+                                      clientName={usr.companyName}
+                                      variant="table"
+                                    />
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           );
@@ -570,7 +589,7 @@ export default async function AdminPage({
 
                   {/* Table Footer */}
                   <div className="p-4 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between text-[10px] font-bold text-zinc-450 uppercase tracking-widest gap-3">
-                    <span>Showing 5 of 1,482 entities</span>
+                    <span>Showing {allUsers.length} of {allUsers.length} entities</span>
                     <div className="flex items-center gap-1">
                       <button className="px-2 py-1 rounded border border-zinc-200 hover:bg-zinc-50 disabled:opacity-50">
                         &lt;
@@ -674,18 +693,31 @@ export default async function AdminPage({
                                   {doc.fileName}
                                 </span>
                               </div>
-                              <a
-                                href={doc.uploadedFileUrl}
-                                download
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-3 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700 flex items-center gap-1 cursor-pointer"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                DOWNLOAD
-                              </a>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <DocumentPreviewButton
+                                  fileUrl={doc.uploadedFileUrl}
+                                  fileName={doc.fileName}
+                                  title={docTitle}
+                                  status={doc.status}
+                                  adminRemark={doc.adminRemark}
+                                />
+                                <a
+                                  href={doc.uploadedFileUrl}
+                                  download
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700 flex items-center gap-1 cursor-pointer"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                  </svg>
+                                  DOWNLOAD
+                                </a>
+                                <DeleteDocumentButton
+                                  documentId={doc.id}
+                                  fileName={doc.fileName}
+                                />
+                              </div>
                             </div>
                             
                             <DocumentReviewForm
@@ -800,6 +832,7 @@ export default async function AdminPage({
                           <th className="p-4">Paid-Up Capital Bracket</th>
                           <th className="p-4">Upload Progress</th>
                           <th className="p-4">System Role</th>
+                          <th className="p-4 pr-6 text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-200">
@@ -829,6 +862,15 @@ export default async function AdminPage({
                                 }`}>
                                   {user.role}
                                 </span>
+                              </td>
+                              <td className="p-4 pr-6 text-right">
+                                {user.role !== "ADMIN" && (
+                                  <DeleteClientButton
+                                    userId={user.id}
+                                    clientName={user.companyName}
+                                    variant="table"
+                                  />
+                                )}
                               </td>
                             </tr>
                           );
