@@ -8,29 +8,16 @@ export default function LoginPage() {
   const [corporateId, setCorporateId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [totpCode, setTotpCode] = useState("");
-  const [showTotp, setShowTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, startTransition] = useTransition();
-
-  const handleEstablishSession = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!corporateId || !email || !password) {
-      setError("Please fill out all credential fields.");
-      return;
-    }
-    // Transition to the Multi-Factor Authentication view
-    setShowTotp(true);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (totpCode.trim().length < 6) {
-      setError("Please enter a valid 6-digit verification code.");
+    if (!corporateId || !email || !password) {
+      setError("Please fill out all credential fields.");
       return;
     }
 
@@ -39,11 +26,10 @@ export default function LoginPage() {
       formData.append("corporateId", corporateId);
       formData.append("email", email);
       formData.append("password", password);
-      
+
       const res = await login(formData);
       if (res && !res.success) {
         setError(res.error || "An unexpected error occurred.");
-        setShowTotp(false); // Reset to credentials step on failure
       }
     });
   };
@@ -53,25 +39,19 @@ export default function LoginPage() {
     setCorporateId(testCorpId);
     setEmail(testEmail);
     setPassword(testPass);
-    setTotpCode("849204"); // Prefilled mock TOTP
     setError(null);
-    setShowTotp(true);
-    
-    // Automatically submit with a minor delay so the user sees the transition
-    setTimeout(() => {
-      startTransition(async () => {
-        const formData = new FormData();
-        formData.append("corporateId", testCorpId);
-        formData.append("email", testEmail);
-        formData.append("password", testPass);
-        
-        const res = await login(formData);
-        if (res && !res.success) {
-          setError(res.error || "An unexpected error occurred.");
-          setShowTotp(false);
-        }
-      });
-    }, 800);
+
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("corporateId", testCorpId);
+      formData.append("email", testEmail);
+      formData.append("password", testPass);
+
+      const res = await login(formData);
+      if (res && !res.success) {
+        setError(res.error || "An unexpected error occurred.");
+      }
+    });
   };
 
   return (
@@ -131,153 +111,105 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Form */}
-          {!showTotp ? (
-            <form onSubmit={handleEstablishSession} className="space-y-4">
-              
-              {/* Corporate ID */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
-                  Corporate ID
-                </label>
-                <input
-                  type="text"
-                  required
-                  disabled={isPending}
-                  value={corporateId}
-                  onChange={(e) => setCorporateId(e.target.value)}
-                  placeholder="ENT-0000-000"
-                  className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
-                />
-              </div>
-
-              {/* Official Email */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
-                  Official Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  disabled={isPending}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@entity.com"
-                  className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
-                    Password
-                  </label>
-                  <Link href="/forgot-password" className="text-[10px] font-extrabold text-zinc-550 hover:text-zinc-800 transition-colors">
-                    Forgot Access?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    disabled={isPending}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-4 pr-10 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors focus:outline-none cursor-pointer"
-                  >
-                    {showPassword ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
+          {/* Direct Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Corporate ID */}
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
+                Corporate ID
+              </label>
+              <input
+                type="text"
+                required
                 disabled={isPending}
-                className="w-full py-3 px-4 rounded bg-[#0B1528] hover:bg-[#152238] text-white font-extrabold text-xs tracking-wider transition-colors active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer uppercase shadow"
-              >
-                Establish Secure Session
-                <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </button>
-            </form>
-          ) : (
-            // MULTI-FACTOR AUTHORIZATION SCREEN (TOTP)
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2 text-center">
-                <span className="inline-flex p-2 bg-indigo-50 text-indigo-650 rounded-full">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </span>
-                <h3 className="text-sm font-bold text-zinc-900">Multi-Factor Authentication</h3>
-                <p className="text-[11px] text-zinc-550 leading-relaxed">
-                  Enter the 6-digit Time-based One-Time Password (TOTP) pushed to your registered mobile device or Authenticator App.
-                </p>
-              </div>
+                value={corporateId}
+                onChange={(e) => setCorporateId(e.target.value)}
+                placeholder="ENT-0000-000"
+                className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+              />
+            </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider text-center">
-                  Verification Code (MFA Code)
+            {/* Official Email */}
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
+                Official Email
+              </label>
+              <input
+                type="email"
+                required
+                disabled={isPending}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@entity.com"
+                className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+              />
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
+                  Password
                 </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={6}
-                  disabled={isPending}
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="e.g. 123456"
-                  className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-center font-mono text-base tracking-widest text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
-                />
+                <Link href="/forgot-password" className="text-[10px] font-extrabold text-zinc-550 hover:text-zinc-800 transition-colors">
+                  Forgot Access?
+                </Link>
               </div>
-
-              <div className="flex gap-3">
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  disabled={isPending}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-4 pr-10 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                />
                 <button
                   type="button"
-                  onClick={() => { setShowTotp(false); setTotpCode(""); }}
-                  className="flex-1 py-3 px-4 rounded border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-650 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors focus:outline-none cursor-pointer"
                 >
-                  Go Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending || totpCode.length < 6}
-                  className="flex-1 py-3 px-4 rounded bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-xs tracking-wider transition-colors active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer uppercase shadow"
-                >
-                  {isPending ? (
-                    <>
-                      <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Authenticating...
-                    </>
+                  {showPassword ? (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
                   ) : (
-                    "Secure Sign-In"
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                   )}
                 </button>
               </div>
-            </form>
-          )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isPending}
+              className="w-full py-3 px-4 rounded bg-[#0B1528] hover:bg-[#152238] text-white font-extrabold text-xs tracking-wider transition-colors active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer uppercase shadow"
+            >
+              {isPending ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                  Sign In to Dashboard
+                  <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </>
+              )}
+            </button>
+          </form>
 
           {/* Company Registration CTA Option */}
           <div className="pt-4 border-t border-zinc-150 flex flex-col items-center gap-2">
@@ -310,7 +242,7 @@ export default function LoginPage() {
         {/* Quick Test Accounts Box */}
         <div className="w-full max-w-md mt-6 bg-white border border-zinc-200 rounded p-5 shadow-lg space-y-3">
           <h4 className="text-[10px] font-extrabold text-zinc-450 uppercase tracking-widest text-center">
-            Demo Testing Portal (Includes MFA Bypass)
+            Demo Quick Login
           </h4>
           <div className="grid grid-cols-1 gap-2.5">
             <button
@@ -327,7 +259,7 @@ export default function LoginPage() {
                 </span>
               </div>
               <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-white border border-zinc-200 text-zinc-650 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
-                AUTO-FILL
+                QUICK LOGIN
               </span>
             </button>
 
@@ -345,7 +277,7 @@ export default function LoginPage() {
                 </span>
               </div>
               <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-white border border-zinc-200 text-zinc-650 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
-                AUTO-FILL
+                QUICK LOGIN
               </span>
             </button>
 
@@ -363,7 +295,7 @@ export default function LoginPage() {
                 </span>
               </div>
               <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-indigo-50 border border-indigo-150 text-indigo-655">
-                AUTO-FILL
+                QUICK LOGIN
               </span>
             </button>
           </div>
