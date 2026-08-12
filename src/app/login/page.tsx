@@ -80,6 +80,26 @@ export default function LoginPage() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
 
+      {/* Top Header Bar */}
+      <header className="w-full max-w-5xl flex items-center justify-between py-3 px-4 border-b border-zinc-200/60 shrink-0">
+        <Link href="/" className="flex items-center gap-2 text-xs font-black tracking-widest text-[#0B1528] uppercase hover:opacity-80 transition-opacity">
+          <span className="w-6 h-6 rounded bg-[#0B1528] text-white flex items-center justify-center text-[10px] font-bold">TL</span>
+          TrustLink
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest hidden sm:inline">New Enterprise?</span>
+          <Link
+            href="/register"
+            className="px-3.5 py-1.5 rounded bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[10px] uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1.5"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
+            </svg>
+            Register Company
+          </Link>
+        </div>
+      </header>
+
       {/* Main Spacer Top */}
       <div className="flex-1 flex flex-col items-center justify-center w-full py-8">
         
@@ -258,6 +278,22 @@ export default function LoginPage() {
               </div>
             </form>
           )}
+
+          {/* Company Registration CTA Option */}
+          <div className="pt-4 border-t border-zinc-150 flex flex-col items-center gap-2">
+            <span className="text-[11px] font-medium text-zinc-550">
+              Don't have an institutional account yet?
+            </span>
+            <Link
+              href="/register"
+              className="w-full py-2.5 px-4 rounded border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 hover:border-indigo-300 text-indigo-700 font-extrabold text-xs tracking-wider transition-all uppercase flex items-center justify-center gap-2 shadow-sm group cursor-pointer"
+            >
+              <svg className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
+              </svg>
+              Register Company / Onboard Entity
+            </Link>
+          </div>
 
           {/* Under Line Warning */}
           <div className="pt-4 border-t border-zinc-150 flex gap-3 text-[9px] text-zinc-450 leading-relaxed">
