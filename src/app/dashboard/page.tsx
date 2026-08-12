@@ -371,18 +371,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 flex items-center justify-between shadow-sm">
+                <div className="p-4 rounded-xl border border-purple-250 bg-gradient-to-br from-purple-50/90 via-indigo-50/50 to-purple-100/30 flex items-center justify-between shadow-sm">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 font-mono block">
-                      Verified by Admin
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-900 font-mono block">
+                      Approved by Admin
                     </span>
                     <div className="flex items-baseline gap-1.5 mt-1">
-                      <span className="text-2xl font-black text-emerald-950">{verifiedCount}</span>
-                      <span className="text-xs font-bold text-emerald-700">/ {totalRequiredDocs} Verified</span>
+                      <span className="text-2xl font-black text-purple-950">{verifiedCount}</span>
+                      <span className="text-xs font-bold text-purple-800">/ {totalRequiredDocs} Approved</span>
                     </div>
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 flex items-center justify-center font-bold text-lg">
-                    🛡️
+                  <div className="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
+                    ✓
                   </div>
                 </div>
 
@@ -428,17 +428,40 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                       !tpl.fileUrl.toLowerCase().includes("placeholder")
                     );
 
+                    const isVerified = doc?.status === "VERIFIED";
+                    const isRejected = doc?.status === "REJECTED";
+
                     return (
-                      <div key={tpl.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
+                      <div
+                        key={tpl.id}
+                        className={`p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
+                          doc
+                            ? isVerified
+                              ? "bg-gradient-to-r from-purple-50/90 via-indigo-50/40 to-white border-l-4 border-l-purple-600"
+                              : isRejected
+                              ? "bg-gradient-to-r from-rose-50/90 via-pink-50/40 to-white border-l-4 border-l-rose-600"
+                              : "bg-gradient-to-r from-emerald-50/80 via-teal-50/30 to-white border-l-4 border-l-emerald-500"
+                            : "hover:bg-zinc-50/50"
+                        }`}
+                      >
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <div className="flex items-center gap-2">
                               {doc && (
-                                <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm" title="Document Uploaded">
-                                  ✓
+                                <span
+                                  className={`w-5 h-5 rounded-full text-white flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${
+                                    isVerified ? "bg-purple-600" : isRejected ? "bg-rose-600" : "bg-emerald-500"
+                                  }`}
+                                  title={isVerified ? "Approved by Admin" : isRejected ? "Rejected by Admin" : "Document Uploaded"}
+                                >
+                                  {isRejected ? "✕" : "✓"}
                                 </span>
                               )}
-                              <h4 className={`text-xs font-bold ${doc ? "text-emerald-950 font-extrabold" : "text-zinc-900"}`}>{tpl.title}</h4>
+                              <h4 className={`text-xs font-bold ${
+                                isVerified ? "text-purple-950 font-extrabold" : doc ? "text-emerald-950 font-extrabold" : "text-zinc-900"
+                              }`}>
+                                {tpl.title}
+                              </h4>
                             </div>
                             {hasFormat ? (
                               <span className="text-[9px] font-bold text-indigo-700 bg-indigo-100/70 px-1.5 py-0.5 rounded border border-indigo-200 font-mono">
@@ -450,14 +473,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                               </span>
                             )}
                             {doc && (
-                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 font-mono ${
-                                doc.status === "VERIFIED"
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold"
-                                  : doc.status === "REJECTED"
-                                  ? "bg-rose-100 text-rose-800 border-rose-300 font-extrabold"
-                                  : "bg-teal-50 text-teal-800 border-teal-250 font-extrabold"
+                              <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border flex items-center gap-1 font-mono shadow-sm ${
+                                isVerified
+                                  ? "bg-purple-600 text-white border-purple-600"
+                                  : isRejected
+                                  ? "bg-rose-600 text-white border-rose-600"
+                                  : "bg-teal-600 text-white border-teal-600"
                               }`}>
-                                {doc.status === "VERIFIED" ? "✓ Verified" : doc.status === "REJECTED" ? "✕ Rejected" : "✓ Document Uploaded"}
+                                {isVerified ? "✓ Approved by Admin" : isRejected ? "✕ Rejected by Admin" : "✓ Document Uploaded"}
                               </span>
                             )}
                           </div>
@@ -475,10 +498,10 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                               download
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-250 text-zinc-750 font-bold text-[10px] transition-colors flex items-center gap-1.5 shrink-0"
+                              className="px-3 py-2 rounded-lg bg-white hover:bg-zinc-50 border border-zinc-250 text-zinc-750 font-bold text-[10px] transition-colors flex items-center gap-1.5 shrink-0 shadow-sm"
                               title="Download Admin Provided Format"
                             >
-                              <svg className="w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                               </svg>
                               Download Format
@@ -543,30 +566,53 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                     },
                   ].map((item) => {
                     const doc = uploadMap[item.id];
+                    const isVerified = doc?.status === "VERIFIED";
+                    const isRejected = doc?.status === "REJECTED";
+
                     return (
-                      <div key={item.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
+                      <div
+                        key={item.id}
+                        className={`p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
+                          doc
+                            ? isVerified
+                              ? "bg-gradient-to-r from-purple-50/90 via-indigo-50/40 to-white border-l-4 border-l-purple-600"
+                              : isRejected
+                              ? "bg-gradient-to-r from-rose-50/90 via-pink-50/40 to-white border-l-4 border-l-rose-600"
+                              : "bg-gradient-to-r from-emerald-50/80 via-teal-50/30 to-white border-l-4 border-l-emerald-500"
+                            : "hover:bg-zinc-50/50"
+                        }`}
+                      >
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <div className="flex items-center gap-2">
                               {doc && (
-                                <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm" title="Document Uploaded">
-                                  ✓
+                                <span
+                                  className={`w-5 h-5 rounded-full text-white flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${
+                                    isVerified ? "bg-purple-600" : isRejected ? "bg-rose-600" : "bg-emerald-500"
+                                  }`}
+                                  title={isVerified ? "Approved by Admin" : isRejected ? "Rejected by Admin" : "Document Uploaded"}
+                                >
+                                  {isRejected ? "✕" : "✓"}
                                 </span>
                               )}
-                              <h4 className={`text-xs font-bold ${doc ? "text-emerald-950 font-extrabold" : "text-zinc-900"}`}>{item.title}</h4>
+                              <h4 className={`text-xs font-bold ${
+                                isVerified ? "text-purple-950 font-extrabold" : doc ? "text-emerald-950 font-extrabold" : "text-zinc-900"
+                              }`}>
+                                {item.title}
+                              </h4>
                             </div>
                             <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 font-mono">
                               Direct Upload
                             </span>
                             {doc && (
-                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 font-mono ${
-                                doc.status === "VERIFIED"
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold"
-                                  : doc.status === "REJECTED"
-                                  ? "bg-rose-100 text-rose-800 border-rose-300 font-extrabold"
-                                  : "bg-teal-50 text-teal-800 border-teal-250 font-extrabold"
+                              <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border flex items-center gap-1 font-mono shadow-sm ${
+                                isVerified
+                                  ? "bg-purple-600 text-white border-purple-600"
+                                  : isRejected
+                                  ? "bg-rose-600 text-white border-rose-600"
+                                  : "bg-teal-600 text-white border-teal-600"
                               }`}>
-                                {doc.status === "VERIFIED" ? "✓ Verified" : doc.status === "REJECTED" ? "✕ Rejected" : "✓ Document Uploaded"}
+                                {isVerified ? "✓ Approved by Admin" : isRejected ? "✕ Rejected by Admin" : "✓ Document Uploaded"}
                               </span>
                             )}
                           </div>
