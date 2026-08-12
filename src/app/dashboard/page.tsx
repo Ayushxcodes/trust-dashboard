@@ -65,7 +65,8 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   }, {} as Record<string, typeof uploads[0]>);
 
   const verifiedCount = uploads.filter((d) => d.status === "VERIFIED").length;
-  const totalTasks = templates.length;
+  const totalUploadedCount = uploads.length;
+  const totalRequiredDocs = templates.length + 5;
   const calculatedCountdownDays = calculateRemainingDays(activeCompanyUser.complianceDeadline, activeCompanyUser.countdownDays);
 
   return (
@@ -353,6 +354,54 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 </div>
               </div>
 
+              {/* Document Metrics & Upload Progress Overview */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl border border-teal-200 bg-gradient-to-br from-teal-50/80 to-emerald-50/50 flex items-center justify-between shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-800 font-mono block">
+                      Documents Uploaded
+                    </span>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-2xl font-black text-teal-950">{totalUploadedCount}</span>
+                      <span className="text-xs font-bold text-teal-700">/ {totalRequiredDocs} Uploaded</span>
+                    </div>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-600 flex items-center justify-center font-black text-lg">
+                    ✓
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-teal-50/50 flex items-center justify-between shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 font-mono block">
+                      Verified by Admin
+                    </span>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-2xl font-black text-emerald-950">{verifiedCount}</span>
+                      <span className="text-xs font-bold text-emerald-700">/ {totalRequiredDocs} Verified</span>
+                    </div>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                    🛡️
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/60 flex items-center justify-between shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-800 font-mono block">
+                      Pending Uploads
+                    </span>
+                    <div className="flex items-baseline gap-1.5 mt-1">
+                      <span className="text-2xl font-black text-indigo-950">{Math.max(0, totalRequiredDocs - totalUploadedCount)}</span>
+                      <span className="text-xs font-bold text-indigo-700">Remaining</span>
+                    </div>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                    ⏳
+                  </div>
+                </div>
+              </div>
+
               {/* SECTION A: Admin Provided Templates & Formats */}
               <section className="space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
@@ -383,7 +432,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                       <div key={tpl.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-xs font-bold text-zinc-900">{tpl.title}</h4>
+                            <div className="flex items-center gap-2">
+                              {doc && (
+                                <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm" title="Document Uploaded">
+                                  ✓
+                                </span>
+                              )}
+                              <h4 className={`text-xs font-bold ${doc ? "text-emerald-950 font-extrabold" : "text-zinc-900"}`}>{tpl.title}</h4>
+                            </div>
                             {hasFormat ? (
                               <span className="text-[9px] font-bold text-indigo-700 bg-indigo-100/70 px-1.5 py-0.5 rounded border border-indigo-200 font-mono">
                                 Format Attached
@@ -393,9 +449,15 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                                 Document Required
                               </span>
                             )}
-                            {doc && doc.status === "VERIFIED" && (
-                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-250">
-                                ✓ Verified
+                            {doc && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 font-mono ${
+                                doc.status === "VERIFIED"
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold"
+                                  : doc.status === "REJECTED"
+                                  ? "bg-rose-100 text-rose-800 border-rose-300 font-extrabold"
+                                  : "bg-teal-50 text-teal-800 border-teal-250 font-extrabold"
+                              }`}>
+                                {doc.status === "VERIFIED" ? "✓ Verified" : doc.status === "REJECTED" ? "✕ Rejected" : "✓ Document Uploaded"}
                               </span>
                             )}
                           </div>
@@ -423,7 +485,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                             </a>
                           )}
 
-                          <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} />
+                          <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} existingDoc={doc} />
                         </div>
                       </div>
                     );
@@ -485,13 +547,26 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                       <div key={item.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
                         <div className="space-y-1.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-xs font-bold text-zinc-900">{item.title}</h4>
+                            <div className="flex items-center gap-2">
+                              {doc && (
+                                <span className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm" title="Document Uploaded">
+                                  ✓
+                                </span>
+                              )}
+                              <h4 className={`text-xs font-bold ${doc ? "text-emerald-950 font-extrabold" : "text-zinc-900"}`}>{item.title}</h4>
+                            </div>
                             <span className="text-[9px] font-bold text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 font-mono">
                               Direct Upload
                             </span>
-                            {doc && doc.status === "VERIFIED" && (
-                              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-250">
-                                ✓ Verified
+                            {doc && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded border flex items-center gap-1 font-mono ${
+                                doc.status === "VERIFIED"
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold"
+                                  : doc.status === "REJECTED"
+                                  ? "bg-rose-100 text-rose-800 border-rose-300 font-extrabold"
+                                  : "bg-teal-50 text-teal-800 border-teal-250 font-extrabold"
+                              }`}>
+                                {doc.status === "VERIFIED" ? "✓ Verified" : doc.status === "REJECTED" ? "✕ Rejected" : "✓ Document Uploaded"}
                               </span>
                             )}
                           </div>
@@ -502,14 +577,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                          {doc && (
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                              doc.status === "VERIFIED" ? "bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold" : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}>
-                              {doc.status}
-                            </span>
-                          )}
-                          <UploadButton templateId={item.id} templateTitle={item.title} activeUserId={contextUserId} />
+                          <UploadButton templateId={item.id} templateTitle={item.title} activeUserId={contextUserId} existingDoc={doc} />
                         </div>
                       </div>
                     );
