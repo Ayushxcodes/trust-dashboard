@@ -37,43 +37,55 @@ export async function getCurrentUser(): Promise<User | null> {
 
 // Authentication Actions
 export async function login(formData: FormData) {
-  const corporateId = formData.get("corporateId") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  try {
+    const corporateId = formData.get("corporateId") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-  if (!corporateId || !email || !password) {
-    return { success: false, error: "Please enter all fields." };
-  }
+    if (!corporateId || !email || !password) {
+      return { success: false, error: "Please enter all fields." };
+    }
 
-  const user = await getUserByEmail(email);
-  if (!user || user.corporateId.toLowerCase() !== corporateId.toLowerCase() || user.passwordHash !== password) {
-    return { success: false, error: "Invalid Corporate ID, email, or password." };
-  }
+    const user = await getUserByEmail(email);
+    if (!user || user.corporateId.toLowerCase() !== corporateId.toLowerCase() || user.passwordHash !== password) {
+      return { success: false, error: "Invalid Corporate ID, email, or password." };
+    }
 
-  const cookieStore = await cookies();
-  cookieStore.set("session_user_id", user.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-  });
+    const cookieStore = await cookies();
+    cookieStore.set("session_user_id", user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+    });
 
-  await createAuditLog({
-    adminId: user.role === "ADMIN" ? user.id : null,
-    userId: user.role === "USER" ? user.id : null,
-    action: `User logged in: ${user.name} (${user.role}) under ID ${user.corporateId}`,
-  });
+    try {
+      await createAuditLog({
+        adminId: user.role === "ADMIN" ? user.id : null,
+        userId: user.role === "USER" ? user.id : null,
+        action: `User logged in: ${user.name} (${user.role}) under ID ${user.corporateId}`,
+      });
+    } catch (auditErr) {
+      console.warn("Audit log non-blocking error:", auditErr);
+    }
 
-  // Revalidate both views to update layout headers, statistics, etc.
-  revalidatePath("/dashboard");
-  revalidatePath("/admin");
-  revalidatePath("/");
+    // Revalidate paths
+    revalidatePath("/dashboard");
+    revalidatePath("/admin");
+    revalidatePath("/");
 
-  if (user.role === "ADMIN") {
-    redirect("/admin");
-  } else {
-    redirect("/dashboard");
+    return {
+      success: true,
+      role: user.role,
+      redirectUrl: user.role === "ADMIN" ? "/admin" : "/dashboard",
+    };
+  } catch (err: any) {
+    console.error("Login server action error:", err);
+    return {
+      success: false,
+      error: err?.message || "Failed to log in. Please check database connection.",
+    };
   }
 }
 

@@ -28,7 +28,9 @@ export default function LoginPage() {
       formData.append("password", password);
 
       const res = await login(formData);
-      if (res && !res.success) {
+      if (res && res.success && res.redirectUrl) {
+        window.location.href = res.redirectUrl;
+      } else if (res && !res.success) {
         setError(res.error || "An unexpected error occurred.");
       }
     });
