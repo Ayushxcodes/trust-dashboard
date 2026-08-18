@@ -7,6 +7,12 @@ frontend:
         - npx prisma generate
     build:
       commands:
+        # Inject Amplify console environment variables into .env.production for Next.js SSR runtime
+        - echo "DATABASE_URL=$DATABASE_URL" >> .env.production
+        - echo "APP_AWS_REGION=$APP_AWS_REGION" >> .env.production
+        - echo "APP_AWS_ACCESS_KEY_ID=$APP_AWS_ACCESS_KEY_ID" >> .env.production
+        - echo "APP_AWS_SECRET_ACCESS_KEY=$APP_AWS_SECRET_ACCESS_KEY" >> .env.production
+        - echo "APP_AWS_S3_BUCKET_NAME=$APP_AWS_S3_BUCKET_NAME" >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next

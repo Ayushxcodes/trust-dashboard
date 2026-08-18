@@ -94,10 +94,13 @@ export async function register(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const companyName = formData.get("companyName") as string;
-  const roleType = formData.get("role") as string; // USER or ADMIN (just for mock ease)
 
   if (!name || !email || !password || !companyName) {
     return { success: false, error: "All fields are required." };
+  }
+
+  if (password.length < 8) {
+    return { success: false, error: "Password must be at least 8 characters long." };
   }
 
   const existing = await getUserByEmail(email);
@@ -105,14 +108,15 @@ export async function register(formData: FormData) {
     return { success: false, error: "Email is already registered." };
   }
 
-  const role = roleType === "ADMIN" ? "ADMIN" : "USER";
+  // Enforce USER role for all public registrations to prevent privilege escalation
+  const role = "USER";
 
   const newUser = await createUser({
-    name,
-    email,
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
     passwordHash: password,
     role,
-    companyName,
+    companyName: companyName.trim(),
   });
 
   const cookieStore = await cookies();
@@ -128,11 +132,7 @@ export async function register(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/");
 
-  if (newUser.role === "ADMIN") {
-    redirect("/admin");
-  } else {
-    redirect("/dashboard");
-  }
+  redirect("/dashboard");
 }
 
 export async function logout() {
@@ -146,8 +146,8 @@ export async function logout() {
         userId,
         action: "User logged out",
       });
-    } catch (err) {
-      console.warn("Failed to create logout audit log:", err);
+    } catch {
+      // Non-blocking
     }
   }
 
@@ -160,6 +160,10 @@ export async function logout() {
   redirect("/login");
 }
 
+// Allowed file extensions for document compliance uploads
+const ALLOWED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".docx", ".doc", ".xlsx", ".xls"];
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+
 // Client-Specific Actions
 export async function uploadDocument(formData: FormData) {
   const user = await getCurrentUser();
@@ -168,41 +172,55 @@ export async function uploadDocument(formData: FormData) {
   }
 
   const templateId = formData.get("templateId") as string;
-  const activeUserId = (formData.get("activeUserId") as string) || user.id;
+  const requestedUserId = (formData.get("activeUserId") as string) || "";
+  // IDOR Prevention: Only administrators can specify a different target client user ID
+  const activeUserId = user.role === "ADMIN" && requestedUserId ? requestedUserId : user.id;
   const file = formData.get("file") as File | null;
 
   if (!templateId || !file) {
     return { success: false, error: "Missing required parameters." };
   }
 
-  const fileName = file.name;
-  let fileUrl = "";
-
-  if (file.size > 0) {
-    const s3Url = await uploadFileToS3(file, `uploads/${activeUserId}`);
-    if (s3Url) {
-      fileUrl = s3Url;
-    } else {
-      try {
-        const uploadDir = path.join(process.cwd(), "public", "uploads", activeUserId);
-        await fs.mkdir(uploadDir, { recursive: true });
-
-        const localFileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
-        const filePath = path.join(uploadDir, localFileName);
-        const buffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, buffer);
-
-        fileUrl = `/uploads/${activeUserId}/${localFileName}`;
-      } catch (err) {
-        console.error("Local file save error:", err);
-        return { success: false, error: "Failed to save file locally." };
-      }
-    }
-  } else {
+  if (file.size === 0) {
     return { success: false, error: "Uploaded file is empty." };
   }
 
-  await uploadUserDocument(activeUserId, templateId, fileName, fileUrl);
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    return { success: false, error: "File size exceeds the 20MB limit." };
+  }
+
+  const ext = path.extname(file.name).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return {
+      success: false,
+      error: `Invalid file format (${ext}). Allowed formats: ${ALLOWED_EXTENSIONS.join(", ")}`,
+    };
+  }
+
+  const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  let fileUrl = "";
+
+  const s3Url = await uploadFileToS3(file, `uploads/${activeUserId}`);
+  if (s3Url) {
+    fileUrl = s3Url;
+  } else {
+    try {
+      const uploadDir = path.join(process.cwd(), "public", "uploads", activeUserId);
+      await fs.mkdir(uploadDir, { recursive: true });
+
+      const localFileName = `${Date.now()}_${sanitizedFileName}`;
+      const filePath = path.join(uploadDir, localFileName);
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+
+      fileUrl = `/uploads/${activeUserId}/${localFileName}`;
+    } catch (err) {
+      console.error("Local file save error:", err);
+      return { success: false, error: "Failed to save file." };
+    }
+  }
+
+  await uploadUserDocument(activeUserId, templateId, sanitizedFileName, fileUrl);
 
   revalidatePath("/dashboard");
   revalidatePath("/admin");
@@ -259,6 +277,15 @@ export async function addTemplate(formData: FormData) {
   }
 
   if (file && file.size > 0) {
+    const ext = path.extname(file.name).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return {
+        success: false,
+        error: `Invalid file format (${ext}). Allowed formats: ${ALLOWED_EXTENSIONS.join(", ")}`,
+      };
+    }
+
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const s3Url = await uploadFileToS3(file, "templates");
     if (s3Url) {
       fileUrl = s3Url;
@@ -267,7 +294,7 @@ export async function addTemplate(formData: FormData) {
         const templatesDir = path.join(process.cwd(), "public", "templates");
         await fs.mkdir(templatesDir, { recursive: true });
 
-        const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+        const fileName = `${Date.now()}_${sanitizedFileName}`;
         const filePath = path.join(templatesDir, fileName);
         const buffer = Buffer.from(await file.arrayBuffer());
         await fs.writeFile(filePath, buffer);
