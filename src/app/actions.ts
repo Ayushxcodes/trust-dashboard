@@ -46,8 +46,11 @@ export async function login(formData: FormData) {
       return { success: false, error: "Please enter all fields." };
     }
 
-    const user = await getUserByEmail(email);
-    if (!user || user.corporateId.toLowerCase() !== corporateId.toLowerCase() || user.passwordHash !== password) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCorpId = corporateId.trim().toLowerCase();
+
+    const user = await getUserByEmail(cleanEmail);
+    if (!user || user.corporateId.trim().toLowerCase() !== cleanCorpId || user.passwordHash !== password) {
       return { success: false, error: "Invalid Corporate ID, email, or password." };
     }
 
