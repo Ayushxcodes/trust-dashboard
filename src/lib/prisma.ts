@@ -15,8 +15,12 @@ function createPrismaClient(): PrismaClient {
     });
   }
 
-  const pool = new Pool({ connectionString: databaseUrl });
+  const pool = new Pool({
+    connectionString: databaseUrl,
+    ssl: databaseUrl.includes("sslmode=require") ? { rejectUnauthorized: false } : undefined,
+  });
   const adapter = new PrismaPg(pool);
+
   return new PrismaClient({
     adapter,
     log: logOpts as any,

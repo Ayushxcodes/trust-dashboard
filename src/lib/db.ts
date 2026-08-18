@@ -64,6 +64,77 @@ export interface SystemMessage {
   createdAt: string;
 }
 
+export const DEFAULT_USERS: User[] = [
+  {
+    id: "usr-admin-1",
+    name: "Compliance Admin",
+    email: "admin@trustlink.com",
+    passwordHash: "admin123",
+    role: "ADMIN",
+    companyName: "TrustLink Compliance Operations",
+    corporateId: "ENT-ADMIN-000",
+    createdAt: new Date().toISOString(),
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "usr-client-1",
+    name: "Alpha Corp Admin",
+    email: "admin@alphacorp.com",
+    passwordHash: "alpha123",
+    role: "USER",
+    companyName: "Alpha Corp Ltd",
+    corporateId: "ENT-4089-102",
+    createdAt: new Date().toISOString(),
+    complianceDeadline: "2026-09-30",
+    countdownDays: 43,
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "usr-client-2",
+    name: "Beta Tech Signatory",
+    email: "admin@betatech.com",
+    passwordHash: "beta123",
+    role: "USER",
+    companyName: "Beta Tech Systems",
+    corporateId: "ENT-8821-304",
+    createdAt: new Date().toISOString(),
+    complianceDeadline: "2026-10-15",
+    countdownDays: 58,
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
+  },
+];
+
+export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
+  {
+    id: "log-sys-01",
+    adminId: "usr-admin-1",
+    userId: null,
+    action: "REGISTRY SYSTEM INITIALIZED: MCA Rule 9B Compliance Engine active for unlisted public entities.",
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+  },
+  {
+    id: "log-sys-02",
+    adminId: "usr-admin-1",
+    userId: null,
+    action: "DEPOSITORY SYNC: Synchronized ISIN records & CDSL/NSDL Tripartite Agreement status.",
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+  },
+  {
+    id: "log-sys-03",
+    adminId: null,
+    userId: "usr-client-1",
+    action: "DOCUMENT SUBMISSION: Board Resolution & Certificate of Incorporation uploaded for verification.",
+    createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+  },
+  {
+    id: "log-sys-04",
+    adminId: "usr-admin-1",
+    userId: null,
+    action: "ADMIN VERIFICATION: Document verification completed. Immutable approval stamp applied.",
+    createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
+  },
+];
+
 export const DEFAULT_TEMPLATES: DocumentTemplate[] = [
   {
     id: "tpl-br",
@@ -155,56 +226,76 @@ export function writeDb(data: MockDbData | Record<string, unknown>): void {
 // Database Helpers (Async/Prisma)
 
 export async function getUsers(): Promise<User[]> {
-  const users = await prisma.user.findMany();
-  return users.map((u) => ({
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    passwordHash: u.passwordHash,
-    role: u.role as "USER" | "ADMIN",
-    companyName: u.companyName,
-    corporateId: u.corporateId,
-    createdAt: u.createdAt.toISOString(),
-    complianceDeadline: u.complianceDeadline ?? undefined,
-    countdownDays: u.countdownDays ?? undefined,
-    avatarUrl: u.avatarUrl ?? undefined,
-  }));
+  try {
+    const users = await prisma.user.findMany();
+    if (users.length === 0) return DEFAULT_USERS;
+    return users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      passwordHash: u.passwordHash,
+      role: u.role as "USER" | "ADMIN",
+      companyName: u.companyName,
+      corporateId: u.corporateId,
+      createdAt: u.createdAt.toISOString(),
+      complianceDeadline: u.complianceDeadline ?? undefined,
+      countdownDays: u.countdownDays ?? undefined,
+      avatarUrl: u.avatarUrl ?? undefined,
+    }));
+  } catch (err) {
+    console.warn("Prisma getUsers error, using DEFAULT_USERS fallback:", err);
+    return DEFAULT_USERS;
+  }
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
-  const u = await prisma.user.findUnique({ where: { id } });
-  if (!u) return undefined;
-  return {
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    passwordHash: u.passwordHash,
-    role: u.role as "USER" | "ADMIN",
-    companyName: u.companyName,
-    corporateId: u.corporateId,
-    createdAt: u.createdAt.toISOString(),
-    complianceDeadline: u.complianceDeadline ?? undefined,
-    countdownDays: u.countdownDays ?? undefined,
-    avatarUrl: u.avatarUrl ?? undefined,
-  };
+  try {
+    const u = await prisma.user.findUnique({ where: { id } });
+    if (!u) {
+      return DEFAULT_USERS.find((user) => user.id === id);
+    }
+    return {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      passwordHash: u.passwordHash,
+      role: u.role as "USER" | "ADMIN",
+      companyName: u.companyName,
+      corporateId: u.corporateId,
+      createdAt: u.createdAt.toISOString(),
+      complianceDeadline: u.complianceDeadline ?? undefined,
+      countdownDays: u.countdownDays ?? undefined,
+      avatarUrl: u.avatarUrl ?? undefined,
+    };
+  } catch (err) {
+    console.warn("Prisma getUserById error, using fallback:", err);
+    return DEFAULT_USERS.find((user) => user.id === id);
+  }
 }
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
-  const u = await prisma.user.findUnique({ where: { email } });
-  if (!u) return undefined;
-  return {
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    passwordHash: u.passwordHash,
-    role: u.role as "USER" | "ADMIN",
-    companyName: u.companyName,
-    corporateId: u.corporateId,
-    createdAt: u.createdAt.toISOString(),
-    complianceDeadline: u.complianceDeadline ?? undefined,
-    countdownDays: u.countdownDays ?? undefined,
-    avatarUrl: u.avatarUrl ?? undefined,
-  };
+  try {
+    const u = await prisma.user.findUnique({ where: { email } });
+    if (!u) {
+      return DEFAULT_USERS.find((user) => user.email.toLowerCase() === email.toLowerCase());
+    }
+    return {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      passwordHash: u.passwordHash,
+      role: u.role as "USER" | "ADMIN",
+      companyName: u.companyName,
+      corporateId: u.corporateId,
+      createdAt: u.createdAt.toISOString(),
+      complianceDeadline: u.complianceDeadline ?? undefined,
+      countdownDays: u.countdownDays ?? undefined,
+      avatarUrl: u.avatarUrl ?? undefined,
+    };
+  } catch (err) {
+    console.warn("Prisma getUserByEmail error, using fallback:", err);
+    return DEFAULT_USERS.find((user) => user.email.toLowerCase() === email.toLowerCase());
+  }
 }
 
 export async function createUser(user: Omit<User, "id" | "createdAt" | "corporateId">): Promise<User> {
