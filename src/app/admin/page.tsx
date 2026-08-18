@@ -19,6 +19,8 @@ import AdminControlWidgets from "./AdminControlWidgets";
 import DeleteClientButton from "./DeleteClientButton";
 import DocumentPreviewButton from "./DocumentPreviewButton";
 import DeleteDocumentButton from "./DeleteDocumentButton";
+import SettingsTab from "../dashboard/SettingsTab";
+import SupportTab from "../dashboard/SupportTab";
 import { getDownloadUrl } from "@/lib/s3";
 
 interface SearchParams {
@@ -97,18 +99,120 @@ export default async function AdminPage({
   const pendingReviewCount = documents.filter((d) => d.status === "UPLOADED").length;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col lg:flex-row font-sans selection:bg-indigo-500 selection:text-white">
       
-      {/* 1. Left Sidebar: Dark Navy */}
-      <aside className="w-64 bg-[#0B1528] text-slate-400 flex flex-col shrink-0 border-r border-[#152238] z-30 justify-between">
+      {/* Mobile Top Header (< lg viewports) */}
+      <div className="lg:hidden bg-[#0B1528] text-white border-b border-[#152238] sticky top-0 z-40 shrink-0">
+        <div className="p-3.5 px-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="TrustLink Logo" className="h-8 w-auto bg-white p-1 rounded" />
+            <div>
+              <span className="text-sm font-extrabold text-white tracking-tight block leading-none">Registry Admin</span>
+              <span className="text-[8px] font-mono text-zinc-400">Institutional Control</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-2">
+            <form action={logout}>
+              <button
+                type="submit"
+                className="px-2.5 py-1 rounded border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Mobile Horizontal Scroll Tab Navigation */}
+        <div className="px-3 py-2 bg-[#091120] border-t border-[#152238] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <Link
+            href={`/admin?client=${activeClientId}&tab=pipeline`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "pipeline" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Pipeline
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=vault`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === "vault" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Vault
+            {pendingReviewCount > 0 && (
+              <span className="text-[9px] font-bold bg-amber-500 text-zinc-950 px-1.5 py-0.2 rounded shrink-0">
+                {pendingReviewCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=commercial`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "commercial" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Commercial
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=user-management`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "user-management" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Users
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=entity-review`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "entity-review" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Entities
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=broadcasts`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "broadcasts" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Broadcasts
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=audit-log`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              (activeTab === "audit" || activeTab === "audit-log") ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Audit Logs
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=settings`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "settings" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Settings
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=support`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "support" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Support
+          </Link>
+        </div>
+      </div>
+
+      {/* 1. Left Sidebar: Dark Navy (Visible lg+) */}
+      <aside className="hidden lg:flex lg:flex-col w-64 bg-[#0B1528] text-slate-400 shrink-0 border-r border-[#152238] z-30 justify-between min-h-screen sticky top-0 h-screen overflow-y-auto">
         
         {/* Top Part */}
         <div className="flex flex-col">
           <div className="p-6 border-b border-[#152238]">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-gradient-to-tr from-teal-400 to-emerald-400 flex items-center justify-center">
-                <span className="font-extrabold text-[#0B1528] text-sm tracking-wider">TL</span>
-              </div>
+              <img src="/logo.png" alt="TrustLink Logo" className="h-10 w-auto bg-white p-1 rounded" />
               <div>
                 <span className="text-base font-extrabold text-white tracking-tight">Registry Admin</span>
                 <span className="text-[10px] block font-mono text-zinc-500 leading-none">Institutional Access</span>
@@ -198,37 +302,37 @@ export default async function AdminPage({
                 }`}
               >
                 <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
                 </svg>
                 Entity Review
               </Link>
 
               <Link
-                href={`/admin?client=${activeClientId}&tab=audit`}
+                href={`/admin?client=${activeClientId}&tab=broadcasts`}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
-                  activeTab === "audit"
+                  activeTab === "broadcasts"
                     ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
                     : "hover:bg-[#111C30] hover:text-slate-200"
                 }`}
               >
                 <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.761 1.761 0 013 12c0-.972.788-1.76 1.761-1.76.62 0 1.164.322 1.477.808" />
                 </svg>
-                Audit Logs
+                Broadcasts
               </Link>
 
               <Link
-                href={`/admin?client=${activeClientId}&tab=templates`}
+                href={`/admin?client=${activeClientId}&tab=audit-log`}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
-                  activeTab === "templates"
+                  activeTab === "audit-log"
                     ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
                     : "hover:bg-[#111C30] hover:text-slate-200"
                 }`}
               >
                 <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Templates
+                Audit Log
               </Link>
             </div>
 
@@ -245,18 +349,28 @@ export default async function AdminPage({
           </Link>
           
           <div className="space-y-2 text-xs font-bold pl-2 text-slate-400">
-            <button className="flex items-center gap-2.5 hover:text-white transition-colors cursor-pointer w-full text-left">
+            <Link
+              href={`/admin?client=${activeClientId}&tab=settings`}
+              className={`flex items-center gap-2.5 transition-colors cursor-pointer w-full text-left ${
+                activeTab === "settings" ? "text-[#4ef3b2]" : "hover:text-white"
+              }`}
+            >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               </svg>
               Settings
-            </button>
-            <button className="flex items-center gap-2.5 hover:text-white transition-colors cursor-pointer w-full text-left">
+            </Link>
+            <Link
+              href={`/admin?client=${activeClientId}&tab=support`}
+              className={`flex items-center gap-2.5 transition-colors cursor-pointer w-full text-left ${
+                activeTab === "support" ? "text-[#4ef3b2]" : "hover:text-white"
+              }`}
+            >
               <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536" />
               </svg>
               Support
-            </button>
+            </Link>
           </div>
         </div>
       </aside>
@@ -265,7 +379,7 @@ export default async function AdminPage({
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* 2. Top Navigation Bar */}
-        <header className="h-16 border-b border-zinc-200 bg-white flex items-center justify-between px-8 sticky top-0 z-20 shrink-0 shadow-sm">
+        <header className="h-auto min-h-16 py-3 border-b border-zinc-200 bg-white flex flex-wrap items-center justify-between px-4 sm:px-8 sticky top-0 z-20 shrink-0 shadow-sm gap-3">
           
           {/* Left search & titles */}
           <div className="flex items-center gap-6 flex-1 max-w-xl">
@@ -291,9 +405,9 @@ export default async function AdminPage({
           {/* Links & buttons */}
           <div className="flex items-center gap-5">
             <Link
-              href={`/admin?client=${activeClientId}&tab=audit`}
+              href={`/admin?client=${activeClientId}&tab=audit-log`}
               className={`text-xs font-bold uppercase tracking-wider ${
-                activeTab === "audit" ? "text-indigo-650" : "text-zinc-500 hover:text-zinc-950"
+                (activeTab === "audit" || activeTab === "audit-log") ? "text-indigo-650" : "text-zinc-500 hover:text-zinc-950"
               }`}
             >
               Audit Logs
@@ -685,15 +799,15 @@ export default async function AdminPage({
                           : "Document Requirement";
 
                         return (
-                          <div key={doc.id} className="p-5 rounded-xl border border-zinc-200 bg-white space-y-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start gap-4">
-                              <div>
+                          <div key={doc.id} className="p-4 sm:p-5 rounded-xl border border-zinc-200 bg-white space-y-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
                                 <h4 className="text-xs font-bold text-zinc-800 line-clamp-1">{docTitle}</h4>
-                                <span className="text-[10px] font-mono text-zinc-455 truncate block max-w-[200px]" title={doc.fileName}>
+                                <span className="text-[10px] font-mono text-zinc-455 truncate block max-w-full sm:max-w-[240px]" title={doc.fileName}>
                                   {doc.fileName}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
+                              <div className="flex flex-wrap items-center gap-2 shrink-0">
                                 <DocumentPreviewButton
                                   fileUrl={doc.uploadedFileUrl}
                                   fileName={doc.fileName}
@@ -706,7 +820,7 @@ export default async function AdminPage({
                                   download
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="px-3 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700 flex items-center gap-1 cursor-pointer"
+                                  className="px-2.5 sm:px-3 py-1 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded text-[9px] font-bold text-zinc-700 flex items-center gap-1 cursor-pointer shrink-0"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -929,7 +1043,7 @@ export default async function AdminPage({
             )}
 
             {/* TAB CONTENT: AUDIT LOGS */}
-            {activeTab === "audit" && (
+            {(activeTab === "audit" || activeTab === "audit-log") && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
                   <h3 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">
@@ -971,6 +1085,19 @@ export default async function AdminPage({
                   )}
                 </div>
               </div>
+            )}
+
+            {activeTab === "settings" && (
+              <SettingsTab
+                userId={admin.id}
+                initialName={admin.name}
+                initialEmail={admin.email}
+                initialAvatarUrl={admin.avatarUrl}
+              />
+            )}
+
+            {activeTab === "support" && (
+              <SupportTab />
             )}
 
           </main>

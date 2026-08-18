@@ -9,6 +9,7 @@ import SettingsTab from "./SettingsTab";
 import SupportTab from "./SupportTab";
 import EquityCalculator from "./EquityCalculator";
 import DepositorySyncEngine from "./DepositorySyncEngine";
+import CompanySwitcher from "./CompanySwitcher";
 import { getDownloadUrl } from "@/lib/s3";
 
 interface PageProps {
@@ -70,19 +71,85 @@ export default async function DashboardPage({ searchParams }: PageProps) {
   const calculatedCountdownDays = calculateRemainingDays(activeCompanyUser.complianceDeadline, activeCompanyUser.countdownDays);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col lg:flex-row font-sans selection:bg-indigo-500 selection:text-white">
       
-      {/* 1. Left Sidebar: Dark Navy */}
-      <aside className="w-64 bg-[#0B1528] text-slate-400 flex flex-col shrink-0 border-r border-[#152238] z-30 justify-between">
+      {/* Mobile Top Header (< lg viewports) */}
+      <div className="lg:hidden bg-[#0B1528] text-white border-b border-[#152238] sticky top-0 z-40 shrink-0">
+        <div className="p-3.5 px-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="TrustLink Logo" className="h-8 w-auto bg-white p-1 rounded" />
+            <div>
+              <span className="text-sm font-extrabold text-white tracking-tight uppercase block leading-none">TrustLink</span>
+              <span className="text-[8px] font-mono text-zinc-400">Client Portal</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-2">
+            <CompanySwitcher currentContextId={contextUserId} companyMap={[{ id: activeCompanyUser.id, name: activeCompanyUser.companyName }]} activeTab={activeTab} />
+            <form action={logout}>
+              <button
+                type="submit"
+                className="px-2.5 py-1 rounded border border-zinc-700 text-zinc-300 hover:text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Mobile Horizontal Scroll Tab Navigation */}
+        <div className="px-3 py-2 bg-[#091120] border-t border-[#152238] flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <Link
+            href="/dashboard?tab=pipeline"
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "pipeline" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Pipeline
+          </Link>
+          <Link
+            href="/dashboard?tab=vault"
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "vault" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Vault
+          </Link>
+          <Link
+            href="/dashboard?tab=commercial"
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "commercial" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Commercial
+          </Link>
+          <Link
+            href="/dashboard?tab=settings"
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "settings" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Settings
+          </Link>
+          <Link
+            href="/dashboard?tab=support"
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "support" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Support
+          </Link>
+        </div>
+      </div>
+
+      {/* 1. Left Sidebar: Dark Navy (Visible lg+) */}
+      <aside className="hidden lg:flex lg:flex-col w-64 bg-[#0B1528] text-slate-400 shrink-0 border-r border-[#152238] z-30 justify-between min-h-screen sticky top-0 h-screen overflow-y-auto">
         
         {/* Top Section */}
         <div>
           {/* Sidebar Header Logo */}
           <div className="p-6 border-b border-[#152238]">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-gradient-to-tr from-teal-400 to-emerald-400 flex items-center justify-center">
-                <span className="font-extrabold text-[#0B1528] text-sm tracking-wider">TL</span>
-              </div>
+              <img src="/logo.png" alt="TrustLink Logo" className="h-10 w-auto bg-white p-1 rounded" />
               <div>
                 <span className="text-base font-extrabold text-white tracking-tight uppercase">TrustLink</span>
                 <span className="text-[9px] block font-mono text-zinc-500 leading-none">Client Portal</span>
@@ -192,7 +259,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* 2. Top Navigation Bar (Context Bar) */}
-        <header className="h-16 border-b border-zinc-200 bg-white flex items-center justify-between px-8 sticky top-0 z-20 shrink-0 shadow-sm">
+        <header className="h-auto min-h-16 py-3 border-b border-zinc-200 bg-white flex flex-wrap items-center justify-between px-4 sm:px-8 sticky top-0 z-20 shrink-0 shadow-sm gap-3">
           
           {/* Global Account Switcher dropdown & Search Bar */}
           <div className="flex items-center gap-4 flex-1 max-w-xl">
@@ -278,9 +345,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
         {/* 3. Main Content Switching Pane */}
         {activeTab === "vault" && (
-          <div className="flex flex-1 min-h-0">
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0">
             {/* Vault Left Sub-Sidebar (Sequential Stage Registry) */}
-            <aside className="w-72 bg-[#ECF2F8] border-r border-zinc-200 p-6 flex flex-col shrink-0 overflow-y-auto">
+            <aside className="w-full lg:w-72 bg-[#ECF2F8] border-b lg:border-b-0 lg:border-r border-zinc-200 p-4 sm:p-6 flex flex-col shrink-0 overflow-y-auto">
               <h4 className="text-xs font-extrabold text-zinc-700 uppercase tracking-wider mb-1">
                 Compliance Journey
               </h4>
@@ -336,7 +403,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             </aside>
 
             {/* Vault Right Main Table Panel (Spec Grouped Phases) */}
-            <main className="flex-1 p-8 bg-white overflow-y-auto space-y-8">
+            <main className="flex-1 p-4 sm:p-6 md:p-8 bg-white overflow-y-auto space-y-6 md:space-y-8 min-w-0">
               <div className="flex justify-between items-end border-b border-zinc-200 pb-4">
                 <div>
                   <span className="text-[10px] font-extrabold text-teal-600 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider font-mono">
@@ -656,7 +723,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                 <div>
                   <h4 className="font-extrabold text-[#1E3A8A] mb-1">Technical Guidance</h4>
                   <p className="text-zinc-650 leading-relaxed">
-                    Ensure all uploaded documents are in high-resolution PDF format. Scanned copies must be clearly legible and feature original wet signatures where specified. All documents will undergo automated OCR validation before being queued for manual registrar review. Verification typically takes 24 to 48 business hours.
+                    Ensure all uploaded documents are in high-resolution PDF format. Scanned copies must be clearly legible and feature original wet signatures where specified. All documents will be queued for manual registrar review. Verification typically takes 24 to 48 business hours.
                   </p>
                 </div>
               </div>
@@ -666,7 +733,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
         {/* PIPELINE BRIEFING TAB (Regulatory Briefing - Rule 9B) */}
         {activeTab === "pipeline" && (
-          <main className="flex-1 p-8 overflow-y-auto max-w-5xl mx-auto w-full space-y-8">
+          <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-5xl mx-auto w-full space-y-6 md:space-y-8 min-w-0">
             
             {/* Breadcrumb Header */}
             <div>
@@ -824,7 +891,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
         )}
 
         {activeTab === "commercial" && (
-          <main className="flex-1 p-8 overflow-y-auto bg-[#F8FAFC]">
+          <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto bg-[#F8FAFC] min-w-0">
             <CommercialTab key={contextUserId} companyName={activeCompanyUser.companyName} />
           </main>
         )}

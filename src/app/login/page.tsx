@@ -34,26 +34,6 @@ export default function LoginPage() {
     });
   };
 
-  // Helper for quick-login actions
-  const handleQuickLogin = (testCorpId: string, testEmail: string, testPass: string) => {
-    setCorporateId(testCorpId);
-    setEmail(testEmail);
-    setPassword(testPass);
-    setError(null);
-
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.append("corporateId", testCorpId);
-      formData.append("email", testEmail);
-      formData.append("password", testPass);
-
-      const res = await login(formData);
-      if (res && !res.success) {
-        setError(res.error || "An unexpected error occurred.");
-      }
-    });
-  };
-
   return (
     <div className="min-h-screen bg-[#F0F4F8] text-[#0B1528] flex flex-col items-center justify-between p-6 font-sans relative selection:bg-indigo-500 selection:text-white">
       {/* Decorative Blur Elements */}
@@ -61,10 +41,9 @@ export default function LoginPage() {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       {/* Top Header Bar */}
-      <header className="w-full max-w-5xl flex items-center justify-between py-3 px-4 border-b border-zinc-200/60 shrink-0">
-        <Link href="/" className="flex items-center gap-2 text-xs font-black tracking-widest text-[#0B1528] uppercase hover:opacity-80 transition-opacity">
-          <span className="w-6 h-6 rounded bg-[#0B1528] text-white flex items-center justify-center text-[10px] font-bold">TL</span>
-          TrustLink
+      <header className="w-full max-w-5xl flex items-center justify-between py-4 px-4 border-b border-zinc-200/60 shrink-0">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <img src="/logo.png" alt="TrustLink Logo" className="h-16 md:h-20 w-auto" />
         </Link>
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest hidden sm:inline">New Enterprise?</span>
@@ -87,15 +66,10 @@ export default function LoginPage() {
         <div className="w-full max-w-md bg-white border border-zinc-200 rounded p-8 shadow-xl space-y-6">
           
           {/* Logo & Subtitles */}
-          <div className="flex flex-col items-center text-center space-y-3">
-            <div className="w-12 h-12 bg-[#0B1528] rounded flex items-center justify-center shadow">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.9a1 1 0 011.07-.872C4.839 4.148 7.502 5 10 5c2.498 0 5.161-.852 6.764-.972a1 1 0 011.07.872C18.312 8.72 17.158 12.08 10 17.568 2.842 12.08 1.688 8.72 2.166 4.9zm8.834 8.742a1 1 0 001.218-1.556l-2.25-1.75a1 1 0 00-1.218 0l-2.25 1.75a1 1 0 101.218 1.556L9 12.568l1.796 1.074z" clipRule="evenodd" />
-              </svg>
-            </div>
+          <div className="flex flex-col items-center text-center space-y-2">
+            <img src="/logo.png" alt="TrustLink Logo" className="h-16 md:h-20 w-auto mb-1" />
             <div>
-              <h2 className="text-xl font-black text-[#0B1528] tracking-widest">TRUSTLINK</h2>
-              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest block mt-0.5">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">
                 Institutional Registry Portal
               </span>
             </div>
@@ -237,68 +211,6 @@ export default function LoginPage() {
             </span>
           </div>
 
-        </div>
-
-        {/* Quick Test Accounts Box */}
-        <div className="w-full max-w-md mt-6 bg-white border border-zinc-200 rounded p-5 shadow-lg space-y-3">
-          <h4 className="text-[10px] font-extrabold text-zinc-450 uppercase tracking-widest text-center">
-            Demo Quick Login
-          </h4>
-          <div className="grid grid-cols-1 gap-2.5">
-            <button
-              onClick={() => handleQuickLogin("ENT-4229-701", "jane@acme.com", "jane123")}
-              disabled={isPending}
-              className="flex items-center justify-between p-3 rounded bg-zinc-50 border border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50/30 text-left transition-all group cursor-pointer"
-            >
-              <div>
-                <span className="block text-xs font-bold text-zinc-800 group-hover:text-indigo-650 transition-colors">
-                  Jane Doe (Client)
-                </span>
-                <span className="block text-[9px] text-zinc-500 font-mono">
-                  ID: ENT-4229-701 • Acme Corp
-                </span>
-              </div>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-white border border-zinc-200 text-zinc-650 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
-                QUICK LOGIN
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin("ENT-2156-204", "bruce@stark.com", "bruce123")}
-              disabled={isPending}
-              className="flex items-center justify-between p-3 rounded bg-zinc-50 border border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50/30 text-left transition-all group cursor-pointer"
-            >
-              <div>
-                <span className="block text-xs font-bold text-zinc-800 group-hover:text-indigo-650 transition-colors">
-                  Bruce Wayne (Client)
-                </span>
-                <span className="block text-[9px] text-zinc-500 font-mono">
-                  ID: ENT-2156-204 • Stark Industries
-                </span>
-              </div>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-white border border-zinc-200 text-zinc-650 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
-                QUICK LOGIN
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin("ENT-ADMIN-000", "admin@trustlink.com", "admin123")}
-              disabled={isPending}
-              className="flex items-center justify-between p-3 rounded bg-zinc-50 border border-zinc-200 hover:border-indigo-500 hover:bg-indigo-50/30 text-left transition-all group cursor-pointer"
-            >
-              <div>
-                <span className="block text-xs font-bold text-zinc-800 group-hover:text-indigo-650 transition-colors">
-                  Alex Mercer (Admin)
-                </span>
-                <span className="block text-[9px] text-zinc-500 font-mono">
-                  ID: ENT-ADMIN-000 • Registry Admin
-                </span>
-              </div>
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-indigo-50 border border-indigo-150 text-indigo-655">
-                QUICK LOGIN
-              </span>
-            </button>
-          </div>
         </div>
 
       </div>

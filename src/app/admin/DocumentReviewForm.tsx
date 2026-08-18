@@ -28,11 +28,6 @@ export default function DocumentReviewForm({
     setRemark(adminRemark || "");
   }
 
-  const [ocrText, setOcrText] = useState(
-    `TRUSTLINK REGISTRY SYSTEM v4.2\n-----------------------------\nDOCUMENT_ID: ${documentId}\nFILE_NAME: ${fileName}\nMETADATA_INTEGRITY: AES-256 INTACT\nEXTRACTED_SIGNATORY: Verified Wet Signature Match\nREGISTRATION_STATUS: MCA SYSTEM SYNCED\n\n[PARSED PLAIN TEXT BODY]\n"We hereby submit the official authorization folios for conversion to electronic depository records under Rule 9B guidelines..."`
-  );
-  const [showScrutiny, setShowScrutiny] = useState(true);
-
   const handleReview = (status: "VERIFIED" | "REJECTED") => {
     startTransition(async () => {
       try {
@@ -81,72 +76,6 @@ export default function DocumentReviewForm({
           {statusState === "UPLOADED" ? "PENDING REVIEW" : statusState}
         </span>
       </div>
-
-      {/* OCR File Scrutiny Workspace Header */}
-      <div className="flex items-center justify-between bg-indigo-50/60 p-2.5 rounded-lg border border-indigo-150">
-        <div>
-          <span className="text-[9px] font-extrabold text-indigo-700 uppercase tracking-widest block font-mono">
-            Admin View — OCR File Scrutiny Workspace
-          </span>
-          <span className="text-[10px] text-zinc-700 font-bold block">
-            Cross-reference uploaded PDFs (COI, BR, Financials, Net Worth Cert) against parsed text
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowScrutiny(!showScrutiny)}
-          className="text-[9px] font-extrabold text-indigo-800 bg-white px-2 py-1 rounded border border-indigo-200 hover:bg-indigo-50 cursor-pointer shadow-sm"
-        >
-          {showScrutiny ? "Hide OCR Text [-]" : "Show OCR Text [+]"}
-        </button>
-      </div>
-
-      {/* OCR Workspace Split Container */}
-      {showScrutiny && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 p-3 rounded-lg bg-white border border-zinc-200">
-          
-          {/* Left Column: Uploaded Document Integrity info */}
-          <div className="space-y-2 text-[10px] border-r border-zinc-200 pr-2">
-            <span className="font-extrabold text-zinc-500 uppercase tracking-wider block">
-              OCR Verification Metadata
-            </span>
-            <div className="space-y-1 bg-zinc-50 p-2.5 rounded font-mono text-[9px] text-zinc-600 leading-normal">
-              <div><span className="font-bold">Target File:</span> {fileName}</div>
-              <div><span className="font-bold">OCR Confidence Score:</span> 99.8%</div>
-              <div className="text-emerald-700 font-bold">✓ PAN/CIN Text Extraction Match</div>
-              <div className="text-teal-700 font-bold">✓ Wet Signature Detected</div>
-            </div>
-            {statusState === "VERIFIED" ? (
-              <div className="p-2 rounded bg-emerald-100 border border-emerald-300 text-emerald-900 font-mono text-[9px] font-extrabold">
-                <span className="block text-[8px] uppercase tracking-wider text-emerald-700">Approve Record Control</span>
-                ✓ IMMUTABLE APPROVAL STAMP APPLIED: REG-SHA256-88F920-APPROVED
-              </div>
-            ) : (
-              <button
-                onClick={() => handleReview("VERIFIED")}
-                disabled={isPending}
-                className="w-full py-1.5 rounded bg-[#0B1528] hover:bg-[#152238] text-white font-extrabold text-[9px] tracking-widest uppercase transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
-              >
-                Approve &amp; Apply Immutable Stamp
-              </button>
-            )}
-          </div>
-
-          {/* Right Column: Parsed Plaintext OCR Block */}
-          <div className="space-y-2 text-[10px] flex flex-col justify-between">
-            <span className="font-extrabold text-zinc-500 uppercase tracking-wider block">
-              Parsed Plaintext OCR Feed
-            </span>
-            <textarea
-              rows={5}
-              value={ocrText}
-              onChange={(e) => setOcrText(e.target.value)}
-              className="w-full p-2 bg-zinc-50 border border-zinc-200 rounded font-mono text-[8px] text-zinc-700 leading-normal focus:outline-none focus:bg-white resize-none"
-            />
-          </div>
-
-        </div>
-      )}
 
       {/* Review Remarks */}
       <div className="space-y-1.5">

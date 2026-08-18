@@ -22,13 +22,7 @@ export default function ForgotPasswordPage() {
       {/* Header Logo */}
       <div className="mb-8 flex flex-col items-center gap-3">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <span className="font-extrabold text-white text-lg tracking-wider">TL</span>
-          </div>
-          <div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-zinc-900 to-zinc-700 bg-clip-text text-transparent">TrustLink</span>
-            <span className="text-[10px] block font-mono text-zinc-500 leading-none">SECURE COMPLIANCE Portal</span>
-          </div>
+          <img src="/logo.png" alt="TrustLink Logo" className="h-12 w-auto" />
         </Link>
       </div>
 

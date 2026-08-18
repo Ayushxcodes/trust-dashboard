@@ -169,17 +169,15 @@ export default function RegisterPage() {
         
         {/* Top Header */}
         <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-tr from-teal-400 to-emerald-400 flex items-center justify-center rounded">
-              <span className="font-extrabold text-[#0B1528] text-base tracking-wider">TL</span>
-            </div>
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/logo.png" alt="TrustLink Logo" className="h-10 w-auto bg-white p-1 rounded" />
             <div>
               <span className="text-lg font-black text-white tracking-widest uppercase block">TrustLink</span>
               <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block leading-none">
                 Compliance Infrastructure
               </span>
             </div>
-          </div>
+          </Link>
 
           <div className="space-y-4 pt-8">
             <h2 className="text-2xl font-black text-white tracking-tight leading-snug">
