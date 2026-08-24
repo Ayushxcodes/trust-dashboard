@@ -29,19 +29,19 @@ export default function GrievanceRedressalPage() {
               <li className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                 <span className="font-semibold w-40 text-gray-800">Grievance Email:</span>
                 <a
-                  href="mailto:grievance@trustlinkinvestor.com"
+                  href="mailto:info@trustlinkinvestor.com"
                   className="text-blue-600 font-medium hover:underline"
                 >
-                  grievance@trustlinkinvestor.com
+                  info@trustlinkinvestor.com
                 </a>
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                 <span className="font-semibold w-40 text-gray-800">Compliance Email:</span>
                 <a
-                  href="mailto:compliance@trustlinkinvestor.com"
+                  href="mailto:info@trustlinkinvestor.com"
                   className="text-blue-600 font-medium hover:underline"
                 >
-                  compliance@trustlinkinvestor.com
+                  info@trustlinkinvestor.com
                 </a>
               </li>
               <li className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
@@ -78,10 +78,10 @@ export default function GrievanceRedressalPage() {
               <p className="text-sm pt-2">
                 <span className="font-semibold">Email:</span>{" "}
                 <a
-                  href="mailto:grievance@trustlinkinvestor.com"
+                  href="mailto:info@trustlinkinvestor.com"
                   className="text-blue-600 font-medium hover:underline"
                 >
-                  grievance@trustlinkinvestor.com
+                  info@trustlinkinvestor.com
                 </a>
               </p>
             </div>

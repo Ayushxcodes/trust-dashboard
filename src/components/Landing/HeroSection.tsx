@@ -30,7 +30,7 @@ export default function HeroSection() {
               Access Client Portal &rarr;
             </Link>
             <a
-              href="mailto:grievance@trustlinkinvestor.com"
+              href="mailto:info@trustlinkinvestor.com"
               className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3.5 font-bold text-white transition hover:bg-indigo-700 shadow-md text-xs uppercase tracking-wider"
             >
               Write to Us

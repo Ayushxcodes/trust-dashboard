@@ -21,7 +21,7 @@ export default function OurServicesPage() {
 
           <div className="mt-8 flex justify-center gap-4">
             <a
-              href="mailto:grievance@trustlinkinvestor.com"
+              href="mailto:info@trustlinkinvestor.com"
               className="rounded-full bg-gradient-to-r from-blue-900 to-indigo-900 px-8 py-3 text-white font-semibold hover:from-blue-800 hover:to-indigo-800 transition-all duration-300 shadow-lg text-sm"
             >
               Contact Us

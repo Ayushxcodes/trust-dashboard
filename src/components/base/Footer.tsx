@@ -28,10 +28,10 @@ export default function Footer() {
               <li>
                 Email:{" "}
                 <a
-                  href="mailto:grievance@trustlinkinvestor.com"
+                  href="mailto:info@trustlinkinvestor.com"
                   className="transition hover:text-white underline"
                 >
-                  grievance@trustlinkinvestor.com
+                  info@trustlinkinvestor.com
                 </a>
               </li>
               <li>Phone: +91 9910118347</li>

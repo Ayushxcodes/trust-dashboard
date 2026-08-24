@@ -16,7 +16,7 @@ export default function ComplianceOfficerPage() {
             <p className="text-sm text-gray-600 font-medium">Director / Compliance Officer / Principal Officer</p>
             <div className="pt-4 border-t border-gray-100 space-y-2 text-sm text-gray-700">
               <p><span className="font-semibold">SEBI Registration No:</span> INR000004510</p>
-              <p><span className="font-semibold">Email:</span> <a href="mailto:grievance@trustlinkinvestor.com" className="text-blue-600 hover:underline">grievance@trustlinkinvestor.com</a></p>
+              <p><span className="font-semibold">Email:</span> <a href="mailto:info@trustlinkinvestor.com" className="text-blue-600 hover:underline">info@trustlinkinvestor.com</a></p>
               <p><span className="font-semibold">Phone:</span> +91 9910118347</p>
               <p><span className="font-semibold">Office Address:</span> Pratap Bhawan, 312–314, Bahadur Shah Zafar Marg, Vikram Nagar, New Delhi – 110002</p>
             </div>
