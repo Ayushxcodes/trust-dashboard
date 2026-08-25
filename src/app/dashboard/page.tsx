@@ -10,6 +10,7 @@ import SupportTab from "./SupportTab";
 import EquityCalculator from "./EquityCalculator";
 import DepositorySyncEngine from "./DepositorySyncEngine";
 import CompanySwitcher from "./CompanySwitcher";
+import DocumentPreviewButton from "../admin/DocumentPreviewButton";
 import { getDownloadUrl } from "@/lib/s3";
 
 interface PageProps {
@@ -557,22 +558,29 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
-                          {/* Download Template Format Button — ONLY shown if format is attached */}
+                        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                          {/* Preview & Download Template Format Buttons — ONLY shown if format is attached */}
                           {hasFormat && (
-                            <a
-                              href={tpl.fileUrl}
-                              download
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-2 rounded-lg bg-white hover:bg-zinc-50 border border-zinc-250 text-zinc-750 font-bold text-[10px] transition-colors flex items-center gap-1.5 shrink-0 shadow-sm"
-                              title="Download Admin Provided Format"
-                            >
-                              <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                              </svg>
-                              Download Format
-                            </a>
+                            <>
+                              <DocumentPreviewButton
+                                fileUrl={tpl.fileUrl}
+                                fileName={tpl.fileUrl.split("/").pop() || `${tpl.title}`}
+                                title={`Template Format: ${tpl.title}`}
+                              />
+                              <a
+                                href={tpl.fileUrl}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 rounded-lg bg-white hover:bg-zinc-50 border border-zinc-250 text-zinc-750 font-extrabold text-[9px] transition-colors flex items-center gap-1 shrink-0 shadow-sm uppercase font-mono"
+                                title="Download Admin Provided Format"
+                              >
+                                <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download
+                              </a>
+                            </>
                           )}
 
                           <UploadButton templateId={tpl.id} templateTitle={tpl.title} activeUserId={contextUserId} existingDoc={doc} />

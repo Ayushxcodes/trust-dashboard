@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { uploadDocument } from "../actions";
+import { uploadDocument, getDirectUploadPresignedUrl, saveDirectUploadedDocumentRecord } from "../actions";
 
 interface UploadButtonProps {
   templateId: string;
@@ -27,8 +27,58 @@ export default function UploadButton({
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleUpload = (file: File) => {
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("File size exceeds the 50MB limit. Please upload a smaller file.");
+      return;
+    }
     startTransition(async () => {
       try {
+        // Step 1: Attempt to get direct S3 presigned upload URL (bypasses Server Action 6MB payload limit on AWS API Gateway)
+        const presignedRes = await getDirectUploadPresignedUrl(
+          templateId,
+          file.name,
+          file.type,
+          activeUserId
+        );
+
+        if (presignedRes.success && presignedRes.uploadUrl && presignedRes.s3Url) {
+          try {
+            // Upload directly from browser to AWS S3 bucket
+            const s3UploadRes = await fetch(presignedRes.uploadUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type": file.type || "application/octet-stream",
+              },
+              body: file,
+            });
+
+            if (s3UploadRes.ok) {
+              // Record document entry in database
+              const recordRes = await saveDirectUploadedDocumentRecord(
+                templateId,
+                file.name,
+                presignedRes.s3Url,
+                activeUserId
+              );
+
+              if (recordRes.success) {
+                toast.success("Document uploaded successfully!", {
+                  description: `${file.name} attached to ${templateTitle}`,
+                });
+                return;
+              } else {
+                toast.error(recordRes.error || "Failed to record document upload");
+                return;
+              }
+            } else {
+              console.warn("Direct S3 upload HTTP status:", s3UploadRes.status, "Falling back to server action.");
+            }
+          } catch (s3FetchErr) {
+            console.warn("Direct S3 fetch error (S3 CORS or network issue):", s3FetchErr, "Falling back to server action.");
+          }
+        }
+
+        // Fallback: If direct S3 upload fails or S3 is not configured, use standard Server Action upload
         const formData = new FormData();
         formData.append("templateId", templateId);
         formData.append("activeUserId", activeUserId);

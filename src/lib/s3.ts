@@ -49,6 +49,37 @@ export async function uploadFileToS3(file: File, folder: string): Promise<string
 }
 
 /**
+ * Generates a presigned PUT URL for direct browser uploads to S3.
+ * Bypasses API Gateway / Next.js Server Action 6MB payload limits.
+ */
+export async function getPresignedUploadUrl(
+  folder: string,
+  fileName: string,
+  fileType: string
+): Promise<{ uploadUrl: string; s3Url: string } | null> {
+  if (!s3Client || !bucketName) return null;
+
+  const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const key = `${folder}/${Date.now()}_${sanitizedFileName}`;
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      ContentType: fileType || "application/octet-stream",
+    });
+
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+    const s3Url = `s3://${bucketName}/${key}`;
+
+    return { uploadUrl, s3Url };
+  } catch (err) {
+    console.error("Error generating presigned upload URL:", err);
+    return null;
+  }
+}
+
+/**
  * Generates a download URL for a file.
  * Handles both S3 URLs (s3://...) and local paths.
  */

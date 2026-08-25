@@ -6,12 +6,12 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 function createPrismaClient(): PrismaClient {
   const databaseUrl = process.env.DATABASE_URL || "";
-  const logOpts = process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"];
+  const logOpts: Array<"error" | "warn"> = process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"];
 
   if (databaseUrl.startsWith("prisma://") || databaseUrl.startsWith("prisma+postgres://")) {
     return new PrismaClient({
       accelerateUrl: databaseUrl,
-      log: logOpts as any,
+      log: logOpts,
     });
   }
 
@@ -23,7 +23,7 @@ function createPrismaClient(): PrismaClient {
 
   return new PrismaClient({
     adapter,
-    log: logOpts as any,
+    log: logOpts,
   });
 }
 

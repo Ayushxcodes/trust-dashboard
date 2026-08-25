@@ -25,7 +25,7 @@ import {
   getUserDocumentById,
   User,
 } from "@/lib/db";
-import { uploadFileToS3 } from "@/lib/s3";
+import { uploadFileToS3, getPresignedUploadUrl } from "@/lib/s3";
 
 // Helper to get current authenticated user
 export async function getCurrentUser(): Promise<User | null> {
@@ -83,11 +83,12 @@ export async function login(formData: FormData) {
       role: user.role,
       redirectUrl: user.role === "ADMIN" ? "/admin" : "/dashboard",
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Login server action error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Failed to log in. Please check database connection.";
     return {
       success: false,
-      error: err?.message || "Failed to log in. Please check database connection.",
+      error: errorMessage,
     };
   }
 }
@@ -165,7 +166,7 @@ export async function logout() {
 
 // Allowed file extensions for document compliance uploads
 const ALLOWED_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".docx", ".doc", ".xlsx", ".xls"];
-const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 
 // Client-Specific Actions
 export async function uploadDocument(formData: FormData) {
@@ -229,6 +230,99 @@ export async function uploadDocument(formData: FormData) {
   revalidatePath("/admin");
 
   return { success: true };
+}
+
+/**
+ * Generates a presigned S3 upload URL for direct browser-to-S3 upload.
+ * Bypasses AWS API Gateway / Next.js Server Action payload limits (6MB).
+ */
+export async function getDirectUploadPresignedUrl(
+  templateId: string,
+  fileName: string,
+  fileType: string,
+  requestedUserId?: string
+) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const activeUserId = user.role === "ADMIN" && requestedUserId ? requestedUserId : user.id;
+
+  const ext = path.extname(fileName).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return {
+      success: false,
+      error: `Invalid file format (${ext}). Allowed formats: ${ALLOWED_EXTENSIONS.join(", ")}`,
+    };
+  }
+
+  const presigned = await getPresignedUploadUrl(`uploads/${activeUserId}`, fileName, fileType);
+  if (!presigned) {
+    return { success: false, fallbackToServerAction: true };
+  }
+
+  return {
+    success: true,
+    uploadUrl: presigned.uploadUrl,
+    s3Url: presigned.s3Url,
+    activeUserId,
+    sanitizedFileName: fileName.replace(/[^a-zA-Z0-9._-]/g, "_"),
+  };
+}
+
+/**
+ * Saves a document record after direct S3 upload completes.
+ */
+export async function saveDirectUploadedDocumentRecord(
+  templateId: string,
+  fileName: string,
+  fileUrl: string,
+  requestedUserId?: string
+) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const activeUserId = user.role === "ADMIN" && requestedUserId ? requestedUserId : user.id;
+  const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+  await uploadUserDocument(activeUserId, templateId, sanitizedFileName, fileUrl);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+/**
+ * Generates a presigned S3 upload URL for template files (Admin).
+ */
+export async function getTemplatePresignedUrl(fileName: string, fileType: string) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const ext = path.extname(fileName).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    return {
+      success: false,
+      error: `Invalid file format (${ext}). Allowed formats: ${ALLOWED_EXTENSIONS.join(", ")}`,
+    };
+  }
+
+  const presigned = await getPresignedUploadUrl("templates", fileName, fileType);
+  if (!presigned) {
+    return { success: false, fallbackToServerAction: true };
+  }
+
+  return {
+    success: true,
+    uploadUrl: presigned.uploadUrl,
+    s3Url: presigned.s3Url,
+  };
 }
 
 // Admin-Specific Actions

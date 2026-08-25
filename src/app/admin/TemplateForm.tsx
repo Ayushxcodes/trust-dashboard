@@ -2,7 +2,7 @@
 
 import { useState, useRef, useTransition } from "react";
 import { toast } from "sonner";
-import { addTemplate } from "../actions";
+import { addTemplate, getTemplatePresignedUrl } from "../actions";
 
 export default function TemplateForm() {
   const [title, setTitle] = useState("");
@@ -15,14 +15,45 @@ export default function TemplateForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedFile && selectedFile.size > 50 * 1024 * 1024) {
+      toast.error("Template file size exceeds the 50MB limit.");
+      return;
+    }
     startTransition(async () => {
       try {
+        let finalFileUrl = fileUrl || "/templates/custom_placeholder.docx";
+
+        // Direct S3 Upload if selectedFile exists
+        if (selectedFile) {
+          const presignedRes = await getTemplatePresignedUrl(selectedFile.name, selectedFile.type);
+          if (presignedRes.success && presignedRes.uploadUrl && presignedRes.s3Url) {
+            try {
+              const s3UploadRes = await fetch(presignedRes.uploadUrl, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": selectedFile.type || "application/octet-stream",
+                },
+                body: selectedFile,
+              });
+
+              if (s3UploadRes.ok) {
+                finalFileUrl = presignedRes.s3Url;
+              } else {
+                console.warn("Direct S3 template upload HTTP status:", s3UploadRes.status, "Falling back to server action.");
+              }
+            } catch (s3FetchErr) {
+              console.warn("Direct S3 template fetch error (CORS or network):", s3FetchErr, "Falling back to server action.");
+            }
+          }
+        }
+
         const formData = new FormData();
         formData.append("title", title);
         formData.append("description", description);
         formData.append("requiredFor", requiredFor);
-        formData.append("fileUrl", fileUrl || "/templates/custom_placeholder.docx");
-        if (selectedFile) {
+        formData.append("fileUrl", finalFileUrl);
+        // Only append raw file to formData if presigned upload wasn't used
+        if (selectedFile && !finalFileUrl.startsWith("s3://")) {
           formData.append("file", selectedFile);
         }
 

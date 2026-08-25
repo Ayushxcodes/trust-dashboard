@@ -160,22 +160,26 @@ export default function DocumentPreviewModal({
               />
             </object>
           ) : (
-            <div className="w-full h-[70vh] flex flex-col items-center justify-center bg-slate-900/90 rounded-xl border border-slate-800 p-8 text-center">
+            <div className="w-full h-[70vh] flex flex-col items-center justify-center bg-slate-900/90 rounded-xl border border-slate-800 p-4 text-center">
               <iframe
-                src={fileUrl}
-                className="w-full h-full rounded-lg border border-slate-800 bg-white mb-4"
+                src={
+                  fileUrl.startsWith("http")
+                    ? `https://docs.google.com/gview?url=${encodeURIComponent(fileUrl)}&embedded=true`
+                    : fileUrl
+                }
+                className="w-full h-full rounded-lg border border-slate-800 bg-white mb-3"
                 title={fileName}
                 referrerPolicy="no-referrer"
               />
               <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400">If the document preview does not load directly in frame:</span>
+                <span className="text-xs text-slate-400">Can&apos;t see the document preview inside the frame?</span>
                 <a
                   href={fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1 bg-teal-500 text-slate-950 text-xs font-bold rounded hover:bg-teal-400 transition-colors"
                 >
-                  Open Document Viewer
+                  Open in New Tab
                 </a>
               </div>
             </div>
