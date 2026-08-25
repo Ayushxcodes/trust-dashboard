@@ -147,6 +147,14 @@ export default async function AdminPage({
             )}
           </Link>
           <Link
+            href={`/admin?client=${activeClientId}&tab=templates`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "templates" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Doc Templates
+          </Link>
+          <Link
             href={`/admin?client=${activeClientId}&tab=commercial`}
             className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
               activeTab === "commercial" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
@@ -243,7 +251,7 @@ export default async function AdminPage({
                 href={`/admin?client=${activeClientId}&tab=vault`}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
                   activeTab === "vault"
-                    ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
+                    ? "bg-[#1E293B] text-[#4ef3b2] border-l-4 border-[#4ef3b2] pl-3"
                     : "hover:bg-[#111C30] hover:text-slate-200"
                 }`}
               >
@@ -256,6 +264,20 @@ export default async function AdminPage({
                     {pendingReviewCount}
                   </span>
                 )}
+              </Link>
+
+              <Link
+                href={`/admin?client=${activeClientId}&tab=templates`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
+                  activeTab === "templates"
+                    ? "bg-[#1E293B] text-[#4ef3b2] border-l-4 border-[#4ef3b2] pl-3"
+                    : "hover:bg-[#111C30] hover:text-slate-200"
+                }`}
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Doc Templates
               </Link>
 
               <Link
@@ -998,7 +1020,19 @@ export default async function AdminPage({
 
             {/* TAB CONTENT: TEMPLATE MANAGEMENT */}
             {activeTab === "templates" && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="space-y-6">
+                <div className="flex justify-between items-end border-b border-zinc-200 pb-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-zinc-450 uppercase tracking-wider font-mono">
+                      System &gt; Document Requirements
+                    </span>
+                    <h2 className="text-xl font-bold text-zinc-900 mt-1.5">
+                      Doc Templates & Requirements
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {/* Form column */}
                 <div className="lg:col-span-1">
@@ -1038,9 +1072,9 @@ export default async function AdminPage({
                     )}
                   </div>
                 </div>
-
               </div>
-            )}
+            </div>
+          )}
 
             {/* TAB CONTENT: AUDIT LOGS */}
             {(activeTab === "audit" || activeTab === "audit-log") && (
