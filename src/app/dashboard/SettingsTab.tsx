@@ -33,6 +33,13 @@ export default function SettingsTab({
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
 
+  // TOTP MFA Modal State
+  const [showMfaModal, setShowMfaModal] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [secret, setSecret] = useState("");
+  const [totpToken, setTotpToken] = useState("");
+  const [isVerifyingTotp, setIsVerifyingTotp] = useState(false);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     startTransition(async () => {
@@ -178,6 +185,44 @@ export default function SettingsTab({
           </div>
         </div>
 
+        {/* Multi-Factor Authentication (TOTP / Authenticator App Setup) */}
+        <div className="p-6 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 002-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                  2-Factor Authentication (TOTP)
+                </h4>
+                <p className="text-[11px] text-indigo-800 font-medium">
+                  Pair Google Authenticator or Authy to secure portal logins.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                const { setupTOTPMFA } = await import("../actions");
+                const res = await setupTOTPMFA();
+                if (res.success && res.qrCodeUrl && res.secret) {
+                  setQrCodeUrl(res.qrCodeUrl);
+                  setSecret(res.secret);
+                  setShowMfaModal(true);
+                } else {
+                  toast.error(res.error || "Failed to initialize MFA setup.");
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[11px] uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+            >
+              Configure Authenticator
+            </button>
+          </div>
+        </div>
+
         {/* Action Button */}
         <div className="flex justify-end">
           <button
@@ -190,6 +235,102 @@ export default function SettingsTab({
         </div>
 
       </form>
+
+      {/* TOTP Authenticator Setup Modal */}
+      {showMfaModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 002-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-900">Set Up TOTP Authenticator</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Scan QR code using Google Authenticator or Authy</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMfaModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-xs font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4 text-center">
+              {qrCodeUrl ? (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 inline-block shadow-inner">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={qrCodeUrl} alt="MFA QR Code" className="w-44 h-44 mx-auto rounded" />
+                </div>
+              ) : (
+                <div className="w-44 h-44 bg-slate-100 rounded-xl animate-pulse mx-auto flex items-center justify-center text-xs text-slate-400 font-mono">
+                  Generating QR...
+                </div>
+              )}
+
+              <div className="p-2.5 bg-slate-100 rounded-lg text-left space-y-1">
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Secret Key (Manual Entry)</span>
+                <code className="text-xs font-mono font-bold text-indigo-700 select-all break-all block">{secret}</code>
+              </div>
+
+              <div className="space-y-2 text-left pt-2">
+                <label className="block text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">
+                  Enter 6-Digit Code to Confirm Setup
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={totpToken}
+                  onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
+                  placeholder="e.g. 592814"
+                  className="w-full px-4 py-2.5 rounded-lg border-2 border-indigo-200 text-center font-mono text-lg font-bold text-slate-900 tracking-widest focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowMfaModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isVerifyingTotp || totpToken.length !== 6}
+                onClick={async () => {
+                  setIsVerifyingTotp(true);
+                  try {
+                    const { verifyAndEnableTOTP } = await import("../actions");
+                    const res = await verifyAndEnableTOTP(totpToken);
+                    if (res.success) {
+                      toast.success("TOTP Multi-Factor Authentication successfully enabled!");
+                      setShowMfaModal(false);
+                      setTotpToken("");
+                    } else {
+                      toast.error(res.error || "Invalid 6-digit TOTP code.");
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    toast.error("Failed to verify TOTP code.");
+                  } finally {
+                    setIsVerifyingTotp(false);
+                  }
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs transition-all disabled:opacity-50 cursor-pointer uppercase tracking-wider shadow-md"
+              >
+                {isVerifyingTotp ? "Verifying..." : "Enable MFA"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

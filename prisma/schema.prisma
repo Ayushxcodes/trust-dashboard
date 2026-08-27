@@ -19,6 +19,8 @@ model User {
   complianceDeadline String?
   countdownDays      Int?
   avatarUrl          String?
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean  @default(false)
 }
 
 model DocumentTemplate {

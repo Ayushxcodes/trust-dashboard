@@ -66,8 +66,11 @@ export default function AboutUsPage() {
           <div className="bg-gradient-to-r from-slate-50 to-gray-50 py-16 border-t border-b border-gray-200">
             <div className="container mx-auto px-6">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-3">
-                  🛡️ Regulatory Status
+                <h2 className="text-3xl font-bold text-gray-800 mb-3 flex items-center justify-center gap-2">
+                  <svg className="w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Regulatory Status
                 </h2>
                 <p className="text-gray-600 max-w-2xl mx-auto text-lg">
                   Licensed and regulated by SEBI to ensure the highest standards of compliance and investor protection
@@ -91,7 +94,7 @@ export default function AboutUsPage() {
                         <span className="font-semibold text-gray-800">Registration Number:</span>
                       </div>
                       <p className="text-gray-700 ml-6 font-mono bg-gray-50 px-3 py-1 rounded text-sm inline-block">
-                        INR000004510
+                        INR000004351
                       </p>
                     </div>
                   </div>
@@ -124,8 +127,11 @@ export default function AboutUsPage() {
               {/* Vision */}
               <Card hover={true} shadow="lg" background="white" border={true} className="h-full">
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">👁️</span>
+                  <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                   </div>
                   <h3 className="mb-4 text-2xl font-bold text-gray-800">
                     Our Vision
@@ -141,8 +147,10 @@ export default function AboutUsPage() {
               {/* Mission */}
               <Card hover={true} shadow="lg" background="white" border={true} className="h-full">
                 <div className="text-center">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🎯</span>
+                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600">
+                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
                   <h3 className="mb-4 text-2xl font-bold text-gray-800">
                     Our Mission

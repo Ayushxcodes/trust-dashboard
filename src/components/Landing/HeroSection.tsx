@@ -22,27 +22,62 @@ export default function HeroSection() {
           </p>
 
           {/* CTA buttons */}
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap gap-3 items-center">
+            <Link
+              href="/companies"
+              className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-3 font-bold text-white transition hover:bg-indigo-700 shadow-md text-xs uppercase tracking-wider gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Search Serviced Companies
+            </Link>
+
             <Link
               href="/login"
-              className="inline-flex items-center justify-center rounded-lg bg-[#0B1528] px-6 py-3.5 font-bold text-white transition hover:bg-[#1A2B4C] shadow-md uppercase tracking-wider text-xs"
+              className="inline-flex items-center justify-center rounded-lg bg-[#0B1528] px-5 py-3 font-bold text-white transition hover:bg-[#1A2B4C] shadow-md uppercase tracking-wider text-xs gap-2"
             >
-              Access Client Portal &rarr;
+              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              Client Portal
             </Link>
-            <a
-              href="mailto:info@trustlinkinvestor.com"
-              className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-6 py-3.5 font-bold text-white transition hover:bg-indigo-700 shadow-md text-xs uppercase tracking-wider"
+
+            <Link
+              href="/investor/grievance-redressal"
+              className="inline-flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-rose-700 px-5 py-3 font-bold transition hover:bg-red-100 text-xs uppercase tracking-wider gap-2"
             >
-              Write to Us
-            </a>
-            <a
-              href="https://calendly.com/grievance-trustlinkinvestor/30min"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-6 py-3.5 font-bold text-gray-700 transition hover:bg-gray-100 text-xs uppercase tracking-wider"
+              <svg className="w-4 h-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Statutory Grievance
+            </Link>
+
+            <Link
+              href="/track-request"
+              className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 font-bold text-gray-700 transition hover:bg-gray-100 text-xs uppercase tracking-wider gap-2"
             >
-              Book a Call
-            </a>
+              <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Track SRN Request
+            </Link>
+          </div>
+
+          {/* Key Metrics / Trust Signals */}
+          <div className="mt-8 pt-6 border-t border-gray-150 grid grid-cols-3 gap-4">
+            <div>
+              <div className="text-2xl font-black text-indigo-900">2018</div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Est. Incorporation</div>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-indigo-900">100+</div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Client Companies</div>
+            </div>
+            <div>
+              <div className="text-2xl font-black text-indigo-900">500,000+</div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Folios Serviced</div>
+            </div>
           </div>
         </div>
 
@@ -50,7 +85,7 @@ export default function HeroSection() {
         <div className="flex w-full md:w-1/2 items-center justify-center">
           <img 
             src="/trustlink_homepage.png" 
-            alt="Registrar & Transfer Agent Solutions" 
+            alt="Trustlink SEBI Registered Category I RTA Solutions" 
             className="max-w-full h-auto rounded-2xl shadow-2xl border border-gray-100 object-cover"
           />
         </div>

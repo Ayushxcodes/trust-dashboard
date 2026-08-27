@@ -14,6 +14,8 @@ export interface User {
   complianceDeadline?: string;
   countdownDays?: number;
   avatarUrl?: string;
+  twoFactorSecret?: string;
+  twoFactorEnabled?: boolean;
 }
 
 export interface DocumentTemplate {
@@ -64,76 +66,7 @@ export interface SystemMessage {
   createdAt: string;
 }
 
-export const DEFAULT_USERS: User[] = [
-  {
-    id: "usr-admin-1",
-    name: "Compliance Admin",
-    email: "admin@trustlink.com",
-    passwordHash: "admin123",
-    role: "ADMIN",
-    companyName: "TrustLink Compliance Operations",
-    corporateId: "ENT-ADMIN-000",
-    createdAt: new Date().toISOString(),
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "usr-client-1",
-    name: "Alpha Corp Admin",
-    email: "admin@alphacorp.com",
-    passwordHash: "alpha123",
-    role: "USER",
-    companyName: "Alpha Corp Ltd",
-    corporateId: "ENT-4089-102",
-    createdAt: new Date().toISOString(),
-    complianceDeadline: "2026-09-30",
-    countdownDays: 43,
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "usr-client-2",
-    name: "Beta Tech Signatory",
-    email: "admin@betatech.com",
-    passwordHash: "beta123",
-    role: "USER",
-    companyName: "Beta Tech Systems",
-    corporateId: "ENT-8821-304",
-    createdAt: new Date().toISOString(),
-    complianceDeadline: "2026-10-15",
-    countdownDays: 58,
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
-  },
-];
-
-export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: "log-sys-01",
-    adminId: "usr-admin-1",
-    userId: null,
-    action: "REGISTRY SYSTEM INITIALIZED: MCA Rule 9B Compliance Engine active for unlisted public entities.",
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-  {
-    id: "log-sys-02",
-    adminId: "usr-admin-1",
-    userId: null,
-    action: "DEPOSITORY SYNC: Synchronized ISIN records & CDSL/NSDL Tripartite Agreement status.",
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: "log-sys-03",
-    adminId: null,
-    userId: "usr-client-1",
-    action: "DOCUMENT SUBMISSION: Board Resolution & Certificate of Incorporation uploaded for verification.",
-    createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-  },
-  {
-    id: "log-sys-04",
-    adminId: "usr-admin-1",
-    userId: null,
-    action: "ADMIN VERIFICATION: Document verification completed. Immutable approval stamp applied.",
-    createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-  },
-];
+// Mock/Default constants removed — all data is fetched directly from PostgreSQL database tables via Prisma.
 
 export const DEFAULT_TEMPLATES: DocumentTemplate[] = [
   {
@@ -223,12 +156,11 @@ export function writeDb(data: MockDbData | Record<string, unknown>): void {
   // no-op for compatibility
 }
 
-// Database Helpers (Async/Prisma)
+// Database Helpers (Async/Prisma - Direct PostgreSQL Execution)
 
 export async function getUsers(): Promise<User[]> {
   try {
-    const users = await prisma.user.findMany();
-    if (users.length === 0) return DEFAULT_USERS;
+    const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
     return users.map((u) => ({
       id: u.id,
       name: u.name,
@@ -241,18 +173,19 @@ export async function getUsers(): Promise<User[]> {
       complianceDeadline: u.complianceDeadline ?? undefined,
       countdownDays: u.countdownDays ?? undefined,
       avatarUrl: u.avatarUrl ?? undefined,
+      twoFactorSecret: u.twoFactorSecret ?? undefined,
+      twoFactorEnabled: u.twoFactorEnabled ?? false,
     }));
-  } catch {
-    return DEFAULT_USERS;
+  } catch (err) {
+    console.error("Prisma getUsers error:", err);
+    return [];
   }
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
   try {
     const u = await prisma.user.findUnique({ where: { id } });
-    if (!u) {
-      return DEFAULT_USERS.find((user) => user.id === id);
-    }
+    if (!u) return undefined;
     return {
       id: u.id,
       name: u.name,
@@ -265,18 +198,19 @@ export async function getUserById(id: string): Promise<User | undefined> {
       complianceDeadline: u.complianceDeadline ?? undefined,
       countdownDays: u.countdownDays ?? undefined,
       avatarUrl: u.avatarUrl ?? undefined,
+      twoFactorSecret: u.twoFactorSecret ?? undefined,
+      twoFactorEnabled: u.twoFactorEnabled ?? false,
     };
-  } catch {
-    return DEFAULT_USERS.find((user) => user.id === id);
+  } catch (err) {
+    console.error("Prisma getUserById error:", err);
+    return undefined;
   }
 }
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
     const u = await prisma.user.findUnique({ where: { email } });
-    if (!u) {
-      return DEFAULT_USERS.find((user) => user.email.toLowerCase() === email.toLowerCase());
-    }
+    if (!u) return undefined;
     return {
       id: u.id,
       name: u.name,
@@ -289,9 +223,28 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
       complianceDeadline: u.complianceDeadline ?? undefined,
       countdownDays: u.countdownDays ?? undefined,
       avatarUrl: u.avatarUrl ?? undefined,
+      twoFactorSecret: u.twoFactorSecret ?? undefined,
+      twoFactorEnabled: u.twoFactorEnabled ?? false,
     };
-  } catch {
-    return DEFAULT_USERS.find((user) => user.email.toLowerCase() === email.toLowerCase());
+  } catch (err) {
+    console.error("Prisma getUserByEmail error:", err);
+    return undefined;
+  }
+}
+
+export async function updateUserMFASecret(userId: string, secret: string | null, enabled: boolean): Promise<boolean> {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        twoFactorSecret: secret,
+        twoFactorEnabled: enabled,
+      },
+    });
+    return true;
+  } catch (err) {
+    console.error("updateUserMFASecret error:", err);
+    return false;
   }
 }
 
@@ -355,33 +308,7 @@ export async function deleteUser(userId: string): Promise<boolean> {
 
 export async function getTemplates(): Promise<DocumentTemplate[]> {
   try {
-    let templates = await prisma.documentTemplate.findMany();
-    if (templates.length < DEFAULT_TEMPLATES.length) {
-      try {
-        for (const tpl of DEFAULT_TEMPLATES) {
-          await prisma.documentTemplate.upsert({
-            where: { id: tpl.id },
-            update: {
-              title: tpl.title,
-              description: tpl.description,
-              fileUrl: tpl.fileUrl,
-              requiredFor: tpl.requiredFor,
-            },
-            create: {
-              id: tpl.id,
-              title: tpl.title,
-              description: tpl.description,
-              fileUrl: tpl.fileUrl,
-              requiredFor: tpl.requiredFor,
-            },
-          });
-        }
-        templates = await prisma.documentTemplate.findMany();
-      } catch {
-        // Silent catch for non-fatal upsert
-      }
-    }
-    if (templates.length === 0) return DEFAULT_TEMPLATES;
+    const templates = await prisma.documentTemplate.findMany({ orderBy: { createdAt: "asc" } });
     return templates.map((t) => ({
       id: t.id,
       title: t.title,
@@ -390,15 +317,16 @@ export async function getTemplates(): Promise<DocumentTemplate[]> {
       requiredFor: t.requiredFor,
       createdAt: t.createdAt.toISOString(),
     }));
-  } catch {
-    return DEFAULT_TEMPLATES;
+  } catch (err) {
+    console.error("Prisma getTemplates error:", err);
+    return [];
   }
 }
 
 export async function getTemplateById(id: string): Promise<DocumentTemplate | undefined> {
   try {
     const t = await prisma.documentTemplate.findUnique({ where: { id } });
-    if (!t) return DEFAULT_TEMPLATES.find((tpl) => tpl.id === id);
+    if (!t) return undefined;
     return {
       id: t.id,
       title: t.title,
@@ -407,8 +335,9 @@ export async function getTemplateById(id: string): Promise<DocumentTemplate | un
       requiredFor: t.requiredFor,
       createdAt: t.createdAt.toISOString(),
     };
-  } catch {
-    return DEFAULT_TEMPLATES.find((tpl) => tpl.id === id);
+  } catch (err) {
+    console.error("Prisma getTemplateById error:", err);
+    return undefined;
   }
 }
 
@@ -771,48 +700,21 @@ export async function updatePipelineProgress(
 }
 
 export async function getAuditLogs(): Promise<AuditLog[]> {
-  const logs = await prisma.auditLog.findMany();
-  if (logs.length === 0) {
-    return [
-      {
-        id: "log-sys-01",
-        adminId: "usr-admin-1",
-        userId: null,
-        action: "REGISTRY SYSTEM INITIALIZED: MCA Rule 9B Compliance Engine active for unlisted public entities.",
-        createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-      },
-      {
-        id: "log-sys-02",
-        adminId: "usr-admin-1",
-        userId: null,
-        action: "DEPOSITORY SYNC: Synchronized ISIN records & CDSL/NSDL Tripartite Agreement status.",
-        createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-      },
-      {
-        id: "log-sys-03",
-        adminId: null,
-        userId: "usr-client-1",
-        action: "DOCUMENT SUBMISSION: Board Resolution & Certificate of Incorporation uploaded for verification.",
-        createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-      },
-      {
-        id: "log-sys-04",
-        adminId: "usr-admin-1",
-        userId: null,
-        action: "ADMIN VERIFICATION: Document verification completed. Immutable approval stamp applied.",
-        createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-      },
-    ];
-  }
-  return [...logs]
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    .map((l) => ({
+  try {
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return logs.map((l) => ({
       id: l.id,
       adminId: l.adminId,
       userId: l.userId,
       action: l.action,
       createdAt: l.createdAt.toISOString(),
     }));
+  } catch (err) {
+    console.error("Prisma getAuditLogs error:", err);
+    return [];
+  }
 }
 
 export async function createAuditLog(log: Omit<AuditLog, "id" | "createdAt">): Promise<AuditLog> {
@@ -952,3 +854,45 @@ export function calculateRemainingDays(deadline?: string | null, customDays?: nu
   const now = new Date().getTime();
   return Math.max(0, Math.ceil((targetTime - now) / (1000 * 60 * 60 * 24)));
 }
+
+// SEBI Monthly Investor Grievances Report Data Structure
+export interface MonthlyGrievanceReport {
+  month: string;
+  received: number;
+  resolved: number;
+  pending: number;
+  carriedForward: number;
+  updatedAt: string;
+}
+
+let inMemoryMonthlyReport: MonthlyGrievanceReport = {
+  month: "August 2026",
+  received: 0,
+  resolved: 0,
+  pending: 0,
+  carriedForward: 0,
+  updatedAt: new Date().toISOString(),
+};
+
+export async function getMonthlyGrievanceReport(): Promise<MonthlyGrievanceReport> {
+  return inMemoryMonthlyReport;
+}
+
+export async function updateMonthlyGrievanceReportData(
+  month: string,
+  received: number,
+  resolved: number,
+  pending: number,
+  carriedForward: number
+): Promise<MonthlyGrievanceReport> {
+  inMemoryMonthlyReport = {
+    month,
+    received,
+    resolved,
+    pending,
+    carriedForward,
+    updatedAt: new Date().toISOString(),
+  };
+  return inMemoryMonthlyReport;
+}
+

@@ -10,6 +10,7 @@ import {
   getAuditLogs,
   getSystemMessages,
   getAllPipelineStages,
+  getMonthlyGrievanceReport,
 } from "@/lib/db";
 import DocumentReviewForm from "./DocumentReviewForm";
 import PipelineForm from "./PipelineForm";
@@ -19,6 +20,7 @@ import AdminControlWidgets from "./AdminControlWidgets";
 import DeleteClientButton from "./DeleteClientButton";
 import DocumentPreviewButton from "./DocumentPreviewButton";
 import DeleteDocumentButton from "./DeleteDocumentButton";
+import MonthlyGrievanceForm from "./MonthlyGrievanceForm";
 import SettingsTab from "../dashboard/SettingsTab";
 import SupportTab from "../dashboard/SupportTab";
 import { getDownloadUrl } from "@/lib/s3";
@@ -53,6 +55,7 @@ export default async function AdminPage({
   const rawTemplates = await getTemplates();
   const auditLogs = await getAuditLogs();
   const allStages = await getAllPipelineStages();
+  const monthlyReport = await getMonthlyGrievanceReport();
 
   const templates = await Promise.all(
     rawTemplates.map(async (tpl) => ({
@@ -639,6 +642,9 @@ export default async function AdminPage({
                   </div>
 
                 </div>
+
+                {/* SEBI Compliance Monthly Grievances Admin Updater */}
+                <MonthlyGrievanceForm initialReport={monthlyReport} />
 
                 {/* Oversight Table Card */}
                 <div className="bg-white border border-zinc-200 rounded shadow-sm overflow-hidden">
