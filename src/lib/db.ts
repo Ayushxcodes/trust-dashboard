@@ -945,3 +945,325 @@ export async function updateMonthlyGrievanceReportData(
   return inMemoryMonthlyReport;
 }
 
+// Individual Grievance Requests Management
+export interface GrievanceRecord {
+  id: string;
+  ticketId: string;
+  investorName: string;
+  email: string;
+  phone: string;
+  folioOrPan: string;
+  companyName: string;
+  category: string;
+  description: string;
+  status: "RECEIVED" | "IN_PROCESSING" | "ESCALATED_LEVEL2" | "RESOLVED";
+  remarks: string;
+  submittedOn: string;
+  expectedResolution: string;
+  updatedAt: string;
+}
+
+let inMemoryGrievanceList: GrievanceRecord[] = [];
+
+export async function getGrievanceRequests(): Promise<GrievanceRecord[]> {
+  try {
+    if (!prisma.grievanceRequest) {
+      return inMemoryGrievanceList;
+    }
+
+    const records = await prisma.grievanceRequest.findMany({
+      orderBy: { submittedOn: "desc" },
+    });
+
+    return records.map((g) => ({
+      id: g.id,
+      ticketId: g.ticketId,
+      investorName: g.investorName,
+      email: g.email,
+      phone: g.phone,
+      folioOrPan: g.folioOrPan,
+      companyName: g.companyName,
+      category: g.category,
+      description: g.description,
+      status: g.status as GrievanceRecord["status"],
+      remarks: g.remarks,
+      submittedOn: g.submittedOn.toISOString(),
+      expectedResolution: g.expectedResolution,
+      updatedAt: g.updatedAt.toISOString(),
+    }));
+  } catch (err) {
+    console.error("getGrievanceRequests error:", err);
+    return inMemoryGrievanceList;
+  }
+}
+
+export async function getGrievanceByTicketId(ticketId: string): Promise<GrievanceRecord | null> {
+  try {
+    const cleanId = ticketId.trim().toUpperCase();
+
+    if (!prisma.grievanceRequest) {
+      const match = inMemoryGrievanceList.find((g) => g.ticketId === cleanId);
+      return match || null;
+    }
+
+    let record = await prisma.grievanceRequest.findUnique({
+      where: { ticketId: cleanId },
+    });
+
+    if (!record) {
+      const match = inMemoryGrievanceList.find((g) => g.ticketId === cleanId);
+      return match || null;
+    }
+
+    return {
+      id: record.id,
+      ticketId: record.ticketId,
+      investorName: record.investorName,
+      email: record.email,
+      phone: record.phone,
+      folioOrPan: record.folioOrPan,
+      companyName: record.companyName,
+      category: record.category,
+      description: record.description,
+      status: record.status as GrievanceRecord["status"],
+      remarks: record.remarks,
+      submittedOn: record.submittedOn.toISOString(),
+      expectedResolution: record.expectedResolution,
+      updatedAt: record.updatedAt.toISOString(),
+    };
+  } catch (err) {
+    console.error("getGrievanceByTicketId error:", err);
+    const cleanId = ticketId.trim().toUpperCase();
+    const match = inMemoryGrievanceList.find((g) => g.ticketId === cleanId);
+    return match || null;
+  }
+}
+
+export async function createGrievanceRequest(data: {
+  investorName: string;
+  email: string;
+  phone: string;
+  folioOrPan: string;
+  companyName: string;
+  category: string;
+  description: string;
+}): Promise<GrievanceRecord> {
+  const ticketId = `GRV-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+  const id = `grv-${Date.now()}`;
+  const nowIso = new Date().toISOString();
+
+  const newRecord: GrievanceRecord = {
+    id,
+    ticketId,
+    investorName: data.investorName,
+    email: data.email,
+    phone: data.phone,
+    folioOrPan: data.folioOrPan,
+    companyName: data.companyName,
+    category: data.category,
+    description: data.description,
+    status: "IN_PROCESSING",
+    remarks: "Request logged in statutory register. Level 1 RTA officer actively processing files.",
+    submittedOn: nowIso,
+    expectedResolution: "7 Business Days (Level 1 Resolution)",
+    updatedAt: nowIso,
+  };
+
+  inMemoryGrievanceList.unshift(newRecord);
+
+  if (prisma.grievanceRequest) {
+    try {
+      const created = await prisma.grievanceRequest.create({
+        data: {
+          id,
+          ticketId,
+          investorName: data.investorName,
+          email: data.email,
+          phone: data.phone,
+          folioOrPan: data.folioOrPan,
+          companyName: data.companyName,
+          category: data.category,
+          description: data.description,
+          status: "IN_PROCESSING",
+          remarks: "Request logged in statutory register. Level 1 RTA officer actively processing files.",
+          expectedResolution: "7 Business Days (Level 1 Resolution)",
+        },
+      });
+
+      return {
+        id: created.id,
+        ticketId: created.ticketId,
+        investorName: created.investorName,
+        email: created.email,
+        phone: created.phone,
+        folioOrPan: created.folioOrPan,
+        companyName: created.companyName,
+        category: created.category,
+        description: created.description,
+        status: created.status as GrievanceRecord["status"],
+        remarks: created.remarks,
+        submittedOn: created.submittedOn.toISOString(),
+        expectedResolution: created.expectedResolution,
+        updatedAt: created.updatedAt.toISOString(),
+      };
+    } catch (dbErr) {
+      console.warn("DB Grievance creation error, falling back to memory store:", dbErr);
+    }
+  }
+
+  return newRecord;
+}
+
+export async function updateGrievanceStatusInDb(
+  ticketId: string,
+  status: "RECEIVED" | "IN_PROCESSING" | "ESCALATED_LEVEL2" | "RESOLVED",
+  remarks: string
+): Promise<boolean> {
+  const cleanId = ticketId.trim().toUpperCase();
+  let updatedMemory = false;
+  inMemoryGrievanceList = inMemoryGrievanceList.map((g) => {
+    if (g.ticketId === cleanId) {
+      updatedMemory = true;
+      return { ...g, status, remarks, updatedAt: new Date().toISOString() };
+    }
+    return g;
+  });
+
+  if (prisma.grievanceRequest) {
+    try {
+      await prisma.grievanceRequest.update({
+        where: { ticketId: cleanId },
+        data: {
+          status,
+          remarks,
+        },
+      });
+      return true;
+    } catch (err) {
+      console.error("updateGrievanceStatusInDb error:", err);
+      return updatedMemory;
+    }
+  }
+
+  return updatedMemory;
+}
+
+export interface ServicedCompanyRecord {
+  id: string;
+  name: string;
+  cin: string;
+  isin: string;
+  type: string;
+  depositories: string[];
+  status: string;
+  nodalContact: string;
+  createdAt: string;
+}
+
+let inMemoryServicedCompanies: ServicedCompanyRecord[] = [];
+
+export async function getServicedCompanies(): Promise<ServicedCompanyRecord[]> {
+  try {
+    if (!prisma.servicedCompany) {
+      return inMemoryServicedCompanies;
+    }
+
+    const records = await prisma.servicedCompany.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return records.map((r) => ({
+      id: r.id,
+      name: r.name,
+      cin: r.cin,
+      isin: r.isin,
+      type: r.type,
+      depositories: r.depositories.split(",").map((d) => d.trim()),
+      status: r.status,
+      nodalContact: r.nodalContact,
+      createdAt: r.createdAt.toISOString(),
+    }));
+  } catch (err) {
+    console.error("getServicedCompanies error:", err);
+    return inMemoryServicedCompanies;
+  }
+}
+
+export async function createServicedCompany(data: {
+  name: string;
+  cin: string;
+  isin: string;
+  type: string;
+  status: string;
+  nodalContact: string;
+}): Promise<ServicedCompanyRecord> {
+  const id = `cmp-${Date.now()}`;
+  const nowIso = new Date().toISOString();
+  const depositories = ["NSDL", "CDSL"];
+
+  const record: ServicedCompanyRecord = {
+    id,
+    name: data.name,
+    cin: data.cin || "N/A",
+    isin: data.isin || "PENDING",
+    type: data.type || "Unlisted Public Equity",
+    depositories,
+    status: data.status || "Active servicing",
+    nodalContact: data.nodalContact || "secretarial@trustlinkinvestor.com",
+    createdAt: nowIso,
+  };
+
+  inMemoryServicedCompanies.unshift(record);
+
+  if (prisma.servicedCompany) {
+    try {
+      const created = await prisma.servicedCompany.create({
+        data: {
+          id,
+          name: data.name,
+          cin: data.cin || "N/A",
+          isin: data.isin || "PENDING",
+          type: data.type || "Unlisted Public Equity",
+          depositories: depositories.join(", "),
+          status: data.status || "Active servicing",
+          nodalContact: data.nodalContact || "secretarial@trustlinkinvestor.com",
+        },
+      });
+
+      return {
+        id: created.id,
+        name: created.name,
+        cin: created.cin,
+        isin: created.isin,
+        type: created.type,
+        depositories: created.depositories.split(",").map((d) => d.trim()),
+        status: created.status,
+        nodalContact: created.nodalContact,
+        createdAt: created.createdAt.toISOString(),
+      };
+    } catch (err) {
+      console.warn("createServicedCompany DB error, using fallback memory store:", err);
+    }
+  }
+
+  return record;
+}
+
+export async function deleteServicedCompany(id: string): Promise<boolean> {
+  inMemoryServicedCompanies = inMemoryServicedCompanies.filter((c) => c.id !== id);
+
+  if (prisma.servicedCompany) {
+    try {
+      await prisma.servicedCompany.delete({
+        where: { id },
+      });
+      return true;
+    } catch (err) {
+      console.error("deleteServicedCompany error:", err);
+      return true;
+    }
+  }
+
+  return true;
+}
+

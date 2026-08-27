@@ -49,29 +49,45 @@ const MOCK_TICKETS: Record<string, TicketDetails> = {
   },
 };
 
+import { fetchGrievanceByTicketAction } from "@/app/actions";
+
 export default function TrackRequestPage() {
   const [ticketIdInput, setTicketIdInput] = useState("");
   const [searchedTicket, setSearchedTicket] = useState<TicketDetails | null | "NOT_FOUND">(null);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanId = ticketIdInput.trim().toUpperCase();
-    if (MOCK_TICKETS[cleanId]) {
-      setSearchedTicket(MOCK_TICKETS[cleanId]);
-    } else if (cleanId.startsWith("GRV-") || cleanId.startsWith("SRN-")) {
-      // Dynamic mock generation for newly submitted tickets
-      setSearchedTicket({
-        ticketId: cleanId,
-        category: "Investor Service Request / Grievance",
-        investorName: "Verified Registered Investor",
-        companyName: "Trustlink Serviced Issuer Entity",
-        status: "IN_PROCESSING",
-        submittedOn: new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-        expectedResolution: "Within 7 Business Days",
-        remarks: "Request logged in statutory register. Level 1 RTA officer actively processing files.",
-      });
-    } else {
+    if (!cleanId) return;
+
+    setIsSearching(true);
+    try {
+      const res = await fetchGrievanceByTicketAction(cleanId);
+      if (res.success && res.ticket) {
+        const formattedDate = new Date(res.ticket.submittedOn).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+        setSearchedTicket({
+          ticketId: res.ticket.ticketId,
+          category: res.ticket.category,
+          investorName: res.ticket.investorName,
+          companyName: res.ticket.companyName,
+          status: res.ticket.status,
+          submittedOn: formattedDate,
+          expectedResolution: res.ticket.expectedResolution,
+          remarks: res.ticket.remarks,
+        });
+      } else {
+        setSearchedTicket("NOT_FOUND");
+      }
+    } catch (err) {
+      console.error(err);
       setSearchedTicket("NOT_FOUND");
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -89,7 +105,7 @@ export default function TrackRequestPage() {
             Track Grievance &amp; SRN Status
           </h1>
           <p className="text-slate-300 text-base max-w-3xl mx-auto leading-relaxed">
-            Enter your Service Request Number (SRN) or Grievance Ticket ID (e.g. <strong>GRV-2026-104921</strong>) to view real-time processing milestones and expected resolution timelines.
+            Enter your Service Request Number (SRN) or Grievance Ticket ID to view real-time processing milestones and expected resolution timelines.
           </p>
         </div>
       </div>
@@ -110,12 +126,12 @@ export default function TrackRequestPage() {
                     required
                     value={ticketIdInput}
                     onChange={(e) => setTicketIdInput(e.target.value)}
-                    placeholder="e.g. GRV-2026-104921 or SRN-2026-881920"
-                    className="flex-1 px-4 py-3.5 rounded-xl border border-slate-200 font-mono text-base focus:ring-2 focus:ring-indigo-500 outline-none uppercase font-bold text-indigo-700"
+                    placeholder="Enter your Ticket ID or SRN Number"
+                    className="flex-1 px-4 py-3.5 rounded-xl border border-slate-200 font-mono text-base focus:ring-2 focus:ring-slate-400 outline-none uppercase font-bold text-slate-900"
                   />
                   <button
                     type="submit"
-                    className="px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2"
+                    className="px-6 py-3.5 rounded-xl bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -123,25 +139,6 @@ export default function TrackRequestPage() {
                     Track Status
                   </button>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                <span>Sample test IDs:</span>
-                <button
-                  type="button"
-                  onClick={() => setTicketIdInput("GRV-2026-104921")}
-                  className="text-indigo-600 hover:underline font-bold"
-                >
-                  GRV-2026-104921
-                </button>
-                <span>•</span>
-                <button
-                  type="button"
-                  onClick={() => setTicketIdInput("GRV-2026-582910")}
-                  className="text-indigo-600 hover:underline font-bold"
-                >
-                  GRV-2026-582910
-                </button>
               </div>
             </form>
 

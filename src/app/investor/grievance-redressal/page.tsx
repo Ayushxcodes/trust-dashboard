@@ -5,6 +5,8 @@ import Navbar from "@/components/base/Navbar";
 import Footer from "@/components/base/Footer";
 import Link from "next/link";
 
+import { submitGrievanceAction } from "@/app/actions";
+
 export default function GrievanceRedressalPage() {
   const [formData, setFormData] = useState({
     investorName: "",
@@ -19,24 +21,32 @@ export default function GrievanceRedressalPage() {
   const [ticket, setTicket] = useState<{ id: string; date: string; tat: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const generatedId = `GRV-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-      const currentDate = new Date().toLocaleDateString("en-IN", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      setTicket({
-        id: generatedId,
-        date: currentDate,
-        tat: "7 Business Days (Level 1 Resolution)",
-      });
+    try {
+      const res = await submitGrievanceAction(formData);
+      if (res.success && res.ticket) {
+        const currentDate = new Date(res.ticket.submittedOn).toLocaleDateString("en-IN", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        setTicket({
+          id: res.ticket.ticketId,
+          date: currentDate,
+          tat: res.ticket.expectedResolution,
+        });
+      } else {
+        alert(res.error || "Failed to submit grievance.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while submitting the statutory grievance.");
+    } finally {
       setIsSubmitting(false);
-    }, 600);
+    }
   };
 
   return (
@@ -97,18 +107,18 @@ export default function GrievanceRedressalPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white p-5 rounded-xl border border-emerald-200 font-mono text-sm space-y-2 text-slate-800">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 font-sans">Ticket Number:</span>
-                      <strong className="text-indigo-600 text-base">{ticket.id}</strong>
+                  <div className="bg-white p-5 rounded-xl border border-emerald-200 font-mono text-sm space-y-2 text-slate-800 shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-sans font-medium text-xs">Statutory Ticket ID:</span>
+                      <strong className="text-[#0B1528] text-lg tracking-wider font-extrabold bg-slate-100 px-3 py-1 rounded-lg border border-slate-300">{ticket.id}</strong>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-xs">
                       <span className="text-slate-500 font-sans">Submission Date:</span>
-                      <span>{ticket.date}</span>
+                      <span className="font-semibold">{ticket.date}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-xs">
                       <span className="text-slate-500 font-sans">Target Turnaround Time:</span>
-                      <span className="text-emerald-700 font-semibold">{ticket.tat}</span>
+                      <span className="text-emerald-700 font-bold">{ticket.tat}</span>
                     </div>
                   </div>
 
@@ -232,7 +242,7 @@ export default function GrievanceRedressalPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <span>Generating Ticket ID...</span>

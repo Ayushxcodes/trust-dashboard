@@ -72,3 +72,32 @@ model SystemMessage {
   type         String   // "INFO" | "WARNING" | "CRITICAL"
   createdAt    DateTime @default(now())
 }
+
+model GrievanceRequest {
+  id                 String   @id
+  ticketId           String   @unique
+  investorName       String
+  email              String
+  phone              String
+  folioOrPan         String
+  companyName        String
+  category           String
+  description        String
+  status             String   @default("IN_PROCESSING") // "RECEIVED" | "IN_PROCESSING" | "ESCALATED_LEVEL2" | "RESOLVED"
+  remarks            String   @default("Request logged in statutory register. Level 1 RTA officer actively processing files.")
+  submittedOn        DateTime @default(now())
+  expectedResolution String   @default("7 Business Days (Level 1 Resolution)")
+  updatedAt          DateTime @updatedAt
+}
+
+model ServicedCompany {
+  id           String   @id
+  name         String
+  cin          String
+  isin         String
+  type         String   @default("Unlisted Public Equity") // "Unlisted Public Equity" | "Listed Equity" | "Debt / Bonds" | "Preference Shares"
+  depositories String   @default("NSDL, CDSL")
+  status       String   @default("Active servicing") // "Active servicing" | "ISIN Activated"
+  nodalContact String
+  createdAt    DateTime @default(now())
+}

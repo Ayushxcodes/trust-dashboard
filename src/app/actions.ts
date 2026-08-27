@@ -31,6 +31,13 @@ import {
   recordFailedLoginAttempt,
   resetFailedLoginAttempts,
   User,
+  createGrievanceRequest,
+  getGrievanceByTicketId,
+  updateGrievanceStatusInDb,
+  getGrievanceRequests,
+  createServicedCompany,
+  deleteServicedCompany,
+  getServicedCompanies,
 } from "@/lib/db";
 import { uploadFileToS3, getPresignedUploadUrl } from "@/lib/s3";
 
@@ -937,5 +944,152 @@ export async function updateMonthlyGrievanceReportAction(formData: FormData) {
   revalidatePath("/admin");
 
   return { success: true, data: updated };
+}
+
+export async function submitGrievanceAction(data: {
+  investorName: string;
+  email: string;
+  phone: string;
+  folioOrPan: string;
+  companyName: string;
+  category: string;
+  description: string;
+}) {
+  try {
+    if (!data.investorName || !data.email || !data.folioOrPan || !data.companyName || !data.description) {
+      return { success: false, error: "Please fill out all required grievance fields." };
+    }
+
+    const created = await createGrievanceRequest(data);
+
+    try {
+      await createAuditLog({
+        adminId: null,
+        userId: null,
+        action: `GRIEVANCE FILED: Statutory Ticket ${created.ticketId} registered for ${data.investorName} (${data.companyName})`,
+      });
+    } catch (auditErr) {
+      console.warn("Audit log error:", auditErr);
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/track-request");
+
+    return { success: true, ticket: created };
+  } catch (err: unknown) {
+    console.error("submitGrievanceAction error:", err);
+    return { success: false, error: "Failed to log statutory grievance. Please try again." };
+  }
+}
+
+export async function fetchGrievanceByTicketAction(ticketId: string) {
+  try {
+    if (!ticketId) return { success: false, error: "Ticket ID is required." };
+    const ticket = await getGrievanceByTicketId(ticketId);
+    if (!ticket) return { success: false, error: "Ticket ID not found in statutory register." };
+    return { success: true, ticket };
+  } catch (err: unknown) {
+    console.error("fetchGrievanceByTicketAction error:", err);
+    return { success: false, error: "Failed to query ticket status." };
+  }
+}
+
+export async function updateGrievanceStatusAction(
+  ticketId: string,
+  status: "RECEIVED" | "IN_PROCESSING" | "ESCALATED_LEVEL2" | "RESOLVED",
+  remarks: string
+) {
+  try {
+    const admin = await getCurrentUser();
+    if (!admin || admin.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized access." };
+    }
+
+    if (!ticketId || !status) {
+      return { success: false, error: "Ticket ID and status are required." };
+    }
+
+    const updated = await updateGrievanceStatusInDb(ticketId, status, remarks);
+    if (!updated) {
+      return { success: false, error: "Failed to update ticket status in database." };
+    }
+
+    await createAuditLog({
+      adminId: admin.id,
+      userId: null,
+      action: `GRIEVANCE STATUS UPDATED: Ticket ${ticketId} status changed to ${status} with remarks: "${remarks}"`,
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/track-request");
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error("updateGrievanceStatusAction error:", err);
+    return { success: false, error: "Failed to update grievance record." };
+  }
+}
+
+export async function addServicedCompanyAction(data: {
+  name: string;
+  cin: string;
+  isin: string;
+  type: string;
+  status: string;
+  nodalContact: string;
+}) {
+  try {
+    const admin = await getCurrentUser();
+    if (!admin || admin.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized access." };
+    }
+
+    if (!data.name) {
+      return { success: false, error: "Company name is required." };
+    }
+
+    const created = await createServicedCompany(data);
+
+    await createAuditLog({
+      adminId: admin.id,
+      userId: null,
+      action: `SERVICED COMPANY ADDED: Added ${created.name} (CIN: ${created.cin}, ISIN: ${created.isin}) to official directory`,
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/companies");
+
+    return { success: true, company: created };
+  } catch (err: unknown) {
+    console.error("addServicedCompanyAction error:", err);
+    return { success: false, error: "Failed to add serviced company." };
+  }
+}
+
+export async function deleteServicedCompanyAction(id: string) {
+  try {
+    const admin = await getCurrentUser();
+    if (!admin || admin.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized access." };
+    }
+
+    if (!id) return { success: false, error: "Company ID is required." };
+
+    await deleteServicedCompany(id);
+
+    await createAuditLog({
+      adminId: admin.id,
+      userId: null,
+      action: `SERVICED COMPANY REMOVED: Removed entity ID ${id} from directory`,
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/companies");
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error("deleteServicedCompanyAction error:", err);
+    return { success: false, error: "Failed to remove serviced company." };
+  }
 }
 

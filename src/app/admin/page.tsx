@@ -11,6 +11,8 @@ import {
   getSystemMessages,
   getAllPipelineStages,
   getMonthlyGrievanceReport,
+  getGrievanceRequests,
+  getServicedCompanies,
 } from "@/lib/db";
 import DocumentReviewForm from "./DocumentReviewForm";
 import PipelineForm from "./PipelineForm";
@@ -21,6 +23,8 @@ import DeleteClientButton from "./DeleteClientButton";
 import DocumentPreviewButton from "./DocumentPreviewButton";
 import DeleteDocumentButton from "./DeleteDocumentButton";
 import MonthlyGrievanceForm from "./MonthlyGrievanceForm";
+import AdminGrievancesTable from "./AdminGrievancesTable";
+import AdminServicedCompaniesTab from "./AdminServicedCompaniesTab";
 import SettingsTab from "../dashboard/SettingsTab";
 import SupportTab from "../dashboard/SupportTab";
 import { getDownloadUrl } from "@/lib/s3";
@@ -56,6 +60,8 @@ export default async function AdminPage({
   const auditLogs = await getAuditLogs();
   const allStages = await getAllPipelineStages();
   const monthlyReport = await getMonthlyGrievanceReport();
+  const grievances = await getGrievanceRequests();
+  const servicedCompanies = await getServicedCompanies();
 
   const templates = await Promise.all(
     rawTemplates.map(async (tpl) => ({
@@ -188,6 +194,22 @@ export default async function AdminPage({
             }`}
           >
             Broadcasts
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=serviced-companies`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "serviced-companies" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            ISIN Directory
+          </Link>
+          <Link
+            href={`/admin?client=${activeClientId}&tab=grievance-reports`}
+            className={`px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-colors ${
+              activeTab === "grievance-reports" ? "bg-[#1E293B] text-teal-400 border border-teal-500/30" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Grievances
           </Link>
           <Link
             href={`/admin?client=${activeClientId}&tab=audit-log`}
@@ -344,6 +366,34 @@ export default async function AdminPage({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.684A1.761 1.761 0 013 12c0-.972.788-1.76 1.761-1.76.62 0 1.164.322 1.477.808" />
                 </svg>
                 Broadcasts
+              </Link>
+
+              <Link
+                href={`/admin?client=${activeClientId}&tab=serviced-companies`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
+                  activeTab === "serviced-companies"
+                    ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
+                    : "hover:bg-[#111C30] hover:text-slate-200"
+                }`}
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
+                </svg>
+                Serviced Companies
+              </Link>
+
+              <Link
+                href={`/admin?client=${activeClientId}&tab=grievance-reports`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded text-xs font-bold tracking-wide transition-all ${
+                  activeTab === "grievance-reports"
+                    ? "bg-[#1E293B] text-white border-l-4 border-[#4ef3b2] pl-3"
+                    : "hover:bg-[#111C30] hover:text-slate-200"
+                }`}
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Grievance Reports
               </Link>
 
               <Link
@@ -1123,6 +1173,86 @@ export default async function AdminPage({
                       No registry actions logged.
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: SERVICED COMPANIES */}
+            {activeTab === "serviced-companies" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-end border-b border-zinc-200 pb-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#0B1528] uppercase tracking-wider font-mono">
+                      Depository Operations &gt; Corporate Directory
+                    </span>
+                    <h2 className="text-xl font-bold text-zinc-900 mt-1.5">
+                      Serviced Companies &amp; ISIN Directory Desk
+                    </h2>
+                  </div>
+                </div>
+
+                <AdminServicedCompaniesTab initialCompanies={servicedCompanies} clients={clients} />
+              </div>
+            )}
+
+            {/* TAB CONTENT: GRIEVANCE REPORTS */}
+            {activeTab === "grievance-reports" && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-end border-b border-zinc-200 pb-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-[#0B1528] uppercase tracking-wider font-mono">
+                      Compliance &gt; SEBI Statutory Disclosures
+                    </span>
+                    <h2 className="text-xl font-bold text-zinc-900 mt-1.5">
+                      Statutory Investor Grievance Control Desk
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-7">
+                    <MonthlyGrievanceForm initialReport={monthlyReport} />
+                  </div>
+
+                  <div className="lg:col-span-5 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                      <h3 className="text-base font-bold text-slate-900">
+                        Statutory Escalation &amp; Resolution SLA
+                      </h3>
+                      <span className="text-xs font-mono font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded border border-blue-200">
+                        SEBI Master Circular
+                      </span>
+                    </div>
+
+                    <div className="space-y-3 text-xs leading-relaxed text-slate-700">
+                      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+                        <strong className="block text-slate-900 font-bold">Level 1: RTA Grievance Cell</strong>
+                        <p className="text-[11px] text-slate-600">Turnaround Time: <strong>7 Business Days</strong>. Direct email handling at <code className="text-slate-800 font-bold">info@trustlinkinvestor.com</code>.</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+                        <strong className="block text-slate-900 font-bold">Level 2: Compliance Officer Escalation</strong>
+                        <p className="text-[11px] text-slate-600">Turnaround Time: <strong>15 Business Days</strong>. Escalated directly to Nodal Compliance Officer <strong>Mr. Nishant Khemani</strong>.</p>
+                      </div>
+                      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1">
+                        <strong className="block text-slate-900 font-bold">Level 3: Regulatory / External Portals</strong>
+                        <p className="text-[11px] text-slate-600">SEBI SCORES 2.0 (<code className="text-slate-800 font-bold">scores.sebi.gov.in</code>) and SMART ODR (<code className="text-slate-800 font-bold">smartodr.in</code>).</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Incoming Individual Investor Grievance Requests */}
+                <div className="space-y-3 pt-4">
+                  <div className="flex items-center justify-between border-b border-zinc-200 pb-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                        Incoming Investor Grievance Tickets ({grievances.length})
+                      </h3>
+                      <p className="text-xs text-slate-500">Live investor filings with real-time status &amp; official remarks management.</p>
+                    </div>
+                  </div>
+
+                  <AdminGrievancesTable initialGrievances={grievances} />
                 </div>
               </div>
             )}
