@@ -28,6 +28,8 @@ import {
   getMonthlyGrievanceReport,
   updateMonthlyGrievanceReportData,
   updateUserMFASecret,
+  recordFailedLoginAttempt,
+  resetFailedLoginAttempts,
   User,
 } from "@/lib/db";
 import { uploadFileToS3, getPresignedUploadUrl } from "@/lib/s3";
@@ -58,9 +60,32 @@ export async function login(formData: FormData) {
     const cleanCorpId = corporateId.trim().toLowerCase();
 
     const user = await getUserByEmail(cleanEmail);
+
+    // Check persistent database lockout status
+    if (user && user.lockedUntil) {
+      const lockTime = new Date(user.lockedUntil).getTime();
+      if (lockTime > Date.now()) {
+        const remainingMins = Math.ceil((lockTime - Date.now()) / 60000);
+        return {
+          success: false,
+          error: `Account locked due to 5 consecutive failed attempts. Try again in ${remainingMins} minute(s).`,
+        };
+      }
+    }
+
     if (!user || user.corporateId.trim().toLowerCase() !== cleanCorpId || user.passwordHash !== password) {
+      const result = await recordFailedLoginAttempt(cleanEmail);
+      if (result.locked) {
+        return {
+          success: false,
+          error: "Too many failed login attempts. Account temporarily locked for 15 minutes.",
+        };
+      }
       return { success: false, error: "Invalid Corporate ID, email, or password." };
     }
+
+    // Reset failed login attempt count in PostgreSQL on successful credential match
+    await resetFailedLoginAttempts(cleanEmail);
 
     // Generate dynamic 6-digit MFA OTP Code
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -71,22 +96,33 @@ export async function login(formData: FormData) {
 
     console.log(`[MFA DISPATCH] Sent 6-digit OTP code [ ${generatedOtp} ] to ${user.email}`);
 
-    // Generate TOTP QR Code if secret is missing or pending
+    // Stable TOTP Secret and QR Code generation
     let qrCodeUrl: string | undefined;
-    let secret: string | undefined;
+    let activeSecret: string | undefined = user.twoFactorSecret;
 
-    if (!user.twoFactorSecret) {
+    if (!activeSecret) {
       try {
         const totpSecret = speakeasy.generateSecret({
           length: 20,
           name: `TrustLink (${user.email})`,
           issuer: "TrustLink Investor Services",
         });
-        if (totpSecret.otpauth_url) {
-          qrCodeUrl = await QRCode.toDataURL(totpSecret.otpauth_url);
-          secret = totpSecret.base32;
-          await updateUserMFASecret(user.id, secret, false);
-        }
+        activeSecret = totpSecret.base32;
+        await updateUserMFASecret(user.id, activeSecret, false);
+      } catch (secErr) {
+        console.warn("TOTP secret creation error:", secErr);
+      }
+    }
+
+    if (activeSecret) {
+      try {
+        const otpauthUrl = speakeasy.otpauthURL({
+          secret: activeSecret,
+          label: `TrustLink (${user.email})`,
+          issuer: "TrustLink Investor Services",
+          encoding: "base32",
+        });
+        qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
       } catch (qrErr) {
         console.warn("QR code generation warning:", qrErr);
       }
@@ -101,7 +137,7 @@ export async function login(formData: FormData) {
       role: user.role,
       hasTOTP: !!(user.twoFactorEnabled && user.twoFactorSecret),
       qrCodeUrl,
-      secret: secret || user.twoFactorSecret,
+      secret: activeSecret,
       generatedCode: generatedOtp,
     };
   } catch (err: unknown) {
@@ -141,7 +177,7 @@ export async function verifyMFA(userId: string, otpCode: string) {
           secret: user.twoFactorSecret,
           encoding: "base32",
           token: cleanCode,
-          window: 1, // Allow 30s drift window
+          window: 2, // Allow 60s time drift window before and after
         });
       } catch (totpErr) {
         console.warn("TOTP verification error:", totpErr);
@@ -150,6 +186,11 @@ export async function verifyMFA(userId: string, otpCode: string) {
 
     if (!isMasterCode && !isValidGeneratedCode && !isTOTPValid) {
       return { success: false, error: "Invalid 6-digit MFA security code. Check your Authenticator app or email." };
+    }
+
+    // Auto-enable TOTP status on first successful TOTP code verification
+    if (isTOTPValid && user.twoFactorSecret && !user.twoFactorEnabled) {
+      await updateUserMFASecret(user.id, user.twoFactorSecret, true);
     }
 
     // Clear used email MFA code
@@ -198,24 +239,29 @@ export async function setupTOTPMFA() {
       return { success: false, error: "Unauthorized. Please log in first." };
     }
 
-    const secret = speakeasy.generateSecret({
-      length: 20,
-      name: `TrustLink (${user.email})`,
-      issuer: "TrustLink Investor Services",
-    });
-
-    if (!secret.otpauth_url) {
-      return { success: false, error: "Failed to generate OTP authentication URL." };
+    let activeSecret = user.twoFactorSecret;
+    if (!activeSecret) {
+      const secret = speakeasy.generateSecret({
+        length: 20,
+        name: `TrustLink (${user.email})`,
+        issuer: "TrustLink Investor Services",
+      });
+      activeSecret = secret.base32;
+      await updateUserMFASecret(user.id, activeSecret, false);
     }
 
-    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+    const otpauthUrl = speakeasy.otpauthURL({
+      secret: activeSecret,
+      label: `TrustLink (${user.email})`,
+      issuer: "TrustLink Investor Services",
+      encoding: "base32",
+    });
 
-    // Store unconfirmed secret in DB
-    await updateUserMFASecret(user.id, secret.base32, false);
+    const qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
 
     return {
       success: true,
-      secret: secret.base32,
+      secret: activeSecret,
       qrCodeUrl,
     };
   } catch (err: unknown) {
@@ -237,7 +283,7 @@ export async function verifyAndEnableTOTP(token: string) {
       secret: user.twoFactorSecret,
       encoding: "base32",
       token: cleanToken,
-      window: 1,
+      window: 2, // Allow 60s time drift window
     });
 
     if (!verified) {

@@ -8,19 +8,21 @@ datasource db {
 }
 
 model User {
-  id                 String   @id
-  name               String
-  email              String   @unique
-  passwordHash       String
-  role               String   // "USER" | "ADMIN"
-  companyName        String
-  corporateId        String
-  createdAt          DateTime @default(now())
-  complianceDeadline String?
-  countdownDays      Int?
-  avatarUrl          String?
-  twoFactorSecret    String?
-  twoFactorEnabled   Boolean  @default(false)
+  id                  String    @id
+  name                String
+  email               String    @unique
+  passwordHash        String
+  role                String    // "USER" | "ADMIN"
+  companyName         String
+  corporateId         String
+  createdAt           DateTime  @default(now())
+  complianceDeadline  String?
+  countdownDays       Int?
+  avatarUrl           String?
+  twoFactorSecret     String?
+  twoFactorEnabled    Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
 }
 
 model DocumentTemplate {

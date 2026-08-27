@@ -16,6 +16,8 @@ export interface User {
   avatarUrl?: string;
   twoFactorSecret?: string;
   twoFactorEnabled?: boolean;
+  failedLoginAttempts?: number;
+  lockedUntil?: string;
 }
 
 export interface DocumentTemplate {
@@ -225,6 +227,8 @@ export async function getUserByEmail(email: string): Promise<User | undefined> {
       avatarUrl: u.avatarUrl ?? undefined,
       twoFactorSecret: u.twoFactorSecret ?? undefined,
       twoFactorEnabled: u.twoFactorEnabled ?? false,
+      failedLoginAttempts: u.failedLoginAttempts ?? 0,
+      lockedUntil: u.lockedUntil ? u.lockedUntil.toISOString() : undefined,
     };
   } catch (err) {
     console.error("Prisma getUserByEmail error:", err);
@@ -245,6 +249,51 @@ export async function updateUserMFASecret(userId: string, secret: string | null,
   } catch (err) {
     console.error("updateUserMFASecret error:", err);
     return false;
+  }
+}
+
+export async function recordFailedLoginAttempt(email: string): Promise<{ locked: boolean; remainingMins?: number }> {
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return { locked: false };
+
+    const newAttempts = (user.failedLoginAttempts || 0) + 1;
+    let lockUntil: Date | null = null;
+    let locked = false;
+    let remainingMins = 0;
+
+    if (newAttempts >= 5) {
+      locked = true;
+      lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minute lockout
+      remainingMins = 15;
+    }
+
+    await prisma.user.update({
+      where: { email },
+      data: {
+        failedLoginAttempts: newAttempts,
+        lockedUntil: lockUntil,
+      },
+    });
+
+    return { locked, remainingMins };
+  } catch (err) {
+    console.error("recordFailedLoginAttempt error:", err);
+    return { locked: false };
+  }
+}
+
+export async function resetFailedLoginAttempts(email: string): Promise<void> {
+  try {
+    await prisma.user.update({
+      where: { email },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+  } catch (err) {
+    console.error("resetFailedLoginAttempts error:", err);
   }
 }
 
