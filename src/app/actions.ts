@@ -96,35 +96,40 @@ export async function login(formData: FormData) {
 
     console.log(`[MFA DISPATCH] Sent 6-digit OTP code [ ${generatedOtp} ] to ${user.email}`);
 
-    // Stable TOTP Secret and QR Code generation
+    // Stable TOTP Secret and QR Code generation for initial pairing
     let qrCodeUrl: string | undefined;
-    let activeSecret: string | undefined = user.twoFactorSecret;
+    let activeSecret: string | undefined;
 
-    if (!activeSecret) {
-      try {
-        const totpSecret = speakeasy.generateSecret({
-          length: 20,
-          name: `TrustLink (${user.email})`,
-          issuer: "TrustLink Investor Services",
-        });
-        activeSecret = totpSecret.base32;
-        await updateUserMFASecret(user.id, activeSecret, false);
-      } catch (secErr) {
-        console.warn("TOTP secret creation error:", secErr);
+    const isAlreadyEnabled = !!(user.twoFactorEnabled && user.twoFactorSecret);
+
+    if (!isAlreadyEnabled) {
+      activeSecret = user.twoFactorSecret;
+      if (!activeSecret) {
+        try {
+          const totpSecret = speakeasy.generateSecret({
+            length: 20,
+            name: `TrustLink (${user.email})`,
+            issuer: "TrustLink Investor Services",
+          });
+          activeSecret = totpSecret.base32;
+          await updateUserMFASecret(user.id, activeSecret, false);
+        } catch (secErr) {
+          console.warn("TOTP secret creation error:", secErr);
+        }
       }
-    }
 
-    if (activeSecret) {
-      try {
-        const otpauthUrl = speakeasy.otpauthURL({
-          secret: activeSecret,
-          label: `TrustLink (${user.email})`,
-          issuer: "TrustLink Investor Services",
-          encoding: "base32",
-        });
-        qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
-      } catch (qrErr) {
-        console.warn("QR code generation warning:", qrErr);
+      if (activeSecret) {
+        try {
+          const otpauthUrl = speakeasy.otpauthURL({
+            secret: activeSecret,
+            label: `TrustLink (${user.email})`,
+            issuer: "TrustLink Investor Services",
+            encoding: "base32",
+          });
+          qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
+        } catch (qrErr) {
+          console.warn("QR code generation warning:", qrErr);
+        }
       }
     }
 
@@ -135,9 +140,9 @@ export async function login(formData: FormData) {
       userId: user.id,
       email: user.email,
       role: user.role,
-      hasTOTP: !!(user.twoFactorEnabled && user.twoFactorSecret),
-      qrCodeUrl,
-      secret: activeSecret,
+      hasTOTP: isAlreadyEnabled,
+      qrCodeUrl: isAlreadyEnabled ? undefined : qrCodeUrl,
+      secret: isAlreadyEnabled ? undefined : activeSecret,
       generatedCode: generatedOtp,
     };
   } catch (err: unknown) {
@@ -167,7 +172,6 @@ export async function verifyMFA(userId: string, otpCode: string) {
     }
 
     const record = mfaCodeStore.get(userId);
-    const isMasterCode = cleanCode === "849201";
     const isValidGeneratedCode = record && record.code === cleanCode && Date.now() < record.expiresAt;
 
     let isTOTPValid = false;
@@ -184,8 +188,8 @@ export async function verifyMFA(userId: string, otpCode: string) {
       }
     }
 
-    if (!isMasterCode && !isValidGeneratedCode && !isTOTPValid) {
-      return { success: false, error: "Invalid 6-digit MFA security code. Check your Authenticator app or email." };
+    if (!isValidGeneratedCode && !isTOTPValid) {
+      return { success: false, error: "Invalid 6-digit MFA security code. Check your Authenticator app." };
     }
 
     // Auto-enable TOTP status on first successful TOTP code verification

@@ -74,23 +74,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F4F8] text-[#0B1528] flex flex-col items-center justify-between p-6 font-sans relative selection:bg-indigo-500 selection:text-white">
-      {/* Decorative Blur Elements */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <div className="min-h-screen bg-[#F0F4F8] text-[#0B1528] flex flex-col items-center justify-between p-6 font-sans relative selection:bg-slate-800 selection:text-white">
+      {/* Subtle Background Elements */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-slate-200/30 rounded-full blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-slate-300/20 rounded-full blur-3xl -z-10 pointer-events-none" />
 
       {/* Top Header Bar */}
-      <header className="w-full max-w-5xl flex items-center justify-between py-4 px-4 border-b border-zinc-200/60 shrink-0">
+      <header className="w-full max-w-5xl flex items-center justify-between py-4 px-4 border-b border-zinc-200/80 shrink-0">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <img src="/logo.png" alt="TrustLink Logo" className="h-16 md:h-20 w-auto" />
         </Link>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest hidden sm:inline">New Enterprise?</span>
+          <span className="text-[10px] font-bold text-zinc-450 uppercase tracking-widest hidden sm:inline">New Enterprise?</span>
           <Link
             href="/register"
-            className="px-3.5 py-1.5 rounded bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 font-extrabold text-[10px] uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-800 font-extrabold text-[10px] uppercase tracking-wider transition-colors shadow-sm flex items-center gap-1.5"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-3.5 h-3.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
             </svg>
             Register Company
@@ -102,13 +102,13 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center w-full py-8">
         
         {/* Main Auth Container Card */}
-        <div className="w-full max-w-md bg-white border border-zinc-200 rounded p-8 shadow-xl space-y-6">
+        <div className="w-full max-w-md bg-white border border-zinc-250 rounded p-8 shadow-xl space-y-6">
           
           {/* Logo & Subtitles */}
           <div className="flex flex-col items-center text-center space-y-2">
             <img src="/logo.png" alt="TrustLink Logo" className="h-16 md:h-20 w-auto mb-1" />
             <div>
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest block">
                 {mfaStep ? "2-Factor Identity Authorization" : "Institutional Registry Portal"}
               </span>
             </div>
@@ -116,8 +116,8 @@ export default function LoginPage() {
 
           {/* Validation Alert */}
           {error && (
-            <div className="p-3.5 rounded bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2">
-              <svg className="w-4.5 h-4.5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="p-3.5 rounded bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-start gap-2">
+              <svg className="w-4.5 h-4.5 shrink-0 mt-0.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>{error}</span>
@@ -127,16 +127,16 @@ export default function LoginPage() {
           {/* STEP 2: MFA VERIFICATION FORM */}
           {mfaStep ? (
             <form onSubmit={handleMFASubmit} className="space-y-5 animate-in fade-in duration-300">
-              <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-150 text-center space-y-2">
-                <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-sm">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-[#0B1528] text-white flex items-center justify-center mx-auto shadow-sm">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3 className="text-xs font-extrabold text-indigo-950 uppercase tracking-wider">
+                <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                   2-Factor Multi-Factor Authentication
                 </h3>
-                <p className="text-[11px] text-indigo-800 leading-relaxed font-medium">
+                <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
                   {hasTOTP
                     ? "Open your Authenticator app (Google Authenticator, Authy) and enter your current 6-digit TOTP code."
                     : "Scan the QR code below using Google Authenticator or Authy to pair your device, then enter the 6-digit code."}
@@ -145,24 +145,24 @@ export default function LoginPage() {
 
               {/* QR Code Container if initial setup */}
               {qrCodeUrl && (
-                <div className="p-4 rounded-xl bg-white border-2 border-indigo-200 text-center space-y-3 shadow-sm">
-                  <span className="text-[10px] font-extrabold text-indigo-900 uppercase tracking-wider block">
+                <div className="p-4 rounded-xl bg-white border border-slate-250 text-center space-y-3 shadow-sm">
+                  <span className="text-[10px] font-extrabold text-slate-800 uppercase tracking-wider block">
                     Scan with Authenticator App
                   </span>
-                  <div className="p-2 bg-indigo-50/50 rounded-lg inline-block border border-indigo-100">
+                  <div className="p-2 bg-slate-50 rounded-lg inline-block border border-slate-200">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={qrCodeUrl} alt="MFA QR Code" className="w-36 h-36 mx-auto rounded shadow-inner" />
                   </div>
                   {secret && (
-                    <div className="text-[9px] text-zinc-500 font-mono">
-                      Secret Key: <span className="font-bold text-indigo-700 select-all">{secret}</span>
+                    <div className="text-[9px] text-slate-500 font-mono">
+                      Secret Key: <span className="font-bold text-slate-800 select-all">{secret}</span>
                     </div>
                   )}
                 </div>
               )}
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider text-center">
+                <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider text-center">
                   Enter 6-Digit Verification Code
                 </label>
                 <input
@@ -174,14 +174,14 @@ export default function LoginPage() {
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
                   placeholder="e.g. 5 9 2 8 1 4"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-indigo-300 bg-white text-center font-mono text-xl font-extrabold text-indigo-950 tracking-[0.4em] placeholder-zinc-300 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-slate-300 bg-white text-center font-mono text-xl font-extrabold text-slate-900 tracking-[0.4em] placeholder-slate-300 focus:outline-none focus:border-[#0B1528] focus:ring-2 focus:ring-slate-200 transition-all disabled:opacity-50"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isPending || otpCode.length !== 6}
-                className="w-full py-3 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs tracking-wider transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer uppercase shadow-md"
+                className="w-full py-3 px-4 rounded-lg bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-xs tracking-wider transition-all active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer uppercase shadow-md"
               >
                 {isPending ? (
                   <>
@@ -201,20 +201,13 @@ export default function LoginPage() {
                 )}
               </button>
 
-              <div className="flex items-center justify-between text-[10px] pt-2">
+              <div className="flex items-center justify-start text-[10px] pt-2">
                 <button
                   type="button"
                   onClick={() => setMfaStep(false)}
-                  className="font-bold text-zinc-500 hover:text-zinc-800 transition-colors flex items-center gap-1 cursor-pointer"
+                  className="font-bold text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   &larr; Back to Login
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOtpCode(activeOtpCode || "849201")}
-                  className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors cursor-pointer bg-indigo-50 px-2 py-1 rounded border border-indigo-200"
-                >
-                  Fill Test Code ({activeOtpCode || "849201"})
                 </button>
               </div>
             </form>
@@ -224,7 +217,7 @@ export default function LoginPage() {
               
               {/* Corporate ID */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
+                <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
                   Corporate ID
                 </label>
                 <input
@@ -234,13 +227,13 @@ export default function LoginPage() {
                   value={corporateId}
                   onChange={(e) => setCorporateId(e.target.value)}
                   placeholder="ENT-0000-000"
-                  className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                  className="w-full px-4 py-2.5 rounded border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:bg-white transition-all disabled:opacity-50"
                 />
               </div>
 
               {/* Official Email */}
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
+                <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
                   Official Email
                 </label>
                 <input
@@ -250,17 +243,17 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@entity.com"
-                  className="w-full px-4 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                  className="w-full px-4 py-2.5 rounded border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:bg-white transition-all disabled:opacity-50"
                 />
               </div>
 
               {/* Password */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="block text-[10px] font-extrabold text-zinc-550 uppercase tracking-wider">
+                  <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
                     Password
                   </label>
-                  <Link href="/forgot-password" className="text-[10px] font-extrabold text-zinc-550 hover:text-zinc-800 transition-colors">
+                  <Link href="/forgot-password" className="text-[10px] font-extrabold text-slate-500 hover:text-slate-800 transition-colors">
                     Forgot Access?
                   </Link>
                 </div>
@@ -272,13 +265,13 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-4 pr-10 py-2.5 rounded border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all disabled:opacity-50"
+                    className="w-full pl-4 pr-10 py-2.5 rounded border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:bg-white transition-all disabled:opacity-50"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors focus:outline-none cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors focus:outline-none cursor-pointer"
                   >
                     {showPassword ? (
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -298,7 +291,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3 px-4 rounded bg-[#0B1528] hover:bg-[#152238] text-white font-extrabold text-xs tracking-wider transition-colors active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer uppercase shadow"
+                className="w-full py-3 px-4 rounded bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-xs tracking-wider transition-colors active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer uppercase shadow"
               >
                 {isPending ? (
                   <>
@@ -311,7 +304,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     Continue to 2-Step Verification
-                    <svg className="w-3.5 h-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </>
@@ -321,15 +314,15 @@ export default function LoginPage() {
           )}
 
           {/* Company Registration CTA Option */}
-          <div className="pt-4 border-t border-zinc-150 flex flex-col items-center gap-2">
-            <span className="text-[11px] font-medium text-zinc-550">
+          <div className="pt-4 border-t border-slate-200 flex flex-col items-center gap-2">
+            <span className="text-[11px] font-medium text-slate-500">
               Don&apos;t have an institutional account yet?
             </span>
             <Link
               href="/register"
-              className="w-full py-2.5 px-4 rounded border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100 hover:border-indigo-300 text-indigo-700 font-extrabold text-xs tracking-wider transition-all uppercase flex items-center justify-center gap-2 shadow-sm group cursor-pointer"
+              className="w-full py-2.5 px-4 rounded border border-slate-300 bg-slate-100/70 hover:bg-slate-200 text-slate-800 font-extrabold text-xs tracking-wider transition-all uppercase flex items-center justify-center gap-2 shadow-sm group cursor-pointer"
             >
-              <svg className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-4 h-4 text-slate-700 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
               </svg>
               Register Company / Onboard Entity
@@ -337,8 +330,8 @@ export default function LoginPage() {
           </div>
 
           {/* Under Line Warning */}
-          <div className="pt-4 border-t border-zinc-150 flex gap-3 text-[9px] text-zinc-450 leading-relaxed">
-            <svg className="w-5.5 h-5.5 text-zinc-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="pt-4 border-t border-slate-200 flex gap-3 text-[9px] text-slate-500 leading-relaxed">
+            <svg className="w-5.5 h-5.5 text-slate-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
             <span>
@@ -351,14 +344,14 @@ export default function LoginPage() {
       </div>
 
       {/* Footer link bar */}
-      <footer className="w-full max-w-5xl border-t border-zinc-200/60 pt-4 flex flex-col sm:flex-row items-center justify-between text-[9px] font-bold text-zinc-400 uppercase tracking-widest gap-2">
+      <footer className="w-full max-w-5xl border-t border-slate-200/80 pt-4 flex flex-col sm:flex-row items-center justify-between text-[9px] font-bold text-slate-400 uppercase tracking-widest gap-2">
         <div className="flex gap-4">
-          <Link href="/privacy-policy" className="hover:text-zinc-650 transition-colors">Privacy Policy</Link>
+          <Link href="/privacy-policy" className="hover:text-slate-700 transition-colors">Privacy Policy</Link>
           <span>/</span>
-          <Link href="/security" className="hover:text-zinc-650 transition-colors">Security Architecture</Link>
+          <Link href="/security" className="hover:text-slate-700 transition-colors">Security Architecture</Link>
         </div>
-        <div className="flex items-center gap-1.5 text-emerald-650 animate-pulse">
-          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+        <div className="flex items-center gap-1.5 text-slate-600">
+          <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full" />
           SECURE 2-FACTOR MFA ACTIVE
         </div>
       </footer>

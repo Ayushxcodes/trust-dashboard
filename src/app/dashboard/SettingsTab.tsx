@@ -105,7 +105,7 @@ export default function SettingsTab({
                     type="button"
                     onClick={() => setAvatarUrl(preset)}
                     className={`w-10 h-10 rounded-full overflow-hidden border-2 cursor-pointer transition-all hover:scale-105 active:scale-95 ${
-                      avatarUrl === preset ? "border-indigo-600 scale-105" : "border-zinc-200"
+                      avatarUrl === preset ? "border-slate-800 scale-105" : "border-zinc-200"
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -135,7 +135,7 @@ export default function SettingsTab({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-indigo-500 transition-colors font-bold"
+                className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-slate-800 transition-colors font-bold"
                 required
               />
             </div>
@@ -147,7 +147,7 @@ export default function SettingsTab({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-indigo-500 transition-colors font-bold"
+                className="w-full px-3 py-2 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-slate-800 transition-colors font-bold"
                 required
               />
             </div>
@@ -169,7 +169,7 @@ export default function SettingsTab({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Leave blank to retain current password"
-                className="w-full px-3 py-2 pr-10 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full px-3 py-2 pr-10 rounded-lg bg-white border border-zinc-250 text-xs text-zinc-800 focus:outline-none focus:border-slate-800 transition-colors"
               />
               <button
                 type="button"
@@ -186,19 +186,19 @@ export default function SettingsTab({
         </div>
 
         {/* Multi-Factor Authentication (TOTP / Authenticator App Setup) */}
-        <div className="p-6 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-4">
+        <div className="p-6 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-[#0B1528] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 002-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                   2-Factor Authentication (TOTP)
                 </h4>
-                <p className="text-[11px] text-indigo-800 font-medium">
+                <p className="text-[11px] text-slate-600 font-medium">
                   Pair Google Authenticator or Authy to secure portal logins.
                 </p>
               </div>
@@ -216,7 +216,7 @@ export default function SettingsTab({
                   toast.error(res.error || "Failed to initialize MFA setup.");
                 }
               }}
-              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[11px] uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+              className="px-3 py-1.5 rounded-lg bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-[11px] uppercase tracking-wider transition-all cursor-pointer shadow-sm"
             >
               Configure Authenticator
             </button>
@@ -242,7 +242,7 @@ export default function SettingsTab({
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-6 shadow-2xl border border-slate-100">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-800 flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 002-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -275,7 +275,7 @@ export default function SettingsTab({
 
               <div className="p-2.5 bg-slate-100 rounded-lg text-left space-y-1">
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Secret Key (Manual Entry)</span>
-                <code className="text-xs font-mono font-bold text-indigo-700 select-all break-all block">{secret}</code>
+                <code className="text-xs font-mono font-bold text-slate-800 select-all break-all block">{secret}</code>
               </div>
 
               <div className="space-y-2 text-left pt-2">
@@ -288,7 +288,7 @@ export default function SettingsTab({
                   value={totpToken}
                   onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ""))}
                   placeholder="e.g. 592814"
-                  className="w-full px-4 py-2.5 rounded-lg border-2 border-indigo-200 text-center font-mono text-lg font-bold text-slate-900 tracking-widest focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full px-4 py-2.5 rounded-lg border-2 border-slate-300 text-center font-mono text-lg font-bold text-slate-900 tracking-widest focus:outline-none focus:border-[#0B1528] focus:ring-2 focus:ring-slate-200"
                 />
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function SettingsTab({
                     setIsVerifyingTotp(false);
                   }
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs transition-all disabled:opacity-50 cursor-pointer uppercase tracking-wider shadow-md"
+                className="flex-1 py-2.5 rounded-xl bg-[#0B1528] hover:bg-[#1E293B] text-white font-extrabold text-xs transition-all disabled:opacity-50 cursor-pointer uppercase tracking-wider shadow-md"
               >
                 {isVerifyingTotp ? "Verifying..." : "Enable MFA"}
               </button>
