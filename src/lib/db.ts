@@ -1006,7 +1006,7 @@ export async function getGrievanceByTicketId(ticketId: string): Promise<Grievanc
       return match || null;
     }
 
-    let record = await prisma.grievanceRequest.findUnique({
+    const record = await prisma.grievanceRequest.findUnique({
       where: { ticketId: cleanId },
     });
 
@@ -1052,6 +1052,42 @@ export async function createGrievanceRequest(data: {
   const id = `grv-${Date.now()}`;
   const nowIso = new Date().toISOString();
 
+  if (prisma.grievanceRequest) {
+    const created = await prisma.grievanceRequest.create({
+      data: {
+        id,
+        ticketId,
+        investorName: data.investorName,
+        email: data.email,
+        phone: data.phone,
+        folioOrPan: data.folioOrPan,
+        companyName: data.companyName,
+        category: data.category,
+        description: data.description,
+        status: "IN_PROCESSING",
+        remarks: "Request logged in statutory register. Level 1 RTA officer actively processing files.",
+        expectedResolution: "7 Business Days (Level 1 Resolution)",
+      },
+    });
+
+    return {
+      id: created.id,
+      ticketId: created.ticketId,
+      investorName: created.investorName,
+      email: created.email,
+      phone: created.phone,
+      folioOrPan: created.folioOrPan,
+      companyName: created.companyName,
+      category: created.category,
+      description: created.description,
+      status: created.status as GrievanceRecord["status"],
+      remarks: created.remarks,
+      submittedOn: created.submittedOn.toISOString(),
+      expectedResolution: created.expectedResolution,
+      updatedAt: created.updatedAt.toISOString(),
+    };
+  }
+
   const newRecord: GrievanceRecord = {
     id,
     ticketId,
@@ -1070,47 +1106,6 @@ export async function createGrievanceRequest(data: {
   };
 
   inMemoryGrievanceList.unshift(newRecord);
-
-  if (prisma.grievanceRequest) {
-    try {
-      const created = await prisma.grievanceRequest.create({
-        data: {
-          id,
-          ticketId,
-          investorName: data.investorName,
-          email: data.email,
-          phone: data.phone,
-          folioOrPan: data.folioOrPan,
-          companyName: data.companyName,
-          category: data.category,
-          description: data.description,
-          status: "IN_PROCESSING",
-          remarks: "Request logged in statutory register. Level 1 RTA officer actively processing files.",
-          expectedResolution: "7 Business Days (Level 1 Resolution)",
-        },
-      });
-
-      return {
-        id: created.id,
-        ticketId: created.ticketId,
-        investorName: created.investorName,
-        email: created.email,
-        phone: created.phone,
-        folioOrPan: created.folioOrPan,
-        companyName: created.companyName,
-        category: created.category,
-        description: created.description,
-        status: created.status as GrievanceRecord["status"],
-        remarks: created.remarks,
-        submittedOn: created.submittedOn.toISOString(),
-        expectedResolution: created.expectedResolution,
-        updatedAt: created.updatedAt.toISOString(),
-      };
-    } catch (dbErr) {
-      console.warn("DB Grievance creation error, falling back to memory store:", dbErr);
-    }
-  }
-
   return newRecord;
 }
 
@@ -1120,6 +1115,18 @@ export async function updateGrievanceStatusInDb(
   remarks: string
 ): Promise<boolean> {
   const cleanId = ticketId.trim().toUpperCase();
+
+  if (prisma.grievanceRequest) {
+    await prisma.grievanceRequest.update({
+      where: { ticketId: cleanId },
+      data: {
+        status,
+        remarks,
+      },
+    });
+    return true;
+  }
+
   let updatedMemory = false;
   inMemoryGrievanceList = inMemoryGrievanceList.map((g) => {
     if (g.ticketId === cleanId) {
@@ -1128,22 +1135,6 @@ export async function updateGrievanceStatusInDb(
     }
     return g;
   });
-
-  if (prisma.grievanceRequest) {
-    try {
-      await prisma.grievanceRequest.update({
-        where: { ticketId: cleanId },
-        data: {
-          status,
-          remarks,
-        },
-      });
-      return true;
-    } catch (err) {
-      console.error("updateGrievanceStatusInDb error:", err);
-      return updatedMemory;
-    }
-  }
 
   return updatedMemory;
 }
@@ -1201,6 +1192,33 @@ export async function createServicedCompany(data: {
   const nowIso = new Date().toISOString();
   const depositories = ["NSDL", "CDSL"];
 
+  if (prisma.servicedCompany) {
+    const created = await prisma.servicedCompany.create({
+      data: {
+        id,
+        name: data.name,
+        cin: data.cin || "N/A",
+        isin: data.isin || "PENDING",
+        type: data.type || "Unlisted Public Equity",
+        depositories: depositories.join(", "),
+        status: data.status || "Active servicing",
+        nodalContact: data.nodalContact || "secretarial@trustlinkinvestor.com",
+      },
+    });
+
+    return {
+      id: created.id,
+      name: created.name,
+      cin: created.cin,
+      isin: created.isin,
+      type: created.type,
+      depositories: created.depositories.split(",").map((d) => d.trim()),
+      status: created.status,
+      nodalContact: created.nodalContact,
+      createdAt: created.createdAt.toISOString(),
+    };
+  }
+
   const record: ServicedCompanyRecord = {
     id,
     name: data.name,
@@ -1214,56 +1232,18 @@ export async function createServicedCompany(data: {
   };
 
   inMemoryServicedCompanies.unshift(record);
-
-  if (prisma.servicedCompany) {
-    try {
-      const created = await prisma.servicedCompany.create({
-        data: {
-          id,
-          name: data.name,
-          cin: data.cin || "N/A",
-          isin: data.isin || "PENDING",
-          type: data.type || "Unlisted Public Equity",
-          depositories: depositories.join(", "),
-          status: data.status || "Active servicing",
-          nodalContact: data.nodalContact || "secretarial@trustlinkinvestor.com",
-        },
-      });
-
-      return {
-        id: created.id,
-        name: created.name,
-        cin: created.cin,
-        isin: created.isin,
-        type: created.type,
-        depositories: created.depositories.split(",").map((d) => d.trim()),
-        status: created.status,
-        nodalContact: created.nodalContact,
-        createdAt: created.createdAt.toISOString(),
-      };
-    } catch (err) {
-      console.warn("createServicedCompany DB error, using fallback memory store:", err);
-    }
-  }
-
   return record;
 }
 
 export async function deleteServicedCompany(id: string): Promise<boolean> {
-  inMemoryServicedCompanies = inMemoryServicedCompanies.filter((c) => c.id !== id);
-
   if (prisma.servicedCompany) {
-    try {
-      await prisma.servicedCompany.delete({
-        where: { id },
-      });
-      return true;
-    } catch (err) {
-      console.error("deleteServicedCompany error:", err);
-      return true;
-    }
+    await prisma.servicedCompany.delete({
+      where: { id },
+    });
+    return true;
   }
 
+  inMemoryServicedCompanies = inMemoryServicedCompanies.filter((c) => c.id !== id);
   return true;
 }
 
