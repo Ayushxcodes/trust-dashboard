@@ -100,36 +100,28 @@ export async function login(formData: FormData) {
     let qrCodeUrl: string | undefined;
     let activeSecret: string | undefined;
 
-    const isAlreadyEnabled = !!(user.twoFactorEnabled && user.twoFactorSecret);
+    // If user already has a twoFactorSecret in DB, they have already been issued a QR code.
+    const hasExistingSecret = !!user.twoFactorSecret;
 
-    if (!isAlreadyEnabled) {
-      activeSecret = user.twoFactorSecret;
-      if (!activeSecret) {
-        try {
-          const totpSecret = speakeasy.generateSecret({
-            length: 20,
-            name: `TrustLink (${user.email})`,
-            issuer: "TrustLink Investor Services",
-          });
-          activeSecret = totpSecret.base32;
-          await updateUserMFASecret(user.id, activeSecret, false);
-        } catch (secErr) {
-          console.warn("TOTP secret creation error:", secErr);
-        }
-      }
+    if (!hasExistingSecret) {
+      try {
+        const totpSecret = speakeasy.generateSecret({
+          length: 20,
+          name: `TrustLink (${user.email})`,
+          issuer: "TrustLink Investor Services",
+        });
+        activeSecret = totpSecret.base32;
+        await updateUserMFASecret(user.id, activeSecret, false);
 
-      if (activeSecret) {
-        try {
-          const otpauthUrl = speakeasy.otpauthURL({
-            secret: activeSecret,
-            label: `TrustLink (${user.email})`,
-            issuer: "TrustLink Investor Services",
-            encoding: "base32",
-          });
-          qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
-        } catch (qrErr) {
-          console.warn("QR code generation warning:", qrErr);
-        }
+        const otpauthUrl = speakeasy.otpauthURL({
+          secret: activeSecret,
+          label: `TrustLink (${user.email})`,
+          issuer: "TrustLink Investor Services",
+          encoding: "base32",
+        });
+        qrCodeUrl = await QRCode.toDataURL(otpauthUrl);
+      } catch (secErr) {
+        console.warn("TOTP secret creation warning:", secErr);
       }
     }
 
@@ -140,9 +132,9 @@ export async function login(formData: FormData) {
       userId: user.id,
       email: user.email,
       role: user.role,
-      hasTOTP: isAlreadyEnabled,
-      qrCodeUrl: isAlreadyEnabled ? undefined : qrCodeUrl,
-      secret: isAlreadyEnabled ? undefined : activeSecret,
+      hasTOTP: hasExistingSecret,
+      qrCodeUrl: hasExistingSecret ? undefined : qrCodeUrl,
+      secret: hasExistingSecret ? undefined : activeSecret,
       generatedCode: generatedOtp,
     };
   } catch (err: unknown) {
