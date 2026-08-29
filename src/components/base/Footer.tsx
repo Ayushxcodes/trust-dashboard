@@ -140,12 +140,6 @@ export default function Footer() {
           <div>
             © {new Date().getFullYear()} Trustlink Investor Services Private Limited. All Rights Reserved.
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
-            <span className="text-emerald-500 font-mono flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              SEBI Category I RTA Compliant
-            </span>
-          </div>
         </div>
       </div>
     </footer>

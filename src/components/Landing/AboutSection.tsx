@@ -178,27 +178,6 @@ export default function AboutSection() {
           ))}
         </div>
 
-        {/* Bottom Trust Bar */}
-        <div className="mt-14 max-w-4xl mx-auto">
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 py-6 px-8 rounded-2xl bg-slate-50/80 border border-slate-100">
-            {[
-              { label: "Est. Incorporation", value: "2018" },
-              { label: "SEBI Category", value: "I RTA" },
-              { label: "Depository Partners", value: "NSDL + CDSL" },
-              { label: "Uptime SLA", value: "99.9%" },
-            ].map((stat, i) => (
-              <div key={i} className="flex items-center gap-3">
-                {i > 0 && (
-                  <div className="hidden sm:block w-px h-8 bg-slate-200" />
-                )}
-                <div className="text-center sm:text-left">
-                  <div className="text-lg font-black text-slate-900 tracking-tight">{stat.value}</div>
-                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{stat.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
