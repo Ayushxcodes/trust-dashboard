@@ -8,11 +8,8 @@ export default function PrivacyPolicyPage() {
 
       {/* Header Banner */}
       <div className="bg-gradient-to-br from-[#0B1528] to-slate-900 text-white py-16 border-b border-slate-800">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
-          <span className="inline-block px-3.5 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-mono font-bold uppercase tracking-wider rounded-full mb-3 border border-indigo-500/30">
-            Statutory Legal Disclosure
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-3">
+        <div className="container mx-auto px-6 text-center max-w-4xl">
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">
             Privacy Policy &amp; Data Protection
           </h1>
           <p className="text-slate-300 text-sm font-mono">

@@ -97,14 +97,14 @@ export default function TrackRequestPage() {
 
       {/* Header Banner */}
       <div className="bg-gradient-to-br from-[#0B1528] to-slate-900 text-white py-16 border-b border-slate-800">
-        <div className="container mx-auto px-6 max-w-5xl text-center">
-          <span className="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider rounded-full mb-3 border border-emerald-500/30">
-            Public Service Request Tracker
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-3">
-            Track Grievance &amp; SRN Status
+        <div className="container mx-auto px-6 max-w-4xl text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-4 animate-fade-in-up">
+            Track{" "}
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-300 bg-clip-text text-transparent animate-text-shimmer">
+              Grievance &amp; SRN Status
+            </span>
           </h1>
-          <p className="text-slate-300 text-base max-w-3xl mx-auto leading-relaxed">
+          <p className="text-slate-300 text-base max-w-3xl mx-auto leading-relaxed animate-fade-in-up-delay-1">
             Enter your Service Request Number (SRN) or Grievance Ticket ID to view real-time processing milestones and expected resolution timelines.
           </p>
         </div>

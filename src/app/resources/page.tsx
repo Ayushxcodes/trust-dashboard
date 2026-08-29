@@ -37,9 +37,6 @@ export default function ResourcesPage() {
       {/* Header Banner */}
       <div className="bg-gradient-to-br from-[#0B1528] to-slate-900 text-white py-16 border-b border-slate-800">
         <div className="container mx-auto px-6 max-w-5xl text-center">
-          <span className="inline-block px-3.5 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-mono font-bold uppercase tracking-wider rounded-full mb-3 border border-indigo-500/30">
-            SEBI Prescribed Investor Forms
-          </span>
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-3">
             Download Statutory Forms &amp; Templates
           </h1>

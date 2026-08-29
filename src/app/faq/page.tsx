@@ -42,11 +42,8 @@ export default function FAQPage() {
 
       {/* Header Banner */}
       <div className="bg-gradient-to-br from-[#0B1528] to-slate-900 text-white py-16 border-b border-slate-800">
-        <div className="container mx-auto px-6 max-w-5xl text-center">
-          <span className="inline-block px-4 py-1.5 bg-indigo-500/20 text-indigo-300 text-xs font-mono font-bold uppercase tracking-wider rounded-full mb-3 border border-indigo-500/30">
-            SEBI Regulatory &amp; Service Knowledgebase
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-3">
+        <div className="container mx-auto px-6 text-center max-w-4xl">
+          <h1 className="text-4xl font-extrabold sm:text-5xl text-white mb-4">
             Frequently Asked Questions (FAQ)
           </h1>
           <p className="text-slate-300 text-base max-w-3xl mx-auto leading-relaxed">

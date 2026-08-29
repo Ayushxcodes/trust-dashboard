@@ -1,186 +1,280 @@
-import Card from "../base/Card";
+import Link from "next/link";
+
+interface ServiceItem {
+  title: string;
+  category: string;
+  tat: string;
+  rule: string;
+  desc: string;
+  deliverables: string[];
+  icon: React.ReactNode;
+}
 
 export default function OurServicesPage() {
-  const services = [
+  const serviceCategories: { name: string; items: ServiceItem[] }[] = [
     {
-      title: "Security Dematerialization (NSDL & CDSL)",
-      desc: "Transform physical certificates into electronic format via dematerialization with NSDL and CDSL depositories for secure ownership.",
-      icon: (
-        <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      ),
+      name: "Depository & Demat Operations",
+      items: [
+        {
+          title: "Security Dematerialisation (NSDL & CDSL)",
+          category: "Depository Sync",
+          tat: "15 Days TAT",
+          rule: "SEBI (D&P) Reg 2018",
+          desc: "End-to-end Dematerialisation (DRF) and Rematerialisation (RRF) processing, electronic verification, and daily BENPOS sync with NSDL & CDSL.",
+          deliverables: ["DRF Verification & Credit", "BENPOS File Reconciliation", "ISIN Setup & Activation"],
+          icon: (
+            <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          ),
+        },
+        {
+          title: "Corporate Actions & Lock-in Tagging",
+          category: "Depository Sync",
+          tat: "5 Days TAT",
+          rule: "SEBI Circular 2023",
+          desc: "Setup and execution of IPO, Rights, Bonus, ESOP lock-in release, and depository corporate action credits.",
+          deliverables: ["Lock-in Tagging & Release", "CA Allotment Execution", "Depository Certificate Filing"],
+          icon: (
+            <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          ),
+        },
+      ],
     },
     {
-      title: "Payout of Dividend / Interest via ECS",
-      desc: "Receive dividends and interest seamlessly through ECS transfers, minimizing risks and ensuring SEBI-compliant payouts.",
-      icon: (
-        <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-6c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      name: "Physical Folios & Share Transfer",
+      items: [
+        {
+          title: "Duplicate Certificate & Letter of Confirmation",
+          category: "Physical Folio",
+          tat: "30 Days TAT",
+          rule: "SEBI ISR Series Circulars",
+          desc: "Issuance of Form ISR-4 Letters of Confirmation in lieu of duplicate share certificates, loss of certificate verification, and public notice audits.",
+          deliverables: ["Form ISR-4 Letter Issue", "Loss Clearance Verification", "Shareholder Folio Endorsement"],
+          icon: (
+            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          ),
+        },
+        {
+          title: "Transmission, Transposition & Name Correction",
+          category: "Physical Folio",
+          tat: "21 Days TAT",
+          rule: "SEBI LODR Reg 39(3)",
+          desc: "Legal heir transmission upon death, name correction, signature update (Form ISR-2), address updates, and consolidation/split of physical certificates.",
+          deliverables: ["Legal Heir Transmission", "Form ISR-2 Signature Audit", "Cert Split & Consolidation"],
+          icon: (
+            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002-2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          ),
+        },
+      ],
     },
     {
-      title: "Investor Record Keeping & Securities Transfer",
-      desc: "Efficient management of investor records, transfers, purchases, sales, and personal detail updates.",
-      icon: (
-        <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-        </svg>
-      ),
+      name: "Corporate Governance & Compliance",
+      items: [
+        {
+          title: "PAS-6 Share Capital Reconciliation",
+          category: "Compliance",
+          tat: "Half-Yearly",
+          rule: "Companies Act Sec 88 & Rule 9B",
+          desc: "Audit and half-yearly PAS-6 reconciliation filings for unlisted public companies, verifying physical and electronic capital balance.",
+          deliverables: ["PAS-6 Audit Filing Data", "Statutory Register Maintenance", "Clause 47(c) Secretarial Certificate"],
+          icon: (
+            <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+            </svg>
+          ),
+        },
+        {
+          title: "AGM / EGM e-Voting & Postal Ballot",
+          category: "Governance",
+          tat: "Event-Based",
+          rule: "SEBI LODR Reg 44 & MCA",
+          desc: "Arrangement for AGM/EGM, remote e-Voting management, postal ballot execution, scrutinizer report compilation, and attendance slips.",
+          deliverables: ["e-Voting Platform Integration", "Attendance & Proxy Register", "Scrutinizer Polling Summary"],
+          icon: (
+            <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          ),
+        },
+      ],
     },
     {
-      title: "Revalidation of Dividend",
-      desc: "Streamline dividend revalidation through dematerialization and secure demat account ownership.",
-      icon: (
-        <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      ),
-    },
-    {
-      title: "Inquiry Handling",
-      desc: "Prompt inquiry resolution through phone, mail, online portals, fax, and helpline services.",
-      icon: (
-        <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-      ),
-    },
-    {
-      title: "Investor Regulatory Reporting",
-      desc: "Comprehensive investor data management ensuring accurate regulatory reporting and compliance.",
-      icon: (
-        <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-    },
-    {
-      title: "Reporting, Mailing & Investor Meetings",
-      desc: "End-to-end reporting, mailing services, and coordination of investor meetings.",
-      icon: (
-        <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-    },
-    {
-      title: "Share Transfer Certificate",
-      desc: "Facilitate physical share transfer through SH-4 form submission and official register updates.",
-      icon: (
-        <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-        </svg>
-      ),
-    },
-    {
-      title: "Duplicate Share Certificate",
-      desc: "Seamless assistance for obtaining duplicate share certificates with required documentation.",
-      icon: (
-        <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-      ),
-    },
-    {
-      title: "Reconciliation of Share Capital (PAS-6)",
-      desc: "Half-yearly reconciliation and PAS-6 compliance for unlisted public companies under Rule 9B.",
-      icon: (
-        <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-        </svg>
-      ),
-    },
-    {
-      title: "IEPF Claim Settlement",
-      desc: "Assistance in reclaiming unclaimed dividends and shares using Form IEPF-5.",
-      icon: (
-        <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
-        </svg>
-      ),
-    },
-    {
-      title: "Name / Signature / Address Changes",
-      desc: "Support for name change, transmission, transposition, and signature/address updates.",
-      icon: (
-        <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
+      name: "Dividend Disbursal & IEPF Settlements",
+      items: [
+        {
+          title: "Dividend / Interest Payout via NECS & NACH",
+          category: "Payouts",
+          tat: "15 Days TAT",
+          rule: "SEBI Unclaimed Payout Circulars",
+          desc: "Direct electronic credit of dividends and debenture interest to bank accounts via NECS/NACH, warrant printing, and bank mandate updates.",
+          deliverables: ["NECS Direct Bank Transfer", "Unclaimed Dividend Ledger", "Warrant Revalidation"],
+          icon: (
+            <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-6c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ),
+        },
+        {
+          title: "IEPF Claim Settlement (Form IEPF-5)",
+          category: "IEPF Claims",
+          tat: "30 Days TAT",
+          rule: "IEPF Authority Rules 2016",
+          desc: "Assisting investors in filing Form IEPF-5, verifying entitlement, and coordinating with the Investor Education and Protection Fund Authority.",
+          deliverables: ["Form IEPF-5 Entitlement Audit", "IEPF-2 Annual Statement", "Shares & Dividend Refund"],
+          icon: (
+            <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0l-3 3m3-3l3 3" />
+            </svg>
+          ),
+        },
+      ],
     },
   ];
 
   return (
-    <section className="bg-gradient-to-br from-slate-50 to-blue-50 text-black py-12">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-sky-100 to-blue-100 py-16 mb-12 border-b border-blue-200">
-        <div className="container mx-auto px-6 text-center">
-          <span className="inline-block px-4 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-extrabold uppercase tracking-wider rounded-full mb-4">
-            Category I RTA Services
-          </span>
-          <h1 className="mb-6 text-4xl font-extrabold sm:text-5xl bg-gradient-to-r from-indigo-700 to-blue-700 bg-clip-text text-transparent">
-            Our Services &amp; Solutions
+    <div className="bg-white text-slate-900 font-sans">
+      
+      {/* Tamed Hero Header */}
+      <section className="bg-slate-50 border-b border-slate-200 py-12 sm:py-16">
+        <div className="container mx-auto px-6 text-center max-w-3xl">
+          
+          
+
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+            RTA Services &amp; Regulatory Solutions
           </h1>
-          <p className="mx-auto max-w-4xl text-lg text-gray-700 leading-relaxed">
-            TrustLink RTA is your one-stop solution for a spectrum of services,
-            encompassing seamless company formation, meticulous regulatory
-            compliance, and strategic advisory. Elevate your business with our
-            comprehensive RTA services.
+
+          <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto mb-6">
+            End-to-end Registrar &amp; Share Transfer Agent operations strictly conforming to SEBI regulations, Companies Act, and depository requirements.
           </p>
 
-          <div className="mt-8 flex justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/track-request"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
+            >
+              <span>Track Service Request (SRN)</span>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </Link>
             <a
               href="mailto:info@trustlinkinvestor.com"
-              className="rounded-full bg-gradient-to-r from-blue-900 to-indigo-900 px-8 py-3 text-white font-semibold hover:from-blue-800 hover:to-indigo-800 transition-all duration-300 shadow-lg text-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs uppercase tracking-wider border border-slate-200 transition-colors shadow-xs"
             >
-              Contact Us
+              <span>Contact Compliance Desk</span>
             </a>
           </div>
+
         </div>
-      </div>
+      </section>
 
-      {/* Intro Section */}
-      <div className="container mx-auto px-6 mb-16">
-        <h2 className="mb-6 text-3xl font-bold text-center text-slate-800">
-          Highly Dedicated RTA Services Providing Company in India
-        </h2>
-        <p className="mx-auto max-w-5xl text-center text-gray-700 leading-relaxed text-lg">
-          TrustLink RTA has expanded traditional securities through innovation in
-          response to customer needs. We provide highly relevant compliance
-          solutions by understanding the unique situations and targets of our
-          clients.
-        </p>
-      </div>
-
-      {/* RTA Services List */}
-      <div className="container mx-auto px-6 py-12">
-        <h2 className="mb-12 text-3xl font-bold text-center text-slate-900">
-          RTA Services for Unlisted Companies, Listed Entities and Professionals
-        </h2>
-
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, index) => (
-            <Card
-              key={index}
-              hover={true}
-              border={true}
-              shadow="md"
-              background="white"
-              className="h-full flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-                  {service.icon}
-                </div>
-                <h3 className="mb-3 text-xl font-bold text-gray-800">{service.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{service.desc}</p>
+      {/* Categorized Services Section */}
+      <section className="py-16 sm:py-20">
+        <div className="container mx-auto px-6 max-w-6xl space-y-16">
+          {serviceCategories.map((cat, idx) => (
+            <div key={idx} className="space-y-6">
+              
+              {/* Category Header */}
+              <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+                <span className="text-xs font-mono font-bold text-indigo-600 uppercase tracking-widest">
+                  MODULE 0{idx + 1}
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  {cat.name}
+                </h2>
               </div>
-            </Card>
+
+              {/* Items Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {cat.items.map((item, itemIdx) => (
+                  <div
+                    key={itemIdx}
+                    className="bg-slate-50/70 rounded-2xl border border-slate-200 p-6 flex flex-col justify-between hover:border-indigo-200 hover:bg-slate-50 transition-all shadow-xs"
+                  >
+                    <div>
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between gap-2 mb-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+                            {item.icon}
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-500">
+                            {item.category}
+                          </span>
+                        </div>
+                        <span className="px-2.5 py-0.5 rounded text-[10.5px] font-mono font-bold bg-white border border-slate-200 text-slate-700 shadow-xs">
+                          {item.tat}
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-lg font-bold text-slate-900 mb-2">
+                        {item.title}
+                      </h3>
+
+                      {/* Regulation */}
+                      <div className="mb-3 inline-block px-2.5 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-indigo-800 text-[11px] font-mono font-bold">
+                        {item.rule}
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                        {item.desc}
+                      </p>
+                    </div>
+
+                    {/* Deliverables List */}
+                    <div className="pt-4 border-t border-slate-200 space-y-1.5">
+                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                        STATUTORY DELIVERABLES:
+                      </span>
+                      {item.deliverables.map((del, dIdx) => (
+                        <div key={dIdx} className="flex items-center gap-2 text-xs text-slate-700 font-medium">
+                          <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{del}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+
+            </div>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Compliance Guarantee Banner */}
+      <section className="bg-slate-50 border-t border-slate-200 py-14">
+        <div className="container mx-auto px-6 max-w-4xl text-center">
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-indigo-600 block mb-2">
+            SEBI REGULATORY ASSURANCE
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-3">
+            Permanent SEBI Category I RTA Compliance
+          </h2>
+          <p className="text-slate-600 text-sm leading-relaxed max-w-2xl mx-auto mb-6">
+            All services are executed with strict adherence to SEBI Master Circulars, MCA Secretarial standards, and NSDL/CDSL depository guidelines.
+          </p>
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-mono text-slate-700 font-bold shadow-xs">
+            <span>SEBI REG NO: INR000004510</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-indigo-700">100% AUDIT READY</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
   );
 }

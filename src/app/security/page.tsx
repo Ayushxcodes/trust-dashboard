@@ -9,11 +9,8 @@ export default function SecurityPage() {
 
       {/* Header Banner */}
       <div className="bg-gradient-to-br from-[#0B1528] to-slate-900 text-white py-16 border-b border-slate-800">
-        <div className="container mx-auto px-6 max-w-5xl text-center">
-          <span className="inline-block px-3.5 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider rounded-full mb-3 border border-emerald-500/30">
-            SEBI Cybersecurity Compliance
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-3">
+        <div className="container mx-auto px-6 text-center max-w-4xl">
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">
             Institutional Security &amp; Infrastructure
           </h1>
           <p className="text-slate-300 text-base max-w-3xl mx-auto leading-relaxed">
