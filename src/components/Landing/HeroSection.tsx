@@ -3,26 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-function CountUp({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let startTimestamp: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const easedProgress = 1 - (1 - progress) * (1 - progress);
-      setCount(Math.floor(easedProgress * end));
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  }, [end, duration]);
-
-  return <>{count.toLocaleString()}{suffix}</>;
-}
-
 const interactiveServices = [
   {
     id: 1,
@@ -169,28 +149,6 @@ export default function HeroSection() {
               </svg>
               <span>Track Request</span>
             </Link>
-          </div>
-
-          {/* Key Metrics with Dynamic Counting Numbers */}
-          <div className="mt-8 pt-6 border-t border-slate-150 grid grid-cols-3 gap-4">
-            <div>
-              <div className="text-2xl font-black text-indigo-900 font-mono">
-                <CountUp end={2018} duration={1800} />
-              </div>
-              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Est. Incorporation</div>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-indigo-900 font-mono">
-                <CountUp end={100} suffix="+" duration={2000} />
-              </div>
-              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Client Companies</div>
-            </div>
-            <div>
-              <div className="text-2xl font-black text-indigo-900 font-mono">
-                <CountUp end={500000} suffix="+" duration={2200} />
-              </div>
-              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Folios Serviced</div>
-            </div>
           </div>
         </div>
 
