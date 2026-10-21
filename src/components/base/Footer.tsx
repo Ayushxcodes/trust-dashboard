@@ -53,7 +53,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/investor/investor-grievances-reports" className="hover:text-white transition-colors">
-                  Monthly Complaints Data
+                  Annexure-26 Complaints Data
                 </Link>
               </li>
               <li>

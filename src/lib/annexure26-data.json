@@ -1,0 +1,55 @@
+{
+  "annexureTitle": "Annexure-26",
+  "subTitle": "Data of complaints against Registrars to an Issue and Share Transfer Agents (RTAs) to be displayed on their websites",
+  "monthEnding": "October 2026",
+  "financialYear": "2026-27",
+  "updatedAt": "2026-10-21T00:00:00.000Z",
+  "sourceWiseData": [
+    {
+      "sn": 1,
+      "source": "Directly from Investors",
+      "carriedForward": 0,
+      "received": 0,
+      "totalPending": 0,
+      "resolved": 0,
+      "pendingLessThan3Months": 0,
+      "pendingMoreThan3Months": 0,
+      "averageResolutionDays": 0
+    },
+    {
+      "sn": 2,
+      "source": "SEBI (SCORES 2.0)",
+      "carriedForward": 0,
+      "received": 0,
+      "totalPending": 0,
+      "resolved": 0,
+      "pendingLessThan3Months": 0,
+      "pendingMoreThan3Months": 0,
+      "averageResolutionDays": 0
+    },
+    {
+      "sn": 3,
+      "source": "Stock Exchanges (if relevant)",
+      "carriedForward": 0,
+      "received": 0,
+      "totalPending": 0,
+      "resolved": 0,
+      "pendingLessThan3Months": 0,
+      "pendingMoreThan3Months": 0,
+      "averageResolutionDays": 0
+    },
+    {
+      "sn": 4,
+      "source": "Other Sources (if any)",
+      "carriedForward": 0,
+      "received": 0,
+      "totalPending": 0,
+      "resolved": 0,
+      "pendingLessThan3Months": 0,
+      "pendingMoreThan3Months": 0,
+      "averageResolutionDays": 0
+    }
+  ],
+  "monthlyTrend": [],
+  "annualTrend": []
+}

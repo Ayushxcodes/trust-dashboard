@@ -13,6 +13,7 @@ import {
   getMonthlyGrievanceReport,
   getGrievanceRequests,
   getServicedCompanies,
+  checkAndAutoArchiveEndedMonth,
 } from "@/lib/db";
 import DocumentReviewForm from "./DocumentReviewForm";
 import PipelineForm from "./PipelineForm";
@@ -60,6 +61,7 @@ export default async function AdminPage({
   const auditLogs = await getAuditLogs();
   const allStages = await getAllPipelineStages();
   const monthlyReport = await getMonthlyGrievanceReport();
+  const annexureData = await checkAndAutoArchiveEndedMonth();
   const grievances = await getGrievanceRequests();
   const servicedCompanies = await getServicedCompanies();
 
@@ -694,7 +696,7 @@ export default async function AdminPage({
                 </div>
 
                 {/* SEBI Compliance Monthly Grievances Admin Updater */}
-                <MonthlyGrievanceForm initialReport={monthlyReport} />
+                <MonthlyGrievanceForm initialReport={monthlyReport} initialAnnexureData={annexureData} />
 
                 {/* Oversight Table Card */}
                 <div className="bg-white border border-zinc-200 rounded shadow-sm overflow-hidden">
@@ -1211,7 +1213,7 @@ export default async function AdminPage({
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                   <div className="lg:col-span-7">
-                    <MonthlyGrievanceForm initialReport={monthlyReport} />
+                    <MonthlyGrievanceForm initialReport={monthlyReport} initialAnnexureData={annexureData} />
                   </div>
 
                   <div className="lg:col-span-5 bg-white border border-zinc-200 rounded-xl p-6 shadow-sm space-y-4">

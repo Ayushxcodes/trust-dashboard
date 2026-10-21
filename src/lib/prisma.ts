@@ -27,6 +27,13 @@ function createPrismaClient(): PrismaClient {
   });
 }
 
-export const prisma = globalForPrisma.prisma || createPrismaClient();
+const cachedClient = globalForPrisma.prisma;
+// Recreate client if undefined or if cached before latest Prisma schema migration
+const isOutdated = cachedClient && !(cachedClient as any).annexure26Snapshot;
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prisma = (!cachedClient || isOutdated) ? createPrismaClient() : cachedClient;
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+

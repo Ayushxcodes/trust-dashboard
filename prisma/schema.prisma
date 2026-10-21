@@ -101,3 +101,22 @@ model ServicedCompany {
   nodalContact String
   createdAt    DateTime @default(now())
 }
+
+model Annexure26Snapshot {
+  id                String   @id
+  monthYear         String   @unique
+  financialYear     String   @default("2026-27")
+  carriedForward    Int      @default(0)
+  received          Int      @default(0)
+  totalPending      Int      @default(0)
+  resolved          Int      @default(0)
+  pending           Int      @default(0)
+  pendingLess3M     Int      @default(0)
+  pendingMore3M     Int      @default(0)
+  avgResolutionDays Float    @default(0.0)
+  sourceDataJson    String   @default("[]")
+  isCurrent         Boolean  @default(false)
+  archivedAt        DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+

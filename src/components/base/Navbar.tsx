@@ -81,14 +81,14 @@ export default function Navbar() {
                     onClick={() => setIsInvestorDropdownOpen(false)}
                     className="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
                   >
-                    Investor Charter
+                    Investor Charter (Annexure-25)
                   </Link>
                   <Link
                     href="/investor/investor-grievances-reports"
                     onClick={() => setIsInvestorDropdownOpen(false)}
                     className="block px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
                   >
-                    Monthly Investor Complaints Data
+                    Annexure-26 Complaints Data
                   </Link>
                   <Link
                     href="/faq"
@@ -185,10 +185,10 @@ export default function Navbar() {
                       Track SRN / Grievance Status
                     </Link>
                     <Link href="/investor/investor-charter" onClick={() => setIsOpen(false)} className="text-xs text-slate-700 hover:text-indigo-600 py-1">
-                      Investor Charter
+                      Investor Charter (Annexure-25)
                     </Link>
                     <Link href="/investor/investor-grievances-reports" onClick={() => setIsOpen(false)} className="text-xs text-slate-700 hover:text-indigo-600 py-1">
-                      Monthly Complaints Data
+                      Annexure-26 Complaints Data
                     </Link>
                     <Link href="/faq" onClick={() => setIsOpen(false)} className="text-xs text-slate-700 hover:text-indigo-600 py-1">
                       Investor FAQ &amp; MCA Rule 9B

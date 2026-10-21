@@ -7,6 +7,7 @@ import fs from "fs/promises";
 import path from "path";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
+import nodemailer from "nodemailer";
 import {
   getUserByEmail,
   createUser,
@@ -34,10 +35,16 @@ import {
   createGrievanceRequest,
   getGrievanceByTicketId,
   updateGrievanceStatusInDb,
-  getGrievanceRequests,
   createServicedCompany,
   deleteServicedCompany,
   getServicedCompanies,
+  getAnnexure26Data,
+  saveAnnexure26Data,
+  Annexure26Report,
+  checkAndAutoArchiveEndedMonth,
+  concludeAndRolloverMonth,
+  saveMonthlySnapshotToDb,
+  getArchivedSnapshotsFromDb,
 } from "@/lib/db";
 import { uploadFileToS3, getPresignedUploadUrl } from "@/lib/s3";
 
@@ -946,6 +953,67 @@ export async function updateMonthlyGrievanceReportAction(formData: FormData) {
   return { success: true, data: updated };
 }
 
+export async function fetchAnnexure26ReportAction() {
+  return await checkAndAutoArchiveEndedMonth();
+}
+
+export async function fetchArchivedSnapshotsAction() {
+  return await getArchivedSnapshotsFromDb();
+}
+
+export async function updateAnnexure26ReportAction(payload: Partial<Annexure26Report>) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const updated = saveAnnexure26Data(payload);
+
+  // Sync to Postgres DB as the current active month snapshot
+  if (updated.sourceWiseData && updated.monthEnding) {
+    await saveMonthlySnapshotToDb({
+      monthYear: updated.monthEnding,
+      financialYear: updated.financialYear,
+      sourceWiseData: updated.sourceWiseData,
+      isCurrent: true,
+    });
+  }
+
+  await createAuditLog({
+    adminId: admin.id,
+    userId: null,
+    action: `SEBI ANNEXURE-26 UPDATE: Updated complaints disclosure data for month ending ${updated.monthEnding}`,
+  });
+
+  revalidatePath("/investor/investor-grievances-reports");
+  revalidatePath("/investor/annexure-26");
+  revalidatePath("/admin");
+
+  const snapshots = await getArchivedSnapshotsFromDb();
+  return {
+    success: true,
+    data: {
+      ...updated,
+      archivedMonths: snapshots,
+    },
+  };
+}
+
+export async function concludeAndRolloverMonthAction(targetMonth?: string) {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized access." };
+  }
+
+  const updated = await concludeAndRolloverMonth(admin.id, targetMonth);
+
+  revalidatePath("/investor/investor-grievances-reports");
+  revalidatePath("/investor/annexure-26");
+  revalidatePath("/admin");
+
+  return { success: true, data: updated };
+}
+
 export async function submitGrievanceAction(data: {
   investorName: string;
   email: string;
@@ -1092,4 +1160,55 @@ export async function deleteServicedCompanyAction(id: string) {
     return { success: false, error: "Failed to remove serviced company." };
   }
 }
+
+export async function requestPasswordReset(email: string, corporateId?: string) {
+  try {
+    if (!email || !email.includes("@")) {
+      return { success: false, error: "Please enter a valid corporate email address." };
+    }
+
+    const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
+    const smtpPort = parseInt(process.env.SMTP_PORT || "587");
+    const smtpUser = process.env.SMTP_USER || "info@trustlinkinvestor.com";
+    const smtpPass = process.env.SMTP_PASSWORD || "";
+
+    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const resetLink = `https://trustlinkinvestor.com/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+
+    if (smtpPass) {
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"Trustlink Institutional Recovery" <${smtpUser}>`,
+        to: email,
+        subject: "Institutional Access Recovery — Password Reset Link",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; padding: 24px; border-radius: 8px;">
+            <h2 style="color: #0b1528;">Password Reset Request</h2>
+            <p>We received a request to reset access for account associated with <strong>${email}</strong>${corporateId ? ` (Corporate ID: ${corporateId})` : ""}.</p>
+            <p>Click the button below to complete your password reset (valid for 15 minutes):</p>
+            <a href="${resetLink}" style="background-color: #0b1528; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; margin: 16px 0;">Reset Password</a>
+            <p style="font-size: 12px; color: #64748b;">If you did not request this reset, please ignore this message or report to info@trustlinkinvestor.com.</p>
+          </div>
+        `,
+      });
+    } else {
+      console.log(`[Password Reset Dispatch for ${email}]: ${resetLink}`);
+    }
+
+    return { success: true, message: "Reset instructions dispatched successfully." };
+  } catch (err: any) {
+    console.error("requestPasswordReset error:", err);
+    return { success: false, error: err?.message || "Failed to send reset email." };
+  }
+}
+
 

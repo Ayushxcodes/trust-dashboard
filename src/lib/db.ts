@@ -904,7 +904,20 @@ export function calculateRemainingDays(deadline?: string | null, customDays?: nu
   return Math.max(0, Math.ceil((targetTime - now) / (1000 * 60 * 60 * 24)));
 }
 
-// SEBI Monthly Investor Grievances Report Data Structure
+// SEBI Annexure-26 and Monthly Investor Grievances Report Data Structure
+export * from "./annexure26";
+export * from "./annexure26-types";
+import {
+  ComplaintSourceData,
+  MonthlyTrendData,
+  AnnualTrendData,
+  ArchivedMonthOption,
+  Annexure26Report,
+  parseMonthYear,
+  calculateSourceWiseTotals,
+} from "./annexure26-types";
+import { getAnnexure26Data, saveAnnexure26Data } from "./annexure26";
+
 export interface MonthlyGrievanceReport {
   month: string;
   received: number;
@@ -914,17 +927,17 @@ export interface MonthlyGrievanceReport {
   updatedAt: string;
 }
 
-let inMemoryMonthlyReport: MonthlyGrievanceReport = {
-  month: "August 2026",
-  received: 0,
-  resolved: 0,
-  pending: 0,
-  carriedForward: 0,
-  updatedAt: new Date().toISOString(),
-};
-
 export async function getMonthlyGrievanceReport(): Promise<MonthlyGrievanceReport> {
-  return inMemoryMonthlyReport;
+  const annexure = getAnnexure26Data();
+  const totals = calculateSourceWiseTotals(annexure.sourceWiseData);
+  return {
+    month: annexure.monthEnding,
+    received: totals.received,
+    resolved: totals.resolved,
+    pending: Math.max(0, totals.totalPending - totals.resolved),
+    carriedForward: totals.carriedForward,
+    updatedAt: annexure.updatedAt,
+  };
 }
 
 export async function updateMonthlyGrievanceReportData(
@@ -934,7 +947,37 @@ export async function updateMonthlyGrievanceReportData(
   pending: number,
   carriedForward: number
 ): Promise<MonthlyGrievanceReport> {
-  inMemoryMonthlyReport = {
+  const current = getAnnexure26Data();
+  // Update the primary investor row
+  const updatedSources = current.sourceWiseData.map((s) => {
+    if (s.sn === 1) {
+      return {
+        ...s,
+        carriedForward,
+        received,
+        totalPending: carriedForward + received,
+        resolved,
+        pendingLessThan3Months: pending,
+        pendingMoreThan3Months: 0,
+      };
+    }
+    return s;
+  });
+
+  saveAnnexure26Data({
+    monthEnding: month,
+    sourceWiseData: updatedSources,
+  });
+
+  // Automatically save/sync current month in PostgreSQL database
+  saveMonthlySnapshotToDb({
+    monthYear: month,
+    financialYear: current.financialYear,
+    sourceWiseData: updatedSources,
+    isCurrent: true,
+  }).catch((err) => console.warn("Background snapshot save failed:", err));
+
+  return {
     month,
     received,
     resolved,
@@ -942,7 +985,352 @@ export async function updateMonthlyGrievanceReportData(
     carriedForward,
     updatedAt: new Date().toISOString(),
   };
-  return inMemoryMonthlyReport;
+}
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+export async function saveMonthlySnapshotToDb(snapshot: {
+  monthYear: string;
+  financialYear: string;
+  sourceWiseData: ComplaintSourceData[];
+  isCurrent?: boolean;
+}): Promise<ArchivedMonthOption | null> {
+  const totals = calculateSourceWiseTotals(snapshot.sourceWiseData);
+  const cleanId = `SNAP-${snapshot.monthYear.replace(/[^a-zA-Z0-9]/g, "-").toUpperCase()}`;
+  const sourceDataJson = JSON.stringify(snapshot.sourceWiseData);
+
+  try {
+    if (!prisma || !(prisma as any).annexure26Snapshot) {
+      console.warn("prisma.annexure26Snapshot not yet available on client");
+      return null;
+    }
+
+    const record = await prisma.annexure26Snapshot.upsert({
+      where: { monthYear: snapshot.monthYear },
+      update: {
+        financialYear: snapshot.financialYear,
+        carriedForward: totals.carriedForward,
+        received: totals.received,
+        totalPending: totals.totalPending,
+        resolved: totals.resolved,
+        pending: Math.max(0, totals.totalPending - totals.resolved),
+        pendingLess3M: totals.pendingLessThan3Months,
+        pendingMore3M: totals.pendingMoreThan3Months,
+        avgResolutionDays: totals.averageResolutionDays,
+        sourceDataJson,
+        isCurrent: snapshot.isCurrent ?? false,
+      },
+      create: {
+        id: cleanId,
+        monthYear: snapshot.monthYear,
+        financialYear: snapshot.financialYear,
+        carriedForward: totals.carriedForward,
+        received: totals.received,
+        totalPending: totals.totalPending,
+        resolved: totals.resolved,
+        pending: Math.max(0, totals.totalPending - totals.resolved),
+        pendingLess3M: totals.pendingLessThan3Months,
+        pendingMore3M: totals.pendingMoreThan3Months,
+        avgResolutionDays: totals.averageResolutionDays,
+        sourceDataJson,
+        isCurrent: snapshot.isCurrent ?? false,
+      },
+    });
+
+    return {
+      id: record.id,
+      monthYear: record.monthYear,
+      financialYear: record.financialYear,
+      carriedForward: record.carriedForward,
+      received: record.received,
+      totalPending: record.totalPending,
+      resolved: record.resolved,
+      pending: record.pending,
+      pendingLess3M: record.pendingLess3M,
+      pendingMore3M: record.pendingMore3M,
+      avgResolutionDays: record.avgResolutionDays,
+      sourceWiseData: JSON.parse(record.sourceDataJson || "[]"),
+      isCurrent: record.isCurrent,
+      archivedAt: record.archivedAt.toISOString(),
+    };
+  } catch (err) {
+    console.warn("Failed to persist snapshot to Postgres DB:", err);
+    return null;
+  }
+}
+
+export async function getArchivedSnapshotsFromDb(): Promise<ArchivedMonthOption[]> {
+  try {
+    if (!prisma || !(prisma as any).annexure26Snapshot) {
+      return [];
+    }
+
+    const records = await prisma.annexure26Snapshot.findMany({
+      orderBy: { archivedAt: "desc" },
+    });
+    return records.map((r) => ({
+      id: r.id,
+      monthYear: r.monthYear,
+      financialYear: r.financialYear,
+      carriedForward: r.carriedForward,
+      received: r.received,
+      totalPending: r.totalPending,
+      resolved: r.resolved,
+      pending: r.pending,
+      pendingLess3M: r.pendingLess3M,
+      pendingMore3M: r.pendingMore3M,
+      avgResolutionDays: r.avgResolutionDays,
+      sourceWiseData: JSON.parse(r.sourceDataJson || "[]"),
+      isCurrent: r.isCurrent,
+      archivedAt: r.archivedAt.toISOString(),
+    }));
+  } catch (err) {
+    console.warn("getArchivedSnapshotsFromDb error:", err);
+    return [];
+  }
+}
+
+export async function checkAndAutoArchiveEndedMonth(): Promise<Annexure26Report> {
+  let current = getAnnexure26Data();
+  const parsed = parseMonthYear(current.monthEnding);
+  const now = new Date();
+
+  if (parsed) {
+    const isPastMonth =
+      now.getFullYear() > parsed.year ||
+      (now.getFullYear() === parsed.year && now.getMonth() > parsed.month);
+
+    if (isPastMonth) {
+      // The configured month has ended! Automatically archive it into the DB
+      const concludedMonth = current.monthEnding;
+      const totals = calculateSourceWiseTotals(current.sourceWiseData);
+      const remainingPending = Math.max(0, totals.totalPending - totals.resolved);
+
+      // Save concluded month snapshot to Postgres DB
+      await saveMonthlySnapshotToDb({
+        monthYear: concludedMonth,
+        financialYear: current.financialYear,
+        sourceWiseData: current.sourceWiseData,
+        isCurrent: false,
+      });
+
+      // Also ensure this concluded month is recorded in Table 2 (monthlyTrend)
+      const concludedLabel = `${MONTH_NAMES[parsed.month]} - ${parsed.year}`;
+      const existingTrendIndex = current.monthlyTrend.findIndex((t) =>
+        t.month.toLowerCase() === concludedLabel.toLowerCase()
+      );
+
+      const trendEntry: MonthlyTrendData = {
+        sn: existingTrendIndex >= 0 ? current.monthlyTrend[existingTrendIndex].sn : current.monthlyTrend.length + 1,
+        month: concludedLabel,
+        carriedForward: totals.carriedForward,
+        received: totals.received,
+        resolved: totals.resolved,
+        pending: remainingPending,
+      };
+
+      let updatedTrend = [...current.monthlyTrend];
+      if (existingTrendIndex >= 0) {
+        updatedTrend[existingTrendIndex] = trendEntry;
+      } else {
+        updatedTrend.push(trendEntry);
+      }
+
+      updatedTrend = updatedTrend.map((item, idx) => ({ ...item, sn: idx + 1 }));
+
+      // Roll over to current month
+      const currentMonthIndex = now.getMonth();
+      const currentYear = now.getFullYear();
+      const currentMonthName = `${MONTH_NAMES[currentMonthIndex]} ${currentYear}`;
+
+      const fyStart = currentMonthIndex >= 3 ? currentYear : currentYear - 1;
+      const fyEnd = (fyStart + 1) % 100;
+      const calculatedFy = `${fyStart}-${fyEnd < 10 ? "0" + fyEnd : fyEnd}`;
+
+      const newSources: ComplaintSourceData[] = [
+        {
+          sn: 1,
+          source: "Directly from Investors",
+          carriedForward: remainingPending,
+          received: 0,
+          totalPending: remainingPending,
+          resolved: 0,
+          pendingLessThan3Months: remainingPending,
+          pendingMoreThan3Months: 0,
+          averageResolutionDays: 0,
+        },
+        {
+          sn: 2,
+          source: "SEBI (SCORES 2.0)",
+          carriedForward: 0,
+          received: 0,
+          totalPending: 0,
+          resolved: 0,
+          pendingLessThan3Months: 0,
+          pendingMoreThan3Months: 0,
+          averageResolutionDays: 0,
+        },
+        {
+          sn: 3,
+          source: "Stock Exchanges (if relevant)",
+          carriedForward: 0,
+          received: 0,
+          totalPending: 0,
+          resolved: 0,
+          pendingLessThan3Months: 0,
+          pendingMoreThan3Months: 0,
+          averageResolutionDays: 0,
+        },
+        {
+          sn: 4,
+          source: "Other Sources (if any)",
+          carriedForward: 0,
+          received: 0,
+          totalPending: 0,
+          resolved: 0,
+          pendingLessThan3Months: 0,
+          pendingMoreThan3Months: 0,
+          averageResolutionDays: 0,
+        },
+      ];
+
+      current = saveAnnexure26Data({
+        monthEnding: currentMonthName,
+        financialYear: calculatedFy,
+        sourceWiseData: newSources,
+        monthlyTrend: updatedTrend,
+      });
+
+      await saveMonthlySnapshotToDb({
+        monthYear: currentMonthName,
+        financialYear: calculatedFy,
+        sourceWiseData: newSources,
+        isCurrent: true,
+      });
+
+      await createAuditLog({
+        adminId: null,
+        userId: null,
+        action: `SEBI AUTOMATION: Month '${concludedMonth}' concluded. Automatically saved snapshot to database and rolled over to '${currentMonthName}'.`,
+      });
+    }
+  }
+
+  // Fetch all archived snapshots from DB to attach to report
+  const snapshots = await getArchivedSnapshotsFromDb();
+  return {
+    ...current,
+    archivedMonths: snapshots,
+  };
+}
+
+export async function concludeAndRolloverMonth(
+  adminId?: string,
+  targetMonth?: string
+): Promise<Annexure26Report> {
+  const current = getAnnexure26Data();
+  const concludedMonth = targetMonth || current.monthEnding;
+  const parsed = parseMonthYear(concludedMonth);
+  const totals = calculateSourceWiseTotals(current.sourceWiseData);
+  const remainingPending = Math.max(0, totals.totalPending - totals.resolved);
+
+  await saveMonthlySnapshotToDb({
+    monthYear: concludedMonth,
+    financialYear: current.financialYear,
+    sourceWiseData: current.sourceWiseData,
+    isCurrent: false,
+  });
+
+  const monthLabel = parsed
+    ? `${MONTH_NAMES[parsed.month]} - ${parsed.year}`
+    : concludedMonth;
+
+  const existingTrendIndex = current.monthlyTrend.findIndex((t) =>
+    t.month.toLowerCase() === monthLabel.toLowerCase()
+  );
+
+  const trendEntry: MonthlyTrendData = {
+    sn: existingTrendIndex >= 0 ? current.monthlyTrend[existingTrendIndex].sn : current.monthlyTrend.length + 1,
+    month: monthLabel,
+    carriedForward: totals.carriedForward,
+    received: totals.received,
+    resolved: totals.resolved,
+    pending: remainingPending,
+  };
+
+  let updatedTrend = [...current.monthlyTrend];
+  if (existingTrendIndex >= 0) {
+    updatedTrend[existingTrendIndex] = trendEntry;
+  } else {
+    updatedTrend.push(trendEntry);
+  }
+  updatedTrend = updatedTrend.map((item, idx) => ({ ...item, sn: idx + 1 }));
+
+  let nextMonthName = "Next Month";
+  let nextFy = current.financialYear;
+  if (parsed) {
+    const nextDate = new Date(parsed.year, parsed.month + 1, 1);
+    const nextMonthIdx = nextDate.getMonth();
+    const nextYear = nextDate.getFullYear();
+    nextMonthName = `${MONTH_NAMES[nextMonthIdx]} ${nextYear}`;
+    const fyStart = nextMonthIdx >= 3 ? nextYear : nextYear - 1;
+    const fyEnd = (fyStart + 1) % 100;
+    nextFy = `${fyStart}-${fyEnd < 10 ? "0" + fyEnd : fyEnd}`;
+  }
+
+  const newSources: ComplaintSourceData[] = current.sourceWiseData.map((s) => {
+    if (s.sn === 1) {
+      return {
+        ...s,
+        carriedForward: remainingPending,
+        received: 0,
+        totalPending: remainingPending,
+        resolved: 0,
+        pendingLessThan3Months: remainingPending,
+        pendingMoreThan3Months: 0,
+        averageResolutionDays: 0,
+      };
+    }
+    return {
+      ...s,
+      carriedForward: 0,
+      received: 0,
+      totalPending: 0,
+      resolved: 0,
+      pendingLessThan3Months: 0,
+      pendingMoreThan3Months: 0,
+      averageResolutionDays: 0,
+    };
+  });
+
+  const updated = saveAnnexure26Data({
+    monthEnding: nextMonthName,
+    financialYear: nextFy,
+    sourceWiseData: newSources,
+    monthlyTrend: updatedTrend,
+  });
+
+  await saveMonthlySnapshotToDb({
+    monthYear: nextMonthName,
+    financialYear: nextFy,
+    sourceWiseData: newSources,
+    isCurrent: true,
+  });
+
+  await createAuditLog({
+    adminId: adminId || null,
+    userId: null,
+    action: `SEBI COMPLIANCE: Concluded month '${concludedMonth}'. Saved snapshot to database and rolled over to '${nextMonthName}'.`,
+  });
+
+  const snapshots = await getArchivedSnapshotsFromDb();
+  return {
+    ...updated,
+    archivedMonths: snapshots,
+  };
 }
 
 // Individual Grievance Requests Management

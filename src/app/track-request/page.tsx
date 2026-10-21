@@ -16,39 +16,6 @@ interface TicketDetails {
   remarks: string;
 }
 
-const MOCK_TICKETS: Record<string, TicketDetails> = {
-  "GRV-2026-104921": {
-    ticketId: "GRV-2026-104921",
-    category: "Physical Share Transfer / Demat",
-    investorName: "Rajesh Kumar",
-    companyName: "Alpha Corp Limited",
-    status: "IN_PROCESSING",
-    submittedOn: "24 Aug 2026",
-    expectedResolution: "31 Aug 2026 (7 Days TAT)",
-    remarks: "Documents under verification with NSDL/CDSL tripartite validator.",
-  },
-  "GRV-2026-582910": {
-    ticketId: "GRV-2026-582910",
-    category: "Non-receipt of Dividend",
-    investorName: "Sunita Sharma",
-    companyName: "Beta Tech Systems Limited",
-    status: "RESOLVED",
-    submittedOn: "12 Aug 2026",
-    expectedResolution: "19 Aug 2026",
-    remarks: "Dividend revalidation warrant dispatched via Registered AD on 18 Aug 2026.",
-  },
-  "SRN-2026-881920": {
-    ticketId: "SRN-2026-881920",
-    category: "Duplicate Share Certificate (Form ISR-4)",
-    investorName: "Vikram Malhotra",
-    companyName: "Apex Financial Services Limited",
-    status: "ESCALATED_LEVEL2",
-    submittedOn: "01 Aug 2026",
-    expectedResolution: "30 Aug 2026 (Level 2 Escalation)",
-    remarks: "Escalated to Compliance Officer Mr. Nishant Khemani for final newspaper notice publication.",
-  },
-};
-
 import { fetchGrievanceByTicketAction } from "@/app/actions";
 
 export default function TrackRequestPage() {
