@@ -8,6 +8,7 @@ import {
   calculateMonthlyTrendTotals,
   calculateAnnualTrendTotals,
 } from "@/lib/annexure26-types";
+import EscalationMatrixTable from "./EscalationMatrixTable";
 
 interface Annexure26ViewProps {
   initialData: Annexure26Report;
@@ -15,7 +16,7 @@ interface Annexure26ViewProps {
 
 export default function Annexure26View({ initialData }: Annexure26ViewProps) {
   const [data] = useState<Annexure26Report>(initialData);
-  const [activeTab, setActiveTab] = useState<"all" | "month" | "monthlyTrend" | "annualTrend">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "month" | "monthlyTrend" | "annualTrend" | "escalationMatrix">("all");
   const [selectedMonthKey, setSelectedMonthKey] = useState<string>("CURRENT");
 
   const archivedList = (data.archivedMonths || []).filter(
@@ -187,6 +188,19 @@ export default function Annexure26View({ initialData }: Annexure26ViewProps) {
             >
               3. Annual Trend ({data.annualTrend.length})
             </button>
+            <button
+              onClick={() => setActiveTab("escalationMatrix")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === "escalationMatrix"
+                  ? "bg-[#0B1528] text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              <span>4. Escalation Matrix</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500/20 text-rose-800 font-extrabold">
+                Page 160
+              </span>
+            </button>
           </div>
 
           {/* Historical Period Selector */}
@@ -227,6 +241,40 @@ export default function Annexure26View({ initialData }: Annexure26ViewProps) {
             </div>
           )}
         </div>
+
+        {/* Quick Jump Anchors when viewing All Tables */}
+        {activeTab === "all" && (
+          <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs print:hidden">
+            <span className="font-bold text-slate-600 text-[11px] uppercase tracking-wide">Jump to Table:</span>
+            <a
+              href="#table-month-ending"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors"
+            >
+              Table 1: Month Ending Sources
+            </a>
+            <a
+              href="#table-monthly-trend"
+              className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 transition-colors flex items-center gap-1"
+            >
+              <span>Table 2: Monthly Trend (Dec 2025 – Present)</span>
+              <span>↓</span>
+            </a>
+            <a
+              href="#table-annual-trend"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors flex items-center gap-1"
+            >
+              <span>Table 3: Annual Multi-Year Trend</span>
+              <span>↓</span>
+            </a>
+            <a
+              href="#table-escalation-matrix"
+              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold border border-rose-200 transition-colors flex items-center gap-1"
+            >
+              <span>Table 4: Escalation Matrix (Page 160)</span>
+              <span>↓</span>
+            </a>
+          </div>
+        )}
       </div>
 
       {/* TABLE 1: Data for the month ending */}
@@ -634,6 +682,13 @@ export default function Annexure26View({ initialData }: Annexure26ViewProps) {
         </section>
       )}
 
+      {/* TABLE 4: Statutory Escalation Matrix (SEBI Page 160) */}
+      {(activeTab === "all" || activeTab === "escalationMatrix") && (
+        <section id="table-escalation-matrix" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+          <EscalationMatrixTable />
+        </section>
+      )}
+
       {/* Statutory Footnotes / Regulatory Notes - VERBATIM FROM SEBI CIRCULAR */}
       <div className="bg-amber-50/80 rounded-3xl p-6 border border-amber-200/80 text-amber-950 space-y-3">
         <div className="flex items-center gap-2">
@@ -678,19 +733,28 @@ export default function Annexure26View({ initialData }: Annexure26ViewProps) {
           </div>
           <div className="space-y-2 text-xs text-slate-600">
             <p>
-              <strong>Compliance &amp; Nodal Officer:</strong> Mr. Nishant Khemani
+              <strong>Compliance Officer:</strong> Pooja Bansal (
+              <a href="mailto:poojabansal.ssdco@gmail.com" className="text-indigo-600 hover:underline font-mono">
+                poojabansal.ssdco@gmail.com
+              </a>{" "}
+              • +91 95609 82564)
             </p>
             <p>
-              <strong>Email:</strong>{" "}
+              <strong>CEO:</strong> Nishant Khemani (
+              <a href="mailto:khemaninishant@gmail.com" className="text-indigo-600 hover:underline font-mono">
+                khemaninishant@gmail.com
+              </a>{" "}
+              • +91 99101 18347)
+            </p>
+            <p>
+              <strong>Customer Care / Helpline:</strong> Umesh Verma (
               <a href="mailto:info@trustlinkinvestor.com" className="text-indigo-600 hover:underline font-mono">
                 info@trustlinkinvestor.com
-              </a>
+              </a>{" "}
+              • +91 77039 70802 / +91 97114 47994)
             </p>
             <p>
-              <strong>Direct Phone:</strong> +91 93309 68989 / +91 98310 99404
-            </p>
-            <p>
-              <strong>Address:</strong> Trustlink Investor Services Private Limited, Registered Office, India
+              <strong>Address:</strong> 312, Pratap Bhawan, Bahadur Shah Zafar Marg, New Delhi-110002 (Working hours: 10:00 am-6:00 pm)
             </p>
           </div>
           <div className="pt-2 flex flex-wrap gap-2">

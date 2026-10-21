@@ -64,8 +64,27 @@ const DEFAULT_ANNEXURE_26_DATA: Annexure26Report = {
       averageResolutionDays: 0,
     },
   ],
-  monthlyTrend: [],
-  annualTrend: [],
+  monthlyTrend: [
+    { sn: 1, month: "December - 2025", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 2, month: "January - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 3, month: "February - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 4, month: "March - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 5, month: "April - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 6, month: "May - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 7, month: "June - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 8, month: "July - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 9, month: "August - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 10, month: "September - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 11, month: "October - 2026", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+  ],
+  annualTrend: [
+    { sn: 1, year: "2021-22", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 2, year: "2022-23", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 3, year: "2023-24", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 4, year: "2024-25", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 5, year: "2025-26", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+    { sn: 6, year: "2026-27", carriedForward: 0, received: 0, resolved: 0, pending: 0 },
+  ],
 };
 
 const DATA_FILE_PATH = path.join(process.cwd(), "src", "lib", "annexure26-data.json");

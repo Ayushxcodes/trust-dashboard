@@ -6,6 +6,7 @@ import Footer from "@/components/base/Footer";
 import Link from "next/link";
 
 import { submitGrievanceAction } from "@/app/actions";
+import EscalationMatrixTable from "@/components/Investor/EscalationMatrixTable";
 
 export default function GrievanceRedressalPage() {
   const [formData, setFormData] = useState({
@@ -264,25 +265,29 @@ export default function GrievanceRedressalPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">1</span>
-                    Level 1: RTA Grievance Cell
+                    Level 1: Customer Care / Support Desk
                   </h3>
                   <span className="text-[11px] font-mono font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded">TAT: 7 Days</span>
                 </div>
                 <p className="text-xs text-slate-600 mb-3 leading-relaxed">
-                  First point of escalation for all investor service requests and queries.
+                  First point of contact for all investor inquiries and service requests:
                 </p>
                 <div className="space-y-2 text-xs font-medium">
+                  <div className="flex justify-between py-1 border-b border-slate-200">
+                    <span className="text-slate-500">Contact Person:</span>
+                    <span className="font-bold text-slate-900">Umesh Verma / Beena (Head of Customer Care)</span>
+                  </div>
                   <div className="flex justify-between py-1 border-b border-slate-200">
                     <span className="text-slate-500">Email:</span>
                     <a href="mailto:info@trustlinkinvestor.com" className="font-bold text-indigo-700 hover:underline font-mono">info@trustlinkinvestor.com</a>
                   </div>
                   <div className="flex justify-between py-1 border-b border-slate-200">
-                    <span className="text-slate-500">Direct Helpline:</span>
-                    <a href="tel:+919910118347" className="font-bold text-slate-800 font-mono">+91 99101 18347</a>
+                    <span className="text-slate-500">Contact No:</span>
+                    <a href="tel:+917703970802" className="font-bold text-slate-800 font-mono">+91 77039 70802 / +91 97114 47994</a>
                   </div>
                   <div className="flex justify-between py-1">
-                    <span className="text-slate-500">Office Hours:</span>
-                    <span className="text-slate-700">Mon–Fri: 9:30 AM – 6:00 PM</span>
+                    <span className="text-slate-500">Working Hours:</span>
+                    <span className="text-slate-700 font-semibold">10:00 am - 6:00 pm (Mon–Fri)</span>
                   </div>
                 </div>
               </div>
@@ -292,19 +297,37 @@ export default function GrievanceRedressalPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <span className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">2</span>
-                    Level 2: Compliance / Nodal Officer
+                    Level 2: Compliance Officer &amp; CEO
                   </h3>
                   <span className="text-[11px] font-mono font-bold text-indigo-700 bg-white border border-indigo-200 px-2 py-0.5 rounded">TAT: 15 Days</span>
                 </div>
                 <p className="text-xs text-slate-600 mb-3 leading-relaxed">
-                  If unresolved within 7 days at Level 1, escalate directly to the Nodal Compliance Officer:
+                  If unresolved within regulatory TAT at Level 1, escalate directly:
                 </p>
-                <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1 text-xs">
-                  <div className="font-bold text-slate-900 text-sm">Mr. Nishant Khemani</div>
-                  <div className="text-slate-500 font-medium">Director &amp; Compliance / Nodal Officer</div>
-                  <div className="pt-1 flex justify-between">
-                    <span className="text-slate-500">Direct Email:</span>
-                    <a href="mailto:info@trustlinkinvestor.com" className="font-bold text-indigo-700 hover:underline font-mono">info@trustlinkinvestor.com</a>
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+                  <div>
+                    <div className="font-bold text-slate-900 text-sm">Pooja Bansal</div>
+                    <div className="text-slate-500 font-medium">Compliance Officer</div>
+                    <div className="pt-0.5 flex justify-between text-[11px]">
+                      <span className="text-slate-500">Email:</span>
+                      <a href="mailto:poojabansal.ssdco@gmail.com" className="font-bold text-indigo-700 hover:underline font-mono">poojabansal.ssdco@gmail.com</a>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">Contact No:</span>
+                      <span className="font-mono font-bold text-slate-800">+91 95609 82564</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="font-bold text-slate-900 text-sm">Nishant Khemani</div>
+                    <div className="text-slate-500 font-medium">CEO</div>
+                    <div className="pt-0.5 flex justify-between text-[11px]">
+                      <span className="text-slate-500">Email:</span>
+                      <a href="mailto:khemaninishant@gmail.com" className="font-bold text-indigo-700 hover:underline font-mono">khemaninishant@gmail.com</a>
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-500">Contact No:</span>
+                      <span className="font-mono font-bold text-slate-800">+91 99101 18347</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -356,6 +379,11 @@ export default function GrievanceRedressalPage() {
 
             </div>
 
+          </div>
+
+          {/* Statutory Escalation Matrix (SEBI Page 160) */}
+          <div className="mb-12 bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-xs">
+            <EscalationMatrixTable />
           </div>
 
           {/* Statutory Registration Details Footer Banner */}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import EscalationMatrixTable from "./EscalationMatrixTable";
 
 interface ServiceTimelineItem {
   category: "A. Investor Service Request" | "B. Grievance Redressal" | "C. Other Operational activities";
@@ -372,7 +373,7 @@ const ODR_STEPS = [
 
 export default function Annexure25View() {
   const [activeTab, setActiveTab] = useState<
-    "all" | "timelines" | "dos-donts" | "rights" | "services" | "odr"
+    "all" | "timelines" | "dos-donts" | "rights" | "services" | "odr" | "escalation-matrix"
   >("all");
   const [timelineCategory, setTimelineCategory] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -563,6 +564,20 @@ export default function Annexure25View() {
             <span>Grievance &amp; SMARTODR</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/20 text-amber-800 font-extrabold">
               7 Steps
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("escalation-matrix")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              activeTab === "escalation-matrix"
+                ? "bg-[#0B1528] text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            <span>‘Escalation Matrix’</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500/20 text-rose-800 font-extrabold">
+              Page 160
             </span>
           </button>
         </div>
@@ -996,6 +1011,13 @@ export default function Annexure25View() {
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* SECTION 6: STATUTORY ESCALATION MATRIX (Page 160) */}
+      {(activeTab === "all" || activeTab === "escalation-matrix") && (
+        <section className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+          <EscalationMatrixTable />
         </section>
       )}
 
